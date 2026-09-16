@@ -47,9 +47,9 @@ export const NAV: NavSection[] = [
     label: "Printing",
     roles: ADMIN_PRINT,
     links: [
-      { label: "Printing Calculator", href: "/printing/calculator", roles: ADMIN_PRINT, implemented: false },
-      { label: "Printing Records", href: "/printing/records", roles: ADMIN_PRINT, implemented: false },
-      { label: "Active Paper Stock", href: "/printing/active-stock", roles: ALL, implemented: false },
+      { label: "Printing Calculator", href: "/printing/calculator", roles: ADMIN_PRINT, implemented: true },
+      { label: "Printing Records", href: "/printing/records", roles: ADMIN_PRINT, implemented: true },
+      { label: "Active Paper Stock", href: "/printing/active-stock", roles: ADMIN_PRINT, implemented: true },
       { label: "Printing Price Configuration", href: "/printing/price-config", roles: ADMIN, implemented: true },
     ],
   },

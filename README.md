@@ -47,8 +47,8 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 - [x] **Phase 2** — inventory items (with generated Item ID + barcode), categories, suppliers
 - [x] **Phase 3** — stock lots (add/activate/finish), stock transactions, barcode scanning
 - [x] **Phase 4** — paper size/GSM/type config, printing price configuration
-- [ ] Phase 5 — printing calculator (active-lot lookup, cost calculation, stock deduction)
-- [ ] Phase 6 — printing records, lecturer management
+- [x] **Phase 5** — printing calculator (active-lot lookup, cost calculation, atomic stock deduction), printing records
+- [ ] Phase 6 — lecturer management (calculator uses existing seeded lecturers for now)
 - [ ] Phase 7 — monthly billing, invoice generation (PDF)
 - [ ] Phase 8 — reports, exports, audit log UI
 

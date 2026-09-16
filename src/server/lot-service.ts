@@ -14,7 +14,7 @@ function cleanOptional(v?: string) {
   return v && v.length > 0 ? v : null;
 }
 
-function statusFromQuantity(currentQuantity: number, minStock: number): LotStatus {
+export function statusFromQuantity(currentQuantity: number, minStock: number): LotStatus {
   if (currentQuantity <= 0) return "OUT_OF_STOCK";
   if (currentQuantity <= minStock) return "LOW_STOCK";
   return "ACTIVE";

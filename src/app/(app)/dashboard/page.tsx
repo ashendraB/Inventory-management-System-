@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getDashboardSummary, getRecentActivity } from "@/server/dashboard-service";
 import { StatCard } from "@/components/ui/StatCard";
 import { formatCurrency } from "@/lib/format";
@@ -104,12 +103,8 @@ export default async function DashboardPage() {
       </div>
 
       <p className="text-xs text-slate-400">
-        Inventory, printing, and billing modules are being built in phases —
-        see the sidebar for what&apos;s live today. Coming next:{" "}
-        <Link href="/inventory/lots" className="underline">
-          Stock / Lots
-        </Link>{" "}
-        and the Printing Calculator.
+        Billing modules are being built next — see the sidebar for what&apos;s live today. Coming
+        next: Lecturer Management, Monthly Billing, and Invoices.
       </p>
     </div>
   );
