@@ -33,9 +33,10 @@ export function FieldWrapper({
 
 export function TextInput({
   className,
+  ref,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={clsx(inputClass, className)} {...props} />;
+}: React.InputHTMLAttributes<HTMLInputElement> & { ref?: React.Ref<HTMLInputElement> }) {
+  return <input ref={ref} className={clsx(inputClass, className)} {...props} />;
 }
 
 export function TextArea({

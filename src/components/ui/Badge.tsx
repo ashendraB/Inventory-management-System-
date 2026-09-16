@@ -37,6 +37,16 @@ export function Badge({
   );
 }
 
+/** A Badge for a raw enum-style status (e.g. "OUT_OF_STOCK") — colors and
+ * humanizes it ("OUT OF STOCK") in one place. */
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  return (
+    <Badge tone={statusTone(status)} className={className}>
+      {status.replaceAll("_", " ")}
+    </Badge>
+  );
+}
+
 /** Maps the common domain statuses used across the app to a Badge tone. */
 export function statusTone(status: string): BadgeTone {
   switch (status) {

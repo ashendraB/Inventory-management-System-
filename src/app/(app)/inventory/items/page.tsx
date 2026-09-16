@@ -3,7 +3,7 @@ import { listInventoryItems, listCategories } from "@/server/inventory-service";
 import { ItemsFilterBar } from "@/components/inventory/ItemsFilterBar";
 import { ItemRowActions } from "@/components/inventory/ItemRowActions";
 import { Pagination } from "@/components/ui/Pagination";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -108,7 +108,7 @@ export default async function InventoryItemsPage({
                     {formatCurrency(Number(item.defaultPrice))}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge tone={statusTone(item.status)}>{item.status}</Badge>
+                    <StatusBadge status={item.status} />
                   </td>
                   <td className="px-4 py-3 text-slate-400">
                     {formatDate(item.createdAt)}

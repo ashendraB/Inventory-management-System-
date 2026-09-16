@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getInventoryItem, totalStockOf } from "@/server/inventory-service";
 import { BarcodeDisplay } from "@/components/inventory/BarcodeDisplay";
 import { ItemActions } from "@/components/inventory/ItemActions";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { LotRowActions } from "@/components/inventory/LotRowActions";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ export default async function InventoryItemDetailPage({
   if (!item) notFound();
 
   const totalStock = totalStockOf(item);
+  const isPaper = item.category.name.toLowerCase() === "paper";
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -24,7 +27,7 @@ export default async function InventoryItemDetailPage({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">{item.name}</h1>
-            <Badge tone={statusTone(item.status)}>{item.status}</Badge>
+            <StatusBadge status={item.status} />
           </div>
           <p className="text-sm text-slate-500">{item.itemCode}</p>
         </div>
@@ -64,10 +67,22 @@ export default async function InventoryItemDetailPage({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Stock Lots</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-900">Stock Lots</h2>
+          {isPaper && (
+            <Link
+              href={`/inventory/items/${item.id}/lots/new`}
+              className="text-sm font-medium text-indigo-600 hover:underline"
+            >
+              + Add Stock Lot
+            </Link>
+          )}
+        </div>
         {item.lots.length === 0 ? (
           <p className="text-sm text-slate-400">
-            No stock lots yet. Stock/Lots management arrives in the next build phase.
+            {isPaper
+              ? "No stock lots yet. Add one to give this item a paper cost."
+              : "This item isn't paper, so it doesn't use stock lots — its Count field tracks quantity directly."}
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -77,16 +92,26 @@ export default async function InventoryItemDetailPage({
                 <th className="py-2">Quantity</th>
                 <th className="py-2">Cost/Sheet</th>
                 <th className="py-2">Status</th>
+                <th className="py-2">Active</th>
+                <th className="py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {item.lots.map((lot) => (
                 <tr key={lot.id} className="border-b border-slate-100 last:border-0">
-                  <td className="py-2">{lot.lotCode}</td>
+                  <td className="py-2">
+                    <Link href={`/inventory/lots/${lot.id}`} className="text-indigo-600 hover:underline">
+                      {lot.lotCode}
+                    </Link>
+                  </td>
                   <td className="py-2">{lot.currentQuantity.toLocaleString()}</td>
                   <td className="py-2">{formatCurrency(Number(lot.costPerSheet))}</td>
                   <td className="py-2">
-                    <Badge tone={statusTone(lot.status)}>{lot.status}</Badge>
+                    <StatusBadge status={lot.status} />
+                  </td>
+                  <td className="py-2">{lot.isActiveStock && <Badge tone="success">Active</Badge>}</td>
+                  <td className="py-2">
+                    <LotRowActions lotId={lot.id} status={lot.status} isActiveStock={lot.isActiveStock} />
                   </td>
                 </tr>
               ))}
