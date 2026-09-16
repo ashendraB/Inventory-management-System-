@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLot } from "@/server/lot-service";
+import { listSuppliers } from "@/server/inventory-service";
+import { getSession } from "@/lib/auth";
 import { BarcodeDisplay } from "@/components/inventory/BarcodeDisplay";
 import { LotRowActions } from "@/components/inventory/LotRowActions";
 import { AdjustStockForm } from "@/components/inventory/AdjustStockForm";
+import { EditLotForm } from "@/components/inventory/EditLotForm";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
@@ -15,7 +18,11 @@ export default async function LotDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lot = await getLot(id);
+  const [lot, session, suppliers] = await Promise.all([
+    getLot(id),
+    getSession(),
+    listSuppliers(),
+  ]);
   if (!lot) notFound();
 
   return (
@@ -53,7 +60,21 @@ export default async function LotDetailPage({
               <p className="text-sm text-slate-700">{lot.notes}</p>
             </div>
           )}
-          <AdjustStockForm lotId={lot.id} />
+          <div className="flex flex-wrap gap-2">
+            <AdjustStockForm lotId={lot.id} />
+            {session?.role === "ADMINISTRATOR" && (
+              <EditLotForm
+                lotId={lot.id}
+                suppliers={suppliers}
+                initialValues={{
+                  costPerSheet: lot.costPerSheet.toString(),
+                  supplierId: lot.supplierId ?? "",
+                  location: lot.location ?? "",
+                  notes: lot.notes ?? "",
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -53,6 +53,23 @@ export function LotRowActions({
     }
   }
 
+  async function handleReopen() {
+    if (!window.confirm("Reopen this lot? It was marked finished by mistake — this brings it back to normal stock tracking (you'll still need to Set Active separately).")) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/inventory/lots/${lotId}/reopen`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Could not reopen this lot.");
+        return;
+      }
+      toast.success("Lot reopened");
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const canActivate = !isActiveStock && status !== "FINISHED" && status !== "OUT_OF_STOCK";
   const canFinish = status !== "FINISHED";
 
@@ -63,9 +80,13 @@ export function LotRowActions({
           Set Active
         </button>
       )}
-      {canFinish && (
+      {canFinish ? (
         <button disabled={busy} onClick={handleFinish} className="text-slate-500 hover:underline">
           Mark Finished
+        </button>
+      ) : (
+        <button disabled={busy} onClick={handleReopen} className="text-amber-600 hover:underline">
+          Reopen
         </button>
       )}
     </div>

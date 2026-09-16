@@ -15,3 +15,12 @@ export const adjustLotQuantitySchema = z.object({
   type: z.enum(["MANUAL_ADJUSTMENT", "DAMAGED", "RETURN", "TRANSFER"]),
   reason: z.string().trim().min(1, "Reason is required").max(500),
 });
+
+// Deliberately excludes quantity — that only ever changes through
+// addStockLot or adjustLotQuantity so every unit change stays audited.
+export const updateLotSchema = z.object({
+  costPerSheet: z.coerce.number().positive("Cost per sheet must be greater than 0").optional(),
+  supplierId: z.string().trim().optional().or(z.literal("")),
+  location: z.string().trim().max(200).optional().or(z.literal("")),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
+});

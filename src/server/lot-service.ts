@@ -4,10 +4,20 @@ import { nextSequence, padSequence } from "@/server/sequence-service";
 import { ApiError } from "@/lib/api-auth";
 import type { z } from "zod";
 import type { LotStatus } from "@prisma/client";
-import type { addStockLotSchema, adjustLotQuantitySchema } from "@/lib/validation/lots";
+import type {
+  addStockLotSchema,
+  adjustLotQuantitySchema,
+  updateLotSchema,
+} from "@/lib/validation/lots";
 
 function cleanOptional(v?: string) {
   return v && v.length > 0 ? v : null;
+}
+
+function statusFromQuantity(currentQuantity: number, minStock: number): LotStatus {
+  if (currentQuantity <= 0) return "OUT_OF_STOCK";
+  if (currentQuantity <= minStock) return "LOW_STOCK";
+  return "ACTIVE";
 }
 
 /** A lot's status reacts to its quantity, but never overrides a manual
@@ -18,9 +28,7 @@ function computeStatus(
   currentStatus: LotStatus
 ): LotStatus {
   if (currentStatus === "FINISHED" || currentStatus === "INACTIVE") return currentStatus;
-  if (currentQuantity <= 0) return "OUT_OF_STOCK";
-  if (currentQuantity <= minStock) return "LOW_STOCK";
-  return "ACTIVE";
+  return statusFromQuantity(currentQuantity, minStock);
 }
 
 export interface LotFilters {
@@ -185,6 +193,88 @@ export async function setActiveLot(lotId: string, userId: string) {
         entityType: "InventoryLot",
         entityId: lotId,
         newValue: JSON.stringify({ lotCode: lot.lotCode }),
+      },
+    });
+
+    return updated;
+  });
+}
+
+/** Corrects a lot's details after a data-entry mistake — cost, supplier,
+ * location, notes. Never touches quantity; that only ever changes through
+ * addStockLot/adjustLotQuantity so every unit change stays audited. */
+export async function updateLot(
+  lotId: string,
+  data: z.infer<typeof updateLotSchema>,
+  userId: string
+) {
+  const existing = await prisma.inventoryLot.findUnique({ where: { id: lotId } });
+  if (!existing) throw new ApiError(404, "Stock lot not found.");
+
+  const updated = await prisma.inventoryLot.update({
+    where: { id: lotId },
+    data: {
+      ...(data.costPerSheet !== undefined && { costPerSheet: data.costPerSheet.toFixed(4) }),
+      ...(data.supplierId !== undefined && { supplierId: cleanOptional(data.supplierId) }),
+      ...(data.location !== undefined && { location: cleanOptional(data.location) }),
+      ...(data.notes !== undefined && { notes: cleanOptional(data.notes) }),
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId,
+      action: "UPDATE_LOT",
+      entityType: "InventoryLot",
+      entityId: lotId,
+      oldValue: JSON.stringify({
+        costPerSheet: existing.costPerSheet.toString(),
+        supplierId: existing.supplierId,
+        location: existing.location,
+        notes: existing.notes,
+      }),
+      newValue: JSON.stringify({
+        costPerSheet: updated.costPerSheet.toString(),
+        supplierId: updated.supplierId,
+        location: updated.location,
+        notes: updated.notes,
+      }),
+    },
+  });
+
+  return updated;
+}
+
+/** Undoes an accidental "Mark Finished" — status goes back to whatever its
+ * quantity implies. The lot stays inactive until someone explicitly sets it
+ * active again, so reopening never silently swaps which lot the printing
+ * calculator is using. */
+export async function reopenLot(lotId: string, userId: string) {
+  return prisma.$transaction(async (tx) => {
+    const lot = await tx.inventoryLot.findUnique({
+      where: { id: lotId },
+      include: { inventoryItem: { select: { minStock: true } } },
+    });
+    if (!lot) throw new ApiError(404, "Stock lot not found.");
+    if (lot.status !== "FINISHED") {
+      throw new ApiError(409, "Only a finished lot can be reopened.");
+    }
+
+    const updated = await tx.inventoryLot.update({
+      where: { id: lotId },
+      data: { status: statusFromQuantity(lot.currentQuantity, lot.inventoryItem.minStock) },
+    });
+
+    await tx.stockTransaction.create({
+      data: {
+        type: "MANUAL_ADJUSTMENT",
+        inventoryItemId: lot.inventoryItemId,
+        lotId: lot.id,
+        quantityChange: 0,
+        previousQuantity: lot.currentQuantity,
+        newQuantity: lot.currentQuantity,
+        userId,
+        reason: "Lot reopened (was mistakenly marked finished)",
       },
     });
 
