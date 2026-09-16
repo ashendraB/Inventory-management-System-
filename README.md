@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Inventory Management & Lecturer Billing System
 
-## Getting Started
+Institute inventory, paper-lot tracking, printing cost calculation, and
+lecturer billing — built to the spec in the original brief (see
+`docs/spec.md` if you keep a copy there).
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, TypeScript, Turbopack)
+- Prisma + SQLite for local dev (swap to PostgreSQL for production — see below)
+- Custom auth: bcrypt password hashing, JWT session cookie (`jose`, edge-compatible)
+- Tailwind CSS v4
+
+## Getting started
 
 ```bash
+npm install
+npx prisma migrate dev   # creates/updates prisma/dev.db
+npm run db:seed          # creates default users + lookup data
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Seeded logins
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Username      | Password       | Role                |
+|---------------|----------------|---------------------|
+| `admin`       | `admin123`     | Administrator       |
+| `inventory.op`| `inventory123` | Inventory Operator  |
+| `printing.op` | `printing123`  | Printing Operator   |
 
-## Learn More
+Change these before any real deployment.
 
-To learn more about Next.js, take a look at the following resources:
+## Switching to PostgreSQL later
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Set `DATABASE_URL` in `.env` to your Postgres connection string.
+2. In `prisma/schema.prisma`, change `provider = "sqlite"` to `provider = "postgresql"`.
+3. Run `npx prisma migrate dev` again to regenerate migrations for Postgres.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project status — build phases
 
-## Deploy on Vercel
+This is being built in phases (see the sidebar — unbuilt pages are marked
+"soon"):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [x] **Phase 1** — project setup, database schema, authentication, roles, dashboard shell
+- [ ] Phase 2 — inventory items, categories, suppliers
+- [ ] Phase 3 — stock lots, stock transactions, barcode generation/scanning
+- [ ] Phase 4 — paper size/GSM/type config, printing price configuration
+- [ ] Phase 5 — printing calculator (active-lot lookup, cost calculation, stock deduction)
+- [ ] Phase 6 — printing records, lecturer management
+- [ ] Phase 7 — monthly billing, invoice generation (PDF)
+- [ ] Phase 8 — reports, exports, audit log UI
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key design decisions
+
+- **Roles**: `ADMINISTRATOR`, `INVENTORY_OPERATOR`, `PRINTING_OPERATOR`, stored
+  on `User.role`. Two extra per-user flags (`canManagePricing`,
+  `canManageSettings`) let an admin grant an operator pricing/settings access
+  without changing their base role, per the spec's "unless permission is
+  granted" wording.
+- **Route protection happens in two layers**: `src/proxy.ts` (Next's
+  middleware convention, renamed in Next 16) blocks unauthenticated/wrong-role
+  access to whole page sections using the single source of truth in
+  `src/config/nav.ts`. Individual API routes additionally call
+  `requireRole()` from `src/lib/api-auth.ts` — never rely on the frontend nav
+  alone for authorization.
+- **Historical price protection** (critical business rule): printing records
+  will snapshot `paperCostPerSheet` and `printingChargePerSheet` at the time
+  of the job, not a reference to the current config. This is already modeled
+  in `prisma/schema.prisma` (`PrintingRecord` stores its own decimal columns
+  rather than only foreign-keying to the live price rule).
