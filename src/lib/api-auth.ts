@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
 import { getSession, type SessionPayload } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export class ApiError extends Error {
   status: number;
@@ -15,6 +16,18 @@ export class ApiError extends Error {
 export async function requireSession(): Promise<SessionPayload> {
   const session = await getSession();
   if (!session) throw new ApiError(401, "Not authenticated.");
+
+  // A session cookie can outlive the user it points to (deleted/deactivated
+  // account, or a dev database reset) — writes that reference session.userId
+  // as a foreign key would otherwise fail with an opaque 500.
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isActive: true },
+  });
+  if (!user || !user.isActive) {
+    throw new ApiError(401, "Your session is no longer valid. Please log in again.");
+  }
+
   return session;
 }
 
