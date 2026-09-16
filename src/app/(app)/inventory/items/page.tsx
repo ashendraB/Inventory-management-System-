@@ -62,7 +62,9 @@ export default async function InventoryItemsPage({
               <th className="px-4 py-3">Unit</th>
               <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3" title="Whether this item is listed in the catalog — separate from stock level">
+                Listing
+              </th>
               <th className="px-4 py-3">Added</th>
               <th className="px-4 py-3">Actions</th>
             </tr>

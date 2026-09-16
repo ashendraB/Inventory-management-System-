@@ -27,7 +27,13 @@ export default async function InventoryItemDetailPage({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">{item.name}</h1>
-            <StatusBadge status={item.status} />
+            <span
+              className="flex items-center gap-1"
+              title="Whether this item is listed in the catalog — separate from stock level"
+            >
+              <span className="text-xs text-slate-400">Listing:</span>
+              <StatusBadge status={item.status} />
+            </span>
           </div>
           <p className="text-sm text-slate-500">{item.itemCode}</p>
         </div>
