@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { nextSequence, padSequence } from "@/server/sequence-service";
 import { ApiError } from "@/lib/api-auth";
 import type { z } from "zod";
-import type { Prisma, LotStatus } from "@prisma/client";
+import type { LotStatus } from "@prisma/client";
 import type { addStockLotSchema, adjustLotQuantitySchema } from "@/lib/validation/lots";
 
 function cleanOptional(v?: string) {
@@ -268,50 +268,4 @@ export async function adjustLotQuantity(
 
     return updated;
   });
-}
-
-// ---------------------------------------------------------------------------
-// Stock transaction history (spec §17)
-// ---------------------------------------------------------------------------
-
-export interface TransactionFilters {
-  itemId?: string;
-  lotId?: string;
-  type?: string;
-  page?: number;
-  pageSize?: number;
-}
-
-export async function listStockTransactions(filters: TransactionFilters) {
-  const page = filters.page && filters.page > 0 ? filters.page : 1;
-  const pageSize = filters.pageSize && filters.pageSize > 0 ? filters.pageSize : 30;
-
-  const where: Prisma.StockTransactionWhereInput = {
-    ...(filters.itemId && { inventoryItemId: filters.itemId }),
-    ...(filters.lotId && { lotId: filters.lotId }),
-    ...(filters.type && { type: filters.type as Prisma.EnumStockTransactionTypeFilter["equals"] }),
-  };
-
-  const [transactions, total] = await Promise.all([
-    prisma.stockTransaction.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: {
-        inventoryItem: { select: { name: true, itemCode: true } },
-        lot: { select: { lotCode: true } },
-        user: { select: { name: true } },
-      },
-    }),
-    prisma.stockTransaction.count({ where }),
-  ]);
-
-  return {
-    transactions,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
-  };
 }
