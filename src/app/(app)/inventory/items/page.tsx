@@ -93,18 +93,16 @@ export default async function InventoryItemsPage({
                   <td className="px-4 py-3 text-slate-500">{item.unit}</td>
                   <td className="px-4 py-3">
                     {item.totalStock.toLocaleString()}
-                    {item.lots.length > 0 && item.totalStock === 0 && (
+                    {item.totalStock === 0 && (
                       <Badge tone="danger" className="ml-2">
                         out of stock
                       </Badge>
                     )}
-                    {item.lots.length > 0 &&
-                      item.totalStock > 0 &&
-                      item.totalStock <= item.minStock && (
-                        <Badge tone="warning" className="ml-2">
-                          low
-                        </Badge>
-                      )}
+                    {item.totalStock > 0 && item.totalStock <= item.minStock && (
+                      <Badge tone="warning" className="ml-2">
+                        low
+                      </Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-500">
                     {formatCurrency(Number(item.defaultPrice))}

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getInventoryItem } from "@/server/inventory-service";
+import { getInventoryItem, totalStockOf } from "@/server/inventory-service";
 import { BarcodeDisplay } from "@/components/inventory/BarcodeDisplay";
 import { ItemActions } from "@/components/inventory/ItemActions";
 import { Badge, statusTone } from "@/components/ui/Badge";
@@ -16,7 +16,7 @@ export default async function InventoryItemDetailPage({
   const item = await getInventoryItem(id);
   if (!item) notFound();
 
-  const totalStock = item.lots.reduce((sum, l) => sum + l.currentQuantity, 0);
+  const totalStock = totalStockOf(item);
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -35,12 +35,11 @@ export default async function InventoryItemDetailPage({
         <div className="sm:col-span-2 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <Detail label="Category" value={item.category.name} />
-            <Detail label="Item Type" value={item.itemType ?? "—"} />
             <Detail label="Brand" value={item.brand ?? "—"} />
             <Detail label="Unit" value={item.unit} />
             <Detail label="Minimum Stock" value={item.minStock.toLocaleString()} />
-            <Detail label="Default Price" value={formatCurrency(Number(item.defaultPrice))} />
-            <Detail label="Current Stock (all lots)" value={totalStock.toLocaleString()} />
+            <Detail label="Price" value={formatCurrency(Number(item.defaultPrice))} />
+            <Detail label="Current Stock" value={`${totalStock.toLocaleString()} ${item.unit}(s)`} />
             <Detail label="Supplier" value={item.supplier?.name ?? "—"} />
             <Detail label="Location" value={item.location ?? "—"} />
             <Detail label="Added" value={formatDate(item.createdAt)} />

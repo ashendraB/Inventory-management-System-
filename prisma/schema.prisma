@@ -134,10 +134,13 @@ model InventoryItem {
   name        String
   categoryId  String
   category    InventoryCategory @relation(fields: [categoryId], references: [id])
-  itemType    String?
   description String?
   brand       String?
-  unit        String // Sheet, Box, Unit, ...
+  unit        String // Sheet, Unit, ...
+  // Simple on-hand count for items that aren't lot-tracked (toner, ink,
+  // stationery, ...). Ignored once the item has stock lots — paper items
+  // always do, and lot quantities become the source of truth instead.
+  currentQuantity Float @default(0)
   minStock    Float   @default(0)
   defaultPrice Decimal @default(0)
   supplierId  String?

@@ -2,8 +2,10 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { nextSequence, padSequence } from "@/server/sequence-service";
 import type { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import type {
-  createInventoryItemSchema,
+  createGenericItemSchema,
+  createPaperItemSchema,
   updateInventoryItemSchema,
   createSupplierSchema,
   updateSupplierSchema,
@@ -19,6 +21,10 @@ export async function listCategories() {
     where: { isActive: true },
     orderBy: { name: "asc" },
   });
+}
+
+export async function getCategory(id: string) {
+  return prisma.inventoryCategory.findUnique({ where: { id } });
 }
 
 export async function createCategory(
@@ -135,13 +141,21 @@ export async function listInventoryItems(filters: InventoryItemFilters) {
   return {
     items: items.map((item) => ({
       ...item,
-      totalStock: item.lots.reduce((sum, l) => sum + l.currentQuantity, 0),
+      totalStock: totalStockOf(item),
     })),
     total,
     page,
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+}
+
+/** Lot quantities are the source of truth once an item has lots (always true
+ * for paper); otherwise fall back to the item's own simple count. */
+export function totalStockOf(item: { currentQuantity: number; lots: { currentQuantity: number }[] }) {
+  return item.lots.length > 0
+    ? item.lots.reduce((sum, l) => sum + l.currentQuantity, 0)
+    : item.currentQuantity;
 }
 
 export async function getInventoryItem(id: string) {
@@ -155,28 +169,114 @@ export async function getInventoryItem(id: string) {
   });
 }
 
-export async function createInventoryItem(
-  data: z.infer<typeof createInventoryItemSchema>
-) {
-  const seq = await nextSequence("inventory_item");
-  const itemCode = `INV-${padSequence(seq)}`;
+async function generateItemCode(tx: Prisma.TransactionClient) {
+  const seq = await nextSequence("inventory_item", tx);
+  return `INV-${padSequence(seq)}`;
+}
 
-  return prisma.inventoryItem.create({
-    data: {
-      itemCode,
-      barcode: itemCode, // Code128-compatible; scanning it looks up this same record.
-      name: data.name,
-      categoryId: data.categoryId,
-      itemType: cleanOptional(data.itemType),
-      description: cleanOptional(data.description),
-      brand: cleanOptional(data.brand),
-      unit: data.unit,
-      minStock: data.minStock ?? 0,
-      defaultPrice: data.defaultPrice ?? 0,
-      supplierId: cleanOptional(data.supplierId),
-      location: cleanOptional(data.location),
-      notes: cleanOptional(data.notes),
-    },
+export async function createGenericInventoryItem(
+  data: z.infer<typeof createGenericItemSchema>,
+  userId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const itemCode = await generateItemCode(tx);
+    const item = await tx.inventoryItem.create({
+      data: {
+        itemCode,
+        barcode: itemCode, // Code128-compatible; scanning it looks up this same record.
+        name: data.name,
+        categoryId: data.categoryId,
+        description: cleanOptional(data.description),
+        brand: cleanOptional(data.brand),
+        unit: "Unit",
+        minStock: data.minStock ?? 0,
+        defaultPrice: data.defaultPrice ?? 0,
+        currentQuantity: data.currentQuantity ?? 0,
+        supplierId: cleanOptional(data.supplierId),
+        location: cleanOptional(data.location),
+        notes: cleanOptional(data.notes),
+      },
+    });
+
+    if (data.currentQuantity > 0) {
+      await tx.stockTransaction.create({
+        data: {
+          type: "PURCHASE",
+          inventoryItemId: item.id,
+          quantityChange: data.currentQuantity,
+          previousQuantity: 0,
+          newQuantity: data.currentQuantity,
+          userId,
+          reason: "Initial stock on item creation",
+        },
+      });
+    }
+
+    return item;
+  });
+}
+
+/** Paper items are entered as packs and immediately get one stock lot —
+ * paper's per-sheet cost must always come from a real lot (see docs/spec.md,
+ * "Historical price protection"), never a plain item-level price field. */
+export async function createPaperInventoryItem(
+  data: z.infer<typeof createPaperItemSchema>,
+  userId: string
+) {
+  const totalSheets = data.packs * data.sheetsPerPack;
+  const costPerSheet = (data.packPrice / data.sheetsPerPack).toFixed(4);
+
+  return prisma.$transaction(async (tx) => {
+    const itemCode = await generateItemCode(tx);
+    const item = await tx.inventoryItem.create({
+      data: {
+        itemCode,
+        barcode: itemCode,
+        name: data.name,
+        categoryId: data.categoryId,
+        description: cleanOptional(data.description),
+        unit: "Sheet",
+        defaultPrice: costPerSheet,
+        currentQuantity: 0, // stock lives on the lot, not this field
+        supplierId: cleanOptional(data.supplierId),
+        location: cleanOptional(data.location),
+        notes: cleanOptional(data.notes),
+      },
+    });
+
+    const lotSeq = await nextSequence(`lot:${item.id}`, tx);
+    const lotCode = `${itemCode}-LOT-${padSequence(lotSeq, 3)}`;
+
+    const lot = await tx.inventoryLot.create({
+      data: {
+        lotCode,
+        barcode: lotCode,
+        inventoryItemId: item.id,
+        quantityPurchased: totalSheets,
+        currentQuantity: totalSheets,
+        costPerSheet,
+        supplierId: cleanOptional(data.supplierId),
+        location: cleanOptional(data.location),
+        status: "ACTIVE",
+        isActiveStock: true,
+        notes: `${data.packs} pack(s) × ${data.sheetsPerPack} sheets @ Rs. ${data.packPrice}/pack`,
+      },
+    });
+
+    await tx.stockTransaction.create({
+      data: {
+        type: "PURCHASE",
+        inventoryItemId: item.id,
+        lotId: lot.id,
+        quantityChange: totalSheets,
+        previousQuantity: 0,
+        newQuantity: totalSheets,
+        userId,
+        reason: "Initial stock on item creation",
+      },
+    });
+
+    return item;
   });
 }
 
@@ -189,14 +289,15 @@ export async function updateInventoryItem(
     data: {
       ...(data.name !== undefined && { name: data.name }),
       ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
-      ...(data.itemType !== undefined && { itemType: cleanOptional(data.itemType) }),
       ...(data.description !== undefined && {
         description: cleanOptional(data.description),
       }),
       ...(data.brand !== undefined && { brand: cleanOptional(data.brand) }),
-      ...(data.unit !== undefined && { unit: data.unit }),
       ...(data.minStock !== undefined && { minStock: data.minStock }),
       ...(data.defaultPrice !== undefined && { defaultPrice: data.defaultPrice }),
+      ...(data.currentQuantity !== undefined && {
+        currentQuantity: data.currentQuantity,
+      }),
       ...(data.supplierId !== undefined && {
         supplierId: cleanOptional(data.supplierId),
       }),

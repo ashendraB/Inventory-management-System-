@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRole, handleApiError } from "@/lib/api-auth";
 import {
   listInventoryItems,
-  createInventoryItem,
+  createGenericInventoryItem,
+  createPaperInventoryItem,
+  getCategory,
   type InventoryItemFilters,
 } from "@/server/inventory-service";
 import { createInventoryItemSchema } from "@/lib/validation/inventory";
@@ -40,7 +42,30 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const item = await createInventoryItem(parsed.data);
+
+    const category = await getCategory(parsed.data.categoryId);
+    if (!category) {
+      return NextResponse.json({ error: "Category not found." }, { status: 400 });
+    }
+    const isPaperCategory = category.name.toLowerCase() === "paper";
+    if (parsed.data.kind === "paper" && !isPaperCategory) {
+      return NextResponse.json(
+        { error: `"${category.name}" is not the Paper category.` },
+        { status: 400 }
+      );
+    }
+    if (parsed.data.kind === "generic" && isPaperCategory) {
+      return NextResponse.json(
+        { error: "Paper items must be entered using packs, not a plain count." },
+        { status: 400 }
+      );
+    }
+
+    const item =
+      parsed.data.kind === "paper"
+        ? await createPaperInventoryItem(parsed.data, session.userId)
+        : await createGenericInventoryItem(parsed.data, session.userId);
+
     await logAudit({
       userId: session.userId,
       action: "CREATE_INVENTORY_ITEM",

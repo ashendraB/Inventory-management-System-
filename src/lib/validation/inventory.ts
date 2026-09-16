@@ -17,18 +17,51 @@ export const updateSupplierSchema = createSupplierSchema.partial().extend({
   isActive: z.boolean().optional(),
 });
 
-export const createInventoryItemSchema = z.object({
+const baseItemFields = {
   name: z.string().trim().min(1, "Item name is required").max(200),
   categoryId: z.string().trim().min(1, "Category is required"),
-  itemType: z.string().trim().max(100).optional().or(z.literal("")),
+  description: z.string().trim().max(1000).optional().or(z.literal("")),
+  supplierId: z.string().trim().optional().or(z.literal("")),
+  location: z.string().trim().max(200).optional().or(z.literal("")),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
+};
+
+// Generic items (toner, ink, stationery, equipment, ...): a plain on-hand
+// count, no lot tracking.
+export const createGenericItemSchema = z.object({
+  ...baseItemFields,
+  kind: z.literal("generic"),
+  brand: z.string().trim().max(100).optional().or(z.literal("")),
+  defaultPrice: z.coerce.number().min(0, "Price cannot be negative").default(0),
+  currentQuantity: z.coerce.number().min(0, "Count cannot be negative").default(0),
+  minStock: z.coerce.number().min(0, "Minimum stock cannot be negative").default(0),
+});
+
+// Paper items: entered as packs, which become the item's initial stock lot
+// (packs * sheetsPerPack sheets, at packPrice / sheetsPerPack per sheet) —
+// this is what the printing calculator will read its paper cost from.
+export const createPaperItemSchema = z.object({
+  ...baseItemFields,
+  kind: z.literal("paper"),
+  packs: z.coerce.number().positive("Number of packs must be greater than 0"),
+  sheetsPerPack: z.coerce.number().positive("Sheets per pack must be greater than 0"),
+  packPrice: z.coerce.number().positive("Pack price must be greater than 0"),
+});
+
+export const createInventoryItemSchema = z.discriminatedUnion("kind", [
+  createGenericItemSchema,
+  createPaperItemSchema,
+]);
+
+export const updateInventoryItemSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  categoryId: z.string().trim().min(1).optional(),
   description: z.string().trim().max(1000).optional().or(z.literal("")),
   brand: z.string().trim().max(100).optional().or(z.literal("")),
-  unit: z.string().trim().min(1, "Unit is required").max(50),
-  minStock: z.coerce.number().min(0, "Minimum stock cannot be negative").default(0),
-  defaultPrice: z.coerce.number().min(0, "Price cannot be negative").default(0),
+  defaultPrice: z.coerce.number().min(0).optional(),
+  currentQuantity: z.coerce.number().min(0).optional(),
+  minStock: z.coerce.number().min(0).optional(),
   supplierId: z.string().trim().optional().or(z.literal("")),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
-
-export const updateInventoryItemSchema = createInventoryItemSchema.partial();

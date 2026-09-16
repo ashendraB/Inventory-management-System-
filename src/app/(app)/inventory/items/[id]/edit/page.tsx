@@ -40,12 +40,11 @@ export default async function EditInventoryItemPage({
           initialValues={{
             name: item.name,
             categoryId: item.categoryId,
-            itemType: item.itemType ?? "",
             description: item.description ?? "",
             brand: item.brand ?? "",
-            unit: item.unit,
             minStock: String(item.minStock),
             defaultPrice: String(item.defaultPrice),
+            currentQuantity: String(item.currentQuantity),
             supplierId: item.supplierId ?? "",
             location: item.location ?? "",
             notes: item.notes ?? "",
