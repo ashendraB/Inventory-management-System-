@@ -38,7 +38,7 @@ export const NAV: NavSection[] = [
     links: [
       { label: "Inventory Items", href: "/inventory/items", roles: ADMIN_INV, implemented: true },
       { label: "Add Inventory Item", href: "/inventory/items/new", roles: ADMIN_INV, implemented: true },
-      { label: "Barcode Generator", href: "/inventory/barcodes", roles: ALL, implemented: true },
+      { label: "Barcode Reader", href: "/inventory/barcodes", roles: ALL, implemented: true },
       { label: "Stock / Lots", href: "/inventory/lots", roles: ADMIN_INV, implemented: true },
       { label: "Stock Transactions", href: "/inventory/transactions", roles: ADMIN_INV, implemented: true },
       { label: "Suppliers", href: "/inventory/suppliers", roles: ADMIN, implemented: true },
