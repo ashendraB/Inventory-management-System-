@@ -133,7 +133,11 @@ export async function listInventoryItems(filters: InventoryItemFilters) {
       orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { category: true, supplier: true, lots: { select: { currentQuantity: true } } },
+      include: {
+        category: true,
+        supplier: true,
+        lots: { select: { currentQuantity: true, status: true } },
+      },
     }),
     prisma.inventoryItem.count({ where }),
   ]);
@@ -151,10 +155,17 @@ export async function listInventoryItems(filters: InventoryItemFilters) {
 }
 
 /** Lot quantities are the source of truth once an item has lots (always true
- * for paper); otherwise fall back to the item's own simple count. */
-export function totalStockOf(item: { currentQuantity: number; lots: { currentQuantity: number }[] }) {
+ * for paper); otherwise fall back to the item's own simple count. Finished
+ * and inactive lots are excluded — their stock is retired, not available,
+ * even though we keep their currentQuantity around as a historical record. */
+export function totalStockOf(item: {
+  currentQuantity: number;
+  lots: { currentQuantity: number; status: string }[];
+}) {
   return item.lots.length > 0
-    ? item.lots.reduce((sum, l) => sum + l.currentQuantity, 0)
+    ? item.lots
+        .filter((l) => l.status !== "FINISHED" && l.status !== "INACTIVE")
+        .reduce((sum, l) => sum + l.currentQuantity, 0)
     : item.currentQuantity;
 }
 

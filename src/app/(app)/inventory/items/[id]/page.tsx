@@ -42,7 +42,16 @@ export default async function InventoryItemDetailPage({
             <Detail label="Unit" value={item.unit} />
             <Detail label="Minimum Stock" value={item.minStock.toLocaleString()} />
             <Detail label="Price" value={formatCurrency(Number(item.defaultPrice))} />
-            <Detail label="Current Stock" value={`${totalStock.toLocaleString()} ${item.unit}(s)`} />
+            <div>
+              <dt className="text-xs font-medium text-slate-500">Current Stock</dt>
+              <dd className="flex items-center gap-2 text-slate-800">
+                {totalStock.toLocaleString()} {item.unit}(s)
+                {totalStock === 0 && <Badge tone="danger">out of stock</Badge>}
+                {totalStock > 0 && totalStock <= item.minStock && (
+                  <Badge tone="warning">low</Badge>
+                )}
+              </dd>
+            </div>
             <Detail label="Supplier" value={item.supplier?.name ?? "—"} />
             <Detail label="Location" value={item.location ?? "—"} />
             <Detail label="Added" value={formatDate(item.createdAt)} />
