@@ -40,9 +40,15 @@ export const createGenericItemSchema = z.object({
 // Paper items: entered as packs, which become the item's initial stock lot
 // (packs * sheetsPerPack sheets, at packPrice / sheetsPerPack per sheet) —
 // this is what the printing calculator will read its paper cost from.
+// Paper Size/GSM/Type are required — they're the structured identity that
+// Printing Price Rules and the printing calculator match against (spec §24),
+// not the free-text name.
 export const createPaperItemSchema = z.object({
   ...baseItemFields,
   kind: z.literal("paper"),
+  paperSizeId: z.string().trim().min(1, "Paper size is required"),
+  gsmId: z.string().trim().min(1, "GSM is required"),
+  paperTypeId: z.string().trim().min(1, "Paper type is required"),
   packs: z.coerce.number().positive("Number of packs must be greater than 0"),
   sheetsPerPack: z.coerce.number().positive("Sheets per pack must be greater than 0"),
   packPrice: z.coerce.number().positive("Pack price must be greater than 0"),
@@ -64,4 +70,7 @@ export const updateInventoryItemSchema = z.object({
   supplierId: z.string().trim().optional().or(z.literal("")),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
+  paperSizeId: z.string().trim().optional().or(z.literal("")),
+  gsmId: z.string().trim().optional().or(z.literal("")),
+  paperTypeId: z.string().trim().optional().or(z.literal("")),
 });

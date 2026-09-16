@@ -11,6 +11,11 @@ export interface Category {
   name: string;
 }
 
+export interface LookupOption {
+  id: string;
+  label: string;
+}
+
 export interface EditableItemValues {
   name: string;
   categoryId: string;
@@ -22,6 +27,9 @@ export interface EditableItemValues {
   location: string;
   description: string;
   notes: string;
+  paperSizeId: string;
+  gsmId: string;
+  paperTypeId: string;
 }
 
 const EMPTY_EDIT: EditableItemValues = {
@@ -35,6 +43,9 @@ const EMPTY_EDIT: EditableItemValues = {
   location: "",
   description: "",
   notes: "",
+  paperSizeId: "",
+  gsmId: "",
+  paperTypeId: "",
 };
 
 function isPaperCategory(categories: Category[], categoryId: string) {
@@ -44,14 +55,22 @@ function isPaperCategory(categories: Category[], categoryId: string) {
 export function InventoryItemForm({
   categories,
   suppliers,
+  paperSizes,
+  gsmTypes,
+  paperTypes,
   initialValues,
   itemId,
+  isPaperItem = false,
   allowNewCategory = false,
 }: {
   categories: Category[];
   suppliers: { id: string; name: string }[];
+  paperSizes: LookupOption[];
+  gsmTypes: LookupOption[];
+  paperTypes: LookupOption[];
   initialValues?: Partial<EditableItemValues>;
   itemId?: string; // presence = edit mode (always the plain generic field set)
+  isPaperItem?: boolean; // edit mode only: is the item being edited a Paper item?
   allowNewCategory?: boolean;
 }) {
   const router = useRouter();
@@ -71,7 +90,7 @@ export function InventoryItemForm({
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const paperMode = !isEdit && isPaperCategory(categoryList, values.categoryId);
+  const paperMode = isEdit ? isPaperItem : isPaperCategory(categoryList, values.categoryId);
 
   const costPerSheet = useMemo(() => {
     const p = Number(packPrice);
@@ -129,11 +148,19 @@ export function InventoryItemForm({
             defaultPrice: Number(values.defaultPrice || 0),
             currentQuantity: Number(values.currentQuantity || 0),
             minStock: Number(values.minStock || 0),
+            ...(isPaperItem && {
+              paperSizeId: values.paperSizeId,
+              gsmId: values.gsmId,
+              paperTypeId: values.paperTypeId,
+            }),
           }
         : paperMode
           ? {
               ...common,
               kind: "paper" as const,
+              paperSizeId: values.paperSizeId,
+              gsmId: values.gsmId,
+              paperTypeId: values.paperTypeId,
               packs: Number(packs || 0),
               sheetsPerPack: Number(sheetsPerPack || 0),
               packPrice: Number(packPrice || 0),
@@ -238,6 +265,51 @@ export function InventoryItemForm({
 
         {paperMode ? (
           <>
+            <FieldWrapper label="Paper Size" htmlFor="paperSizeId" required>
+              <Select
+                id="paperSizeId"
+                required
+                value={values.paperSizeId}
+                onChange={(e) => set("paperSizeId", e.target.value)}
+              >
+                <option value="">Select size</option>
+                {paperSizes.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
+            <FieldWrapper label="GSM" htmlFor="gsmId" required>
+              <Select
+                id="gsmId"
+                required
+                value={values.gsmId}
+                onChange={(e) => set("gsmId", e.target.value)}
+              >
+                <option value="">Select GSM</option>
+                {gsmTypes.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.label}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
+            <FieldWrapper label="Paper Type" htmlFor="paperTypeId" required>
+              <Select
+                id="paperTypeId"
+                required
+                value={values.paperTypeId}
+                onChange={(e) => set("paperTypeId", e.target.value)}
+              >
+                <option value="">Select type</option>
+                {paperTypes.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
             <FieldWrapper label="Number of Packs" htmlFor="packs" required>
               <TextInput
                 id="packs"

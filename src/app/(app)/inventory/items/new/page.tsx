@@ -1,14 +1,18 @@
 import { getSession } from "@/lib/auth";
 import { listCategories, listSuppliers } from "@/server/inventory-service";
+import { listPaperSizes, listGsmTypes, listPaperTypes } from "@/server/paper-config-service";
 import { InventoryItemForm } from "@/components/inventory/InventoryItemForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewInventoryItemPage() {
-  const [session, categories, suppliers] = await Promise.all([
+  const [session, categories, suppliers, paperSizes, gsmTypes, paperTypes] = await Promise.all([
     getSession(),
     listCategories(),
     listSuppliers(),
+    listPaperSizes(),
+    listGsmTypes(),
+    listPaperTypes(),
   ]);
 
   return (
@@ -23,6 +27,9 @@ export default async function NewInventoryItemPage() {
         <InventoryItemForm
           categories={categories}
           suppliers={suppliers}
+          paperSizes={paperSizes.map((p) => ({ id: p.id, label: p.name }))}
+          gsmTypes={gsmTypes.map((g) => ({ id: g.id, label: String(g.value) }))}
+          paperTypes={paperTypes.map((p) => ({ id: p.id, label: p.name }))}
           allowNewCategory={session?.role === "ADMINISTRATOR"}
         />
       </div>

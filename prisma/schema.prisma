@@ -60,9 +60,9 @@ model PaperSize {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  inventoryLots     InventoryLot[]
+  inventoryItems     InventoryItem[]
   printingPriceRules PrintingPriceRule[]
-  printingRecords   PrintingRecord[]
+  printingRecords    PrintingRecord[]
 }
 
 model GsmType {
@@ -71,7 +71,7 @@ model GsmType {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  inventoryLots      InventoryLot[]
+  inventoryItems     InventoryItem[]
   printingPriceRules PrintingPriceRule[]
   printingRecords    PrintingRecord[]
 }
@@ -82,7 +82,7 @@ model PaperType {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  inventoryLots      InventoryLot[]
+  inventoryItems     InventoryItem[]
   printingPriceRules PrintingPriceRule[]
   printingRecords    PrintingRecord[]
 }
@@ -142,6 +142,16 @@ model InventoryItem {
   // always do, and lot quantities become the source of truth instead.
   currentQuantity Float @default(0)
   minStock    Float   @default(0)
+
+  // Structured paper identity — required for Paper category items, null
+  // otherwise. This is what Printing Price Rules and the printing
+  // calculator match against (spec §24), not the free-text name.
+  paperSizeId String?
+  paperSize   PaperSize? @relation(fields: [paperSizeId], references: [id])
+  gsmId       String?
+  gsm         GsmType?   @relation(fields: [gsmId], references: [id])
+  paperTypeId String?
+  paperType   PaperType? @relation(fields: [paperTypeId], references: [id])
   defaultPrice Decimal @default(0)
   supplierId  String?
   supplier    Supplier? @relation(fields: [supplierId], references: [id])
@@ -177,15 +187,6 @@ model InventoryLot {
   inventoryItemId   String
   inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id])
 
-  // Paper attributes that define a "configuration" (paperSize + gsm + paperType).
-  // Null for non-paper inventory lots (toner, ink, stationery, etc.).
-  paperSizeId String?
-  paperSize   PaperSize? @relation(fields: [paperSizeId], references: [id])
-  gsmId       String?
-  gsm         GsmType?   @relation(fields: [gsmId], references: [id])
-  paperTypeId String?
-  paperType   PaperType? @relation(fields: [paperTypeId], references: [id])
-
   quantityPurchased Float
   currentQuantity   Float
   costPerSheet      Decimal
@@ -194,8 +195,8 @@ model InventoryLot {
   purchaseDate      DateTime @default(now())
   location          String?
   status            LotStatus @default(ACTIVE)
-  // Exactly one lot per (paperSize, gsm, paperType) combination may be the
-  // active stock lot used by the printing calculator at a given time.
+  // Exactly one lot per inventory item may be the active stock lot used by
+  // the printing calculator at a given time.
   isActiveStock     Boolean  @default(false)
   notes             String?
   createdAt         DateTime @default(now())
@@ -204,8 +205,7 @@ model InventoryLot {
   stockTransactions StockTransaction[]
   printingRecords   PrintingRecord[]
 
-  @@index([inventoryItemId])
-  @@index([paperSizeId, gsmId, paperTypeId, isActiveStock])
+  @@index([inventoryItemId, isActiveStock])
   @@index([status])
 }
 

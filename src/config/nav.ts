@@ -50,7 +50,7 @@ export const NAV: NavSection[] = [
       { label: "Printing Calculator", href: "/printing/calculator", roles: ADMIN_PRINT, implemented: false },
       { label: "Printing Records", href: "/printing/records", roles: ADMIN_PRINT, implemented: false },
       { label: "Active Paper Stock", href: "/printing/active-stock", roles: ALL, implemented: false },
-      { label: "Printing Price Configuration", href: "/printing/price-config", roles: ADMIN, implemented: false },
+      { label: "Printing Price Configuration", href: "/printing/price-config", roles: ADMIN, implemented: true },
     ],
   },
   {
@@ -86,9 +86,9 @@ export const NAV: NavSection[] = [
     roles: ADMIN,
     links: [
       { label: "Users", href: "/settings/users", roles: ADMIN, implemented: false },
-      { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN, implemented: false },
-      { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: false },
-      { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: false },
+      { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN, implemented: true },
+      { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
+      { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
       { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: false },
     ],
   },

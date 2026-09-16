@@ -175,6 +175,9 @@ export async function getInventoryItem(id: string) {
     include: {
       category: true,
       supplier: true,
+      paperSize: true,
+      gsm: true,
+      paperType: true,
       lots: { orderBy: { createdAt: "desc" } },
     },
   });
@@ -252,6 +255,9 @@ export async function createPaperInventoryItem(
         supplierId: cleanOptional(data.supplierId),
         location: cleanOptional(data.location),
         notes: cleanOptional(data.notes),
+        paperSizeId: data.paperSizeId,
+        gsmId: data.gsmId,
+        paperTypeId: data.paperTypeId,
       },
     });
 
@@ -314,6 +320,9 @@ export async function updateInventoryItem(
       }),
       ...(data.location !== undefined && { location: cleanOptional(data.location) }),
       ...(data.notes !== undefined && { notes: cleanOptional(data.notes) }),
+      ...(data.paperSizeId !== undefined && { paperSizeId: cleanOptional(data.paperSizeId) }),
+      ...(data.gsmId !== undefined && { gsmId: cleanOptional(data.gsmId) }),
+      ...(data.paperTypeId !== undefined && { paperTypeId: cleanOptional(data.paperTypeId) }),
     },
   });
 }

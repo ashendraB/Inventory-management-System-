@@ -44,6 +44,13 @@ export default async function InventoryItemDetailPage({
         <div className="sm:col-span-2 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <Detail label="Category" value={item.category.name} />
+            {isPaper && (
+              <>
+                <Detail label="Paper Size" value={item.paperSize?.name ?? "—"} />
+                <Detail label="GSM" value={item.gsm ? String(item.gsm.value) : "—"} />
+                <Detail label="Paper Type" value={item.paperType?.name ?? "—"} />
+              </>
+            )}
             <Detail label="Brand" value={item.brand ?? "—"} />
             <Detail label="Unit" value={item.unit} />
             <Detail label="Minimum Stock" value={item.minStock.toLocaleString()} />

@@ -14,6 +14,18 @@ build phases — read it before touching pricing, stock-lot, or billing logic.
   time is the **active stock lot**. The printing calculator always pulls
   paper cost from whichever lot is currently active — never a hardcoded
   price.
+- **Implementation note (deviates from the literal spec structure):** rather
+  than matching active lots by scanning all lots for a paperSize+gsm+paperType
+  combo, each Paper `InventoryItem` IS a specific combo (paperSizeId, gsmId,
+  paperTypeId live on the item, set via the three Settings screens under
+  `/settings/paper-sizes`, `/settings/gsm`, `/settings/paper-types`) and
+  `InventoryLot` no longer carries those fields at all — a lot just belongs to
+  one item. "Active lot for A4/80/Plain" == "the active lot of whichever item
+  has that paperSize/gsm/paperType". This was a deliberate simplification
+  (see `INV-000002` = "A4 Paper 80 GSM Plain" as one catalog entry) that keeps
+  the Add Item form simple (packs/sheets/price) while still giving Printing
+  Price Rules (`PrintingPriceRule.paperSizeId/gsmId/paperTypeId`) something
+  structured to match against.
 - When a lot's `currentQuantity` hits 0, it's automatically marked
   `OUT_OF_STOCK`. An operator can also manually mark a lot `FINISHED`. A
   finished/out-of-stock lot must never be used for new printing jobs, but its
