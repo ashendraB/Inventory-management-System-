@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listInventoryItems, listCategories } from "@/server/inventory-service";
 import { ItemsFilterBar } from "@/components/inventory/ItemsFilterBar";
+import { ItemRowActions } from "@/components/inventory/ItemRowActions";
 import { Pagination } from "@/components/ui/Pagination";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -63,12 +64,13 @@ export default async function InventoryItemsPage({
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Added</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {result.items.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-slate-400">
                   No inventory items match these filters yet.
                 </td>
               </tr>
@@ -112,6 +114,9 @@ export default async function InventoryItemsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-400">
                     {formatDate(item.createdAt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ItemRowActions itemId={item.id} status={item.status} />
                   </td>
                 </tr>
               ))
