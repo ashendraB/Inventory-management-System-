@@ -1,0 +1,423 @@
+// Inventory Management + Printing Calculation + Lecturer Billing System
+// Database schema — see docs/spec.md for the full functional spec this implements.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users & roles
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMINISTRATOR
+  INVENTORY_OPERATOR
+  PRINTING_OPERATOR
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  username        String   @unique
+  email           String?  @unique
+  passwordHash    String
+  role            UserRole
+  // Extra grants for operators, per spec section 4 ("Cannot modify pricing
+  // unless permission is granted").
+  canManagePricing  Boolean @default(false)
+  canManageSettings Boolean @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stockTransactions StockTransaction[]
+  printingRecords   PrintingRecord[]
+  auditLogs         AuditLog[]
+}
+
+// ---------------------------------------------------------------------------
+// Lookup / configuration tables (Settings module — section 40)
+// ---------------------------------------------------------------------------
+
+model PaperSize {
+  id        String   @id @default(cuid())
+  name      String   @unique // A4, A3, ...
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  inventoryLots     InventoryLot[]
+  printingPriceRules PrintingPriceRule[]
+  printingRecords   PrintingRecord[]
+}
+
+model GsmType {
+  id        String   @id @default(cuid())
+  value     Int      @unique // 80, 135, 140, 150, 200 ...
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  inventoryLots      InventoryLot[]
+  printingPriceRules PrintingPriceRule[]
+  printingRecords    PrintingRecord[]
+}
+
+model PaperType {
+  id        String   @id @default(cuid())
+  name      String   @unique // Plain, Photo, Cloth, Colour ...
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  inventoryLots      InventoryLot[]
+  printingPriceRules PrintingPriceRule[]
+  printingRecords    PrintingRecord[]
+}
+
+model InventoryCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+
+  inventoryItems InventoryItem[]
+}
+
+model Supplier {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  notes         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  inventoryItems InventoryItem[]
+  inventoryLots  InventoryLot[]
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Inventory (general items) — section 8/9
+// ---------------------------------------------------------------------------
+
+enum InventoryItemStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  itemCode    String   @unique // INV-000001
+  barcode     String   @unique
+  name        String
+  categoryId  String
+  category    InventoryCategory @relation(fields: [categoryId], references: [id])
+  itemType    String?
+  description String?
+  brand       String?
+  unit        String // Sheet, Box, Unit, ...
+  minStock    Float   @default(0)
+  defaultPrice Decimal @default(0)
+  supplierId  String?
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  location    String?
+  status      InventoryItemStatus @default(ACTIVE)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lots               InventoryLot[]
+  stockTransactions  StockTransaction[]
+
+  @@index([categoryId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Stock lots — section 11/12/13 (THE core "lot pricing" concept)
+// ---------------------------------------------------------------------------
+
+enum LotStatus {
+  ACTIVE
+  LOW_STOCK
+  OUT_OF_STOCK
+  FINISHED
+  INACTIVE
+}
+
+model InventoryLot {
+  id                String   @id @default(cuid())
+  lotCode           String   @unique // A4-LOT-001
+  barcode           String   @unique
+  inventoryItemId   String
+  inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id])
+
+  // Paper attributes that define a "configuration" (paperSize + gsm + paperType).
+  // Null for non-paper inventory lots (toner, ink, stationery, etc.).
+  paperSizeId String?
+  paperSize   PaperSize? @relation(fields: [paperSizeId], references: [id])
+  gsmId       String?
+  gsm         GsmType?   @relation(fields: [gsmId], references: [id])
+  paperTypeId String?
+  paperType   PaperType? @relation(fields: [paperTypeId], references: [id])
+
+  quantityPurchased Float
+  currentQuantity   Float
+  costPerSheet      Decimal
+  supplierId        String?
+  supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  purchaseDate      DateTime @default(now())
+  location          String?
+  status            LotStatus @default(ACTIVE)
+  // Exactly one lot per (paperSize, gsm, paperType) combination may be the
+  // active stock lot used by the printing calculator at a given time.
+  isActiveStock     Boolean  @default(false)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  stockTransactions StockTransaction[]
+  printingRecords   PrintingRecord[]
+
+  @@index([inventoryItemId])
+  @@index([paperSizeId, gsmId, paperTypeId, isActiveStock])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Stock transaction history — section 17 (append-only audit trail of stock)
+// ---------------------------------------------------------------------------
+
+enum StockTransactionType {
+  PURCHASE
+  PRINTING_USAGE
+  MANUAL_ADJUSTMENT
+  TRANSFER
+  RETURN
+  DAMAGED
+  STOCK_FINISHED
+}
+
+model StockTransaction {
+  id                String   @id @default(cuid())
+  type              StockTransactionType
+  inventoryItemId   String
+  inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  lotId             String?
+  lot               InventoryLot? @relation(fields: [lotId], references: [id])
+  quantityChange    Float // negative = deduction
+  previousQuantity  Float
+  newQuantity       Float
+  userId            String
+  user              User @relation(fields: [userId], references: [id])
+  reason            String?
+  printingRecordId  String? @unique
+  printingRecord    PrintingRecord? @relation(fields: [printingRecordId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@index([inventoryItemId])
+  @@index([lotId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Lecturers — section 31
+// ---------------------------------------------------------------------------
+
+enum LecturerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Lecturer {
+  id         String   @id @default(cuid())
+  lecturerCode String @unique // LEC-0001
+  name       String
+  department String?
+  email      String?
+  phone      String?
+  status     LecturerStatus @default(ACTIVE)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  printingRecords PrintingRecord[]
+  invoices        Invoice[]
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Printing price configuration — section 23/24
+// ---------------------------------------------------------------------------
+
+enum ColourMode {
+  BW
+  COLOUR
+}
+
+enum PrintSides {
+  SINGLE
+  DOUBLE
+}
+
+enum PriceRuleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model PrintingPriceRule {
+  id             String   @id @default(cuid())
+  paperSizeId    String
+  paperSize      PaperSize @relation(fields: [paperSizeId], references: [id])
+  gsmId          String
+  gsm            GsmType   @relation(fields: [gsmId], references: [id])
+  paperTypeId    String
+  paperType      PaperType @relation(fields: [paperTypeId], references: [id])
+  colourMode     ColourMode
+  sides          PrintSides
+  chargePerSheet Decimal
+  effectiveFrom  DateTime @default(now())
+  effectiveTo    DateTime?
+  status         PriceRuleStatus @default(ACTIVE)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  printingRecords PrintingRecord[]
+
+  @@index([paperSizeId, gsmId, paperTypeId, colourMode, sides, status])
+}
+
+// ---------------------------------------------------------------------------
+// Printing records — section 18-30 (the atomic, price-snapshotting event)
+// ---------------------------------------------------------------------------
+
+model PrintingRecord {
+  id          String   @id @default(cuid())
+  printingCode String  @unique // PRT-000001
+  date        DateTime @default(now())
+
+  lecturerId  String
+  lecturer    Lecturer @relation(fields: [lecturerId], references: [id])
+
+  documentName String
+  subject      String?
+  course       String?
+  batchClass   String?
+
+  paperSizeId String
+  paperSize   PaperSize @relation(fields: [paperSizeId], references: [id])
+  gsmId       String
+  gsm         GsmType   @relation(fields: [gsmId], references: [id])
+  paperTypeId String
+  paperType   PaperType @relation(fields: [paperTypeId], references: [id])
+  colourMode  ColourMode
+  sides       PrintSides
+
+  pages   Int
+  copies  Int
+  physicalSheets Int
+
+  lotId   String
+  lot     InventoryLot @relation(fields: [lotId], references: [id])
+
+  // Snapshotted values — NEVER recalculated from current config later.
+  paperCostPerSheet    Decimal
+  totalPaperCost       Decimal
+  priceRuleId          String?
+  priceRule            PrintingPriceRule? @relation(fields: [priceRuleId], references: [id])
+  printingChargePerSheet Decimal
+  totalPrintingCharge  Decimal
+  totalCost            Decimal
+
+  printingMachine String?
+  operatorId  String
+  operator    User @relation(fields: [operatorId], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  stockTransaction StockTransaction?
+  invoiceItem      InvoiceItem?
+
+  @@index([lecturerId])
+  @@index([date])
+  @@index([lotId])
+}
+
+// ---------------------------------------------------------------------------
+// Billing / invoices — section 32-35
+// ---------------------------------------------------------------------------
+
+enum InvoiceStatus {
+  DRAFT
+  GENERATED
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  invoiceNumber  String   @unique // INV-2026-09-0001
+  lecturerId     String
+  lecturer       Lecturer @relation(fields: [lecturerId], references: [id])
+  billingMonth   Int // 1-12
+  billingYear    Int
+  invoiceDate    DateTime @default(now())
+  status         InvoiceStatus @default(DRAFT)
+
+  totalPaperCost      Decimal
+  totalPrintingCharge Decimal
+  otherCharges        Decimal @default(0)
+  discount            Decimal @default(0)
+  grandTotal          Decimal
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items InvoiceItem[]
+
+  @@unique([lecturerId, billingMonth, billingYear])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id               String  @id @default(cuid())
+  invoiceId        String
+  invoice          Invoice @relation(fields: [invoiceId], references: [id])
+  printingRecordId String  @unique
+  printingRecord   PrintingRecord @relation(fields: [printingRecordId], references: [id])
+  amount           Decimal
+}
+
+// ---------------------------------------------------------------------------
+// Audit log — section 43
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String?
+  entityId   String?
+  oldValue   String?
+  newValue   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
