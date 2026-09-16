@@ -44,7 +44,7 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 "soon"):
 
 - [x] **Phase 1** — project setup, database schema, authentication, roles, dashboard shell
-- [ ] Phase 2 — inventory items, categories, suppliers
+- [x] **Phase 2** — inventory items (with generated Item ID + barcode), categories, suppliers
 - [ ] Phase 3 — stock lots, stock transactions, barcode generation/scanning
 - [ ] Phase 4 — paper size/GSM/type config, printing price configuration
 - [ ] Phase 5 — printing calculator (active-lot lookup, cost calculation, stock deduction)

@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 import toast from "react-hot-toast";
 import type { NavSection } from "@/config/nav";
 import type { UserRole } from "@prisma/client";
+import { SessionProvider } from "@/lib/session-context";
 
 const ROLE_LABEL: Record<UserRole, string> = {
   ADMINISTRATOR: "Administrator",
@@ -101,6 +102,7 @@ export function AppShell({
   );
 
   return (
+    <SessionProvider session={user}>
     <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
@@ -166,5 +168,6 @@ export function AppShell({
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
+    </SessionProvider>
   );
 }
