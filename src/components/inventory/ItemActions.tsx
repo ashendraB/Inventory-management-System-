@@ -40,6 +40,23 @@ export function ItemActions({
     router.refresh();
   }
 
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      "Permanently delete this item? This cannot be undone."
+    );
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/inventory/items/${itemId}`, { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      toast.error(data?.error ?? "Could not delete this item.");
+      return;
+    }
+    toast.success("Item deleted");
+    router.push("/inventory/items");
+    router.refresh();
+  }
+
   return (
     <div className="flex gap-2">
       <Link href={`/inventory/items/${itemId}/edit`}>
@@ -49,6 +66,9 @@ export function ItemActions({
       </Link>
       <Button type="button" variant={status === "ACTIVE" ? "danger" : "primary"} onClick={toggleStatus}>
         {status === "ACTIVE" ? "Deactivate" : "Reactivate"}
+      </Button>
+      <Button type="button" variant="danger" onClick={handleDelete}>
+        Delete
       </Button>
     </div>
   );
