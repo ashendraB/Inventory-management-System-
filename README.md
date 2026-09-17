@@ -51,6 +51,7 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 - [x] **Phase 5** — printing calculator (active-lot lookup, cost calculation, atomic stock deduction), printing records
   - Extra: attach the actual document (PDF) being printed — page count is auto-detected client-side and fills "Number of Pages", and the file is previewed inline on the page. "Submit & Print" saves the record and prints that inline preview through the browser's own print dialog (e.g. Edge's), in one click — no new tab/window, so there's nothing for a popup blocker to catch. The record is saved the moment Submit is clicked, since no website can detect when a user actually finishes a native print dialog. Word/.docx files don't have a real page count in the file itself, so those need manual entry and printing from Word/your own viewer.
   - Removed Subject/Course/Batch/Printing Machine fields from the calculator (unused in practice).
+  - Extra: edit and delete a printing record. Edit only allows Notes and a Wasted Sheets count (sheets spoiled by a printing-time error) — raising/lowering it deducts/restores the delta from the same stock lot but never changes what's billed. Delete fully undoes a job: restores its sheets (including any wasted) to the lot and removes the record; blocked once it's been invoiced.
 - [ ] Phase 6 — lecturer management (calculator uses existing seeded lecturers for now)
 - [ ] Phase 7 — monthly billing, invoice generation (PDF)
 - [ ] Phase 8 — reports, exports, audit log UI
