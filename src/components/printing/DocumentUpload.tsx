@@ -123,8 +123,9 @@ export function DocumentUpload({
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
       <p className="mb-3 text-xs text-slate-500">
-        Optional — attach the file to auto-fill the page count and preview it below. The Submit
-        button prints this preview directly (your browser&apos;s own print dialog).
+        Optional — attach the file to auto-fill the page count and preview it below. The Print
+        button prints this preview directly (your browser&apos;s own print dialog) and saves the
+        record at the same time.
       </p>
       <input
         ref={inputRef}

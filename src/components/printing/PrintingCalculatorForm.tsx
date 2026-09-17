@@ -231,7 +231,7 @@ export function PrintingCalculatorForm({
     setPrintedRecord(null);
   }
 
-  function handleSubmit() {
+  function handlePrint() {
     setSubmitError(null);
     setPrintedRecord(null);
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
@@ -273,7 +273,7 @@ export function PrintingCalculatorForm({
         setPrintedRecord({ id: data.record.id, printingCode: data.record.printingCode });
         toast.success(`Printing record ${data.record.printingCode} saved`);
       } else {
-        toast.success(`Printing record ${data.record.printingCode} submitted`);
+        toast.success(`Printing record ${data.record.printingCode} saved`);
         router.push(`/printing/records/${data.record.id}`);
       }
     } catch {
@@ -434,12 +434,8 @@ export function PrintingCalculatorForm({
         )}
 
         <div className="flex gap-3">
-          <Button type="button" onClick={handleSubmit} disabled={!canSubmit || submitting}>
-            {submitting
-              ? "Submitting..."
-              : documentReady
-                ? "Submit & Print"
-                : "Submit Printing Record"}
+          <Button type="button" onClick={handlePrint} disabled={!canSubmit || submitting}>
+            {submitting ? "Printing..." : "Print"}
           </Button>
           <Button type="button" variant="secondary" onClick={handleReset}>
             Reset
