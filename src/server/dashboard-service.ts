@@ -24,14 +24,17 @@ export async function getDashboardSummary() {
     lecturerCount,
     pendingInvoices,
   ] = await Promise.all([
-    prisma.inventoryItem.count({ where: { status: "ACTIVE" } }),
+    prisma.inventoryItem.count({ where: { status: "ACTIVE", deletedAt: null } }),
     prisma.inventoryLot.aggregate({
-      where: { status: { in: ["ACTIVE", "LOW_STOCK"] } },
+      where: { status: { in: ["ACTIVE", "LOW_STOCK"] }, inventoryItem: { deletedAt: null } },
       _sum: { currentQuantity: true },
     }),
-    prisma.inventoryLot.count({ where: { status: "LOW_STOCK" } }),
-    prisma.inventoryLot.count({ where: { status: "OUT_OF_STOCK" } }),
-    prisma.inventoryLot.count({ where: { isActiveStock: true } }),
+    prisma.inventoryLot.count({ where: { status: "LOW_STOCK", inventoryItem: { deletedAt: null } } }),
+    prisma.inventoryLot.count({ where: { status: "OUT_OF_STOCK", inventoryItem: { deletedAt: null } } }),
+    prisma.inventoryLot.count({ where: { isActiveStock: true, inventoryItem: { deletedAt: null } } }),
+    // Printing job/cost figures are historical billing data and are never
+    // filtered by a since-deleted item — deleting an item must never change
+    // reports or billing.
     prisma.printingRecord.count({ where: { date: { gte: startOfToday() } } }),
     prisma.printingRecord.aggregate({
       where: { date: { gte: startOfMonth() } },
@@ -60,11 +63,13 @@ export async function getRecentActivity() {
   const [recentInventory, recentLots, recentPrinting, recentInvoices] =
     await Promise.all([
       prisma.inventoryItem.findMany({
+        where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
         take: 5,
         select: { id: true, name: true, itemCode: true, createdAt: true },
       }),
       prisma.inventoryLot.findMany({
+        where: { inventoryItem: { deletedAt: null } },
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {

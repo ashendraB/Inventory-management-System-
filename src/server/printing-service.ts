@@ -15,7 +15,7 @@ import type { previewJobInputSchema, printingJobInputSchema } from "@/lib/valida
  * paper spec (see docs/spec.md). */
 export async function listPaperItemsForCalculator() {
   const items = await prisma.inventoryItem.findMany({
-    where: { status: "ACTIVE", category: { name: "Paper" } },
+    where: { status: "ACTIVE", deletedAt: null, category: { name: "Paper" } },
     include: {
       paperSize: true,
       gsm: true,
@@ -48,8 +48,8 @@ export async function listPaperItemsForCalculator() {
  * Accepts either an item barcode or a lot barcode; a lot barcode that isn't
  * currently the active lot is flagged so the UI can offer to activate it. */
 export async function resolveItemFromBarcode(barcode: string) {
-  const item = await prisma.inventoryItem.findUnique({
-    where: { barcode },
+  const item = await prisma.inventoryItem.findFirst({
+    where: { barcode, deletedAt: null },
     include: { category: true },
   });
   if (item) {
@@ -59,7 +59,9 @@ export async function resolveItemFromBarcode(barcode: string) {
     return { inventoryItemId: item.id, scannedLotId: null as string | null, scannedLotIsActive: true };
   }
 
-  const lot = await prisma.inventoryLot.findUnique({ where: { barcode } });
+  const lot = await prisma.inventoryLot.findFirst({
+    where: { barcode, inventoryItem: { deletedAt: null } },
+  });
   if (lot) {
     return {
       inventoryItemId: lot.inventoryItemId,
@@ -78,8 +80,8 @@ interface ResolvedJobInputs {
 }
 
 async function getItemWithPaperIdentity(inventoryItemId: string) {
-  return prisma.inventoryItem.findUnique({
-    where: { id: inventoryItemId },
+  return prisma.inventoryItem.findFirst({
+    where: { id: inventoryItemId, deletedAt: null },
     include: { paperSize: true, gsm: true, paperType: true },
   });
 }
@@ -177,8 +179,8 @@ export async function submitPrintingJob(
   operatorId: string
 ) {
   return prisma.$transaction(async (tx) => {
-    const item = await tx.inventoryItem.findUnique({
-      where: { id: data.inventoryItemId },
+    const item = await tx.inventoryItem.findFirst({
+      where: { id: data.inventoryItemId, deletedAt: null },
       include: { paperSize: true, gsm: true, paperType: true },
     });
     if (!item) throw new ApiError(404, "Paper item not found.");

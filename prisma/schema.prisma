@@ -160,6 +160,12 @@ model InventoryItem {
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  // Soft delete only — never hard-deleted, because lots/stock transactions/
+  // printing records/invoices all trace back to an item and must keep
+  // working exactly as before even after it's "deleted" from the operator's
+  // point of view. Set instead of removing the row; every read that powers
+  // an active list or picker filters deletedAt: null.
+  deletedAt   DateTime?
 
   lots               InventoryLot[]
   stockTransactions  StockTransaction[]

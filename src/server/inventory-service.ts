@@ -108,6 +108,7 @@ export async function listInventoryItems(filters: InventoryItemFilters) {
   const pageSize = filters.pageSize && filters.pageSize > 0 ? filters.pageSize : 20;
 
   const where = {
+    deletedAt: null,
     ...(filters.status && { status: filters.status }),
     ...(filters.categoryId && { categoryId: filters.categoryId }),
     ...(filters.supplierId && { supplierId: filters.supplierId }),
@@ -170,8 +171,8 @@ export function totalStockOf(item: {
 }
 
 export async function getInventoryItem(id: string) {
-  return prisma.inventoryItem.findUnique({
-    where: { id },
+  return prisma.inventoryItem.findFirst({
+    where: { id, deletedAt: null },
     include: {
       category: true,
       supplier: true,
@@ -334,42 +335,16 @@ export async function setInventoryItemStatus(
   return prisma.inventoryItem.update({ where: { id }, data: { status } });
 }
 
-/** Reason this item can't be hard-deleted, or null if it's safe to delete.
- * Two things make a delete unsafe: printing records (billing history) on
- * any of its lots — deleting those would silently break lecturer invoices,
- * which must always be able to point back to what paper/cost produced them
- * — and real on-hand stock, which a hard delete would just discard.
- * Deactivating (setInventoryItemStatus) is the right move in both cases. */
-export async function inventoryItemDeleteBlockReason(item: {
-  id: string;
-  currentQuantity: number;
-  lots: { currentQuantity: number; status: string }[];
-}): Promise<string | null> {
-  const printingCount = await prisma.printingRecord.count({
-    where: { lot: { inventoryItemId: item.id } },
-  });
-  if (printingCount > 0) {
-    return "This item has printing records tied to it, so deleting it would break lecturer billing history. Deactivate it instead.";
-  }
-
-  const totalStock = totalStockOf(item);
-  if (totalStock > 0) {
-    return "This item still has stock on hand, so deleting it would discard that stock. Deactivate it instead, or reduce its stock to zero first.";
-  }
-
-  return null;
-}
-
-/** Deletes the item and everything that only exists to describe it — its
- * stock lots and their (non-billing) stock transactions — in one
- * transaction, so nothing is left dangling in Stock Lots, Barcode lookup,
- * the printing calculator's paper list, etc. Only safe to call once
- * inventoryItemHasBillingHistory() has confirmed there are no printing
- * records depending on this item's lots. */
+/** Soft-deletes the item: sets deletedAt, nothing else. Every read that
+ * powers an active list or picker (items list, item detail, Stock Lots,
+ * Active Paper Stock, the printing calculator's paper picker, barcode
+ * lookup) filters deletedAt: null, so the item and its lots simply stop
+ * appearing everywhere — but the underlying rows are untouched, so nothing
+ * about existing printing records or invoices ever changes. This is why a
+ * delete here never needs to be blocked: there's nothing to lose. */
 export async function deleteInventoryItem(id: string) {
-  return prisma.$transaction(async (tx) => {
-    await tx.stockTransaction.deleteMany({ where: { inventoryItemId: id } });
-    await tx.inventoryLot.deleteMany({ where: { inventoryItemId: id } });
-    await tx.inventoryItem.delete({ where: { id } });
+  return prisma.inventoryItem.update({
+    where: { id },
+    data: { deletedAt: new Date() },
   });
 }

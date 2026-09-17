@@ -4,7 +4,6 @@ import {
   getInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
-  inventoryItemDeleteBlockReason,
 } from "@/server/inventory-service";
 import { updateInventoryItemSchema } from "@/lib/validation/inventory";
 import { logAudit } from "@/lib/audit";
@@ -69,11 +68,6 @@ export async function DELETE(
     const { id } = await ctx.params;
     const existing = await getInventoryItem(id);
     if (!existing) throw new ApiError(404, "Inventory item not found.");
-
-    const blockReason = await inventoryItemDeleteBlockReason(existing);
-    if (blockReason) {
-      throw new ApiError(409, blockReason);
-    }
 
     await deleteInventoryItem(id);
     await logAudit({

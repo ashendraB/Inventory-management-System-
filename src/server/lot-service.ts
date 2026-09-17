@@ -44,6 +44,7 @@ export async function listLots(filters: LotFilters) {
   const pageSize = filters.pageSize && filters.pageSize > 0 ? filters.pageSize : 20;
 
   const where = {
+    inventoryItem: { deletedAt: null },
     ...(filters.itemId && { inventoryItemId: filters.itemId }),
     ...(filters.status && { status: filters.status }),
     ...(filters.search && {
@@ -87,14 +88,14 @@ export async function getLot(id: string) {
 }
 
 export async function findByBarcode(barcode: string) {
-  const item = await prisma.inventoryItem.findUnique({
-    where: { barcode },
+  const item = await prisma.inventoryItem.findFirst({
+    where: { barcode, deletedAt: null },
     include: { category: true, lots: { orderBy: { createdAt: "desc" } } },
   });
   if (item) return { type: "item" as const, item };
 
-  const lot = await prisma.inventoryLot.findUnique({
-    where: { barcode },
+  const lot = await prisma.inventoryLot.findFirst({
+    where: { barcode, inventoryItem: { deletedAt: null } },
     include: { inventoryItem: true },
   });
   if (lot) return { type: "lot" as const, lot };
@@ -114,7 +115,7 @@ export async function addStockLot(
   const costPerSheet = (data.packPrice / data.sheetsPerPack).toFixed(4);
 
   return prisma.$transaction(async (tx) => {
-    const item = await tx.inventoryItem.findUnique({ where: { id: itemId } });
+    const item = await tx.inventoryItem.findFirst({ where: { id: itemId, deletedAt: null } });
     if (!item) throw new ApiError(404, "Inventory item not found.");
 
     const itemCode = item.itemCode;

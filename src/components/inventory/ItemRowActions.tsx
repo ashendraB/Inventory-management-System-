@@ -39,7 +39,7 @@ export function ItemRowActions({
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      "Permanently delete this item? This cannot be undone."
+      "Remove this item? It will no longer appear in Inventory Items, Stock Lots, or the Printing Calculator. Existing printing records and invoices are not affected."
     );
     if (!confirmed) return;
 
@@ -49,7 +49,7 @@ export function ItemRowActions({
       toast.error(data?.error ?? "Could not delete this item.");
       return;
     }
-    toast.success("Item deleted");
+    toast.success("Item removed");
     router.refresh();
   }
 
