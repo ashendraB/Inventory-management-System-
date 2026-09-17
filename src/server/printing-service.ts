@@ -2,11 +2,15 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { nextSequence, padSequence } from "@/server/sequence-service";
 import { findMatchingPriceRule } from "@/server/pricing-service";
-import { statusFromQuantity } from "@/server/lot-service";
+import { statusFromQuantity, computeStatus } from "@/server/lot-service";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 import { ApiError } from "@/lib/api-auth";
 import type { z } from "zod";
-import type { previewJobInputSchema, printingJobInputSchema } from "@/lib/validation/printing";
+import type {
+  previewJobInputSchema,
+  printingJobInputSchema,
+  updatePrintingRecordSchema,
+} from "@/lib/validation/printing";
 
 /** Paper items available to the calculator, each with its current active
  * lot (if any) — this is what "Paper Size/GSM/Paper Type" dropdowns would
@@ -353,5 +357,126 @@ export async function getPrintingRecord(id: string) {
       lot: true,
       operator: { select: { name: true } },
     },
+  });
+}
+
+/** Narrow, safe edits only — notes and wasted-sheet count. Everything else
+ * on a printing record (lecturer, paper, pages, pricing) is locked in at
+ * submission time; to fix one of those, delete the record and resubmit it
+ * correctly. Changing wastedSheets deducts/restores the delta from the same
+ * lot the job used and logs a StockTransaction, exactly like any other
+ * audited stock change — but never touches totalCost, since waste from a
+ * printing-time error is the shop's loss, not something to bill the
+ * lecturer for. */
+export async function updatePrintingRecord(
+  id: string,
+  data: z.infer<typeof updatePrintingRecordSchema>,
+  userId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const record = await tx.printingRecord.findUnique({ where: { id } });
+    if (!record) throw new ApiError(404, "Printing record not found.");
+
+    if (data.wastedSheets !== undefined && data.wastedSheets !== record.wastedSheets) {
+      const delta = data.wastedSheets - record.wastedSheets;
+      const lot = await tx.inventoryLot.findUnique({
+        where: { id: record.lotId },
+        include: { inventoryItem: { select: { minStock: true } } },
+      });
+      if (!lot) throw new ApiError(404, "Stock lot not found.");
+      if (delta > 0 && lot.currentQuantity < delta) {
+        throw new ApiError(
+          409,
+          `Not enough stock to mark ${delta} more sheet(s) as wasted. Available: ${lot.currentQuantity.toLocaleString()} sheets.`
+        );
+      }
+
+      const newQuantity = lot.currentQuantity - delta;
+      const nextStatus = computeStatus(newQuantity, lot.inventoryItem.minStock, lot.status);
+
+      await tx.inventoryLot.update({
+        where: { id: lot.id },
+        data: {
+          currentQuantity: newQuantity,
+          status: nextStatus,
+          isActiveStock: nextStatus === "OUT_OF_STOCK" ? false : lot.isActiveStock,
+        },
+      });
+
+      await tx.stockTransaction.create({
+        data: {
+          type: delta > 0 ? "DAMAGED" : "MANUAL_ADJUSTMENT",
+          inventoryItemId: lot.inventoryItemId,
+          lotId: lot.id,
+          quantityChange: -delta,
+          previousQuantity: lot.currentQuantity,
+          newQuantity,
+          userId,
+          reason:
+            delta > 0
+              ? `${delta} sheet(s) marked wasted on printing record ${record.printingCode}`
+              : `Wasted-sheet count corrected down by ${-delta} on printing record ${record.printingCode}`,
+        },
+      });
+    }
+
+    return tx.printingRecord.update({
+      where: { id },
+      data: {
+        ...(data.wastedSheets !== undefined && { wastedSheets: data.wastedSheets }),
+        ...(data.notes !== undefined && { notes: data.notes || null }),
+      },
+    });
+  });
+}
+
+/** Fully undoes a printing job: restores the sheets it used (including any
+ * wasted sheets) back to the lot it came from, removes the stock
+ * transaction it created, and deletes the record. Blocked once a job has
+ * been invoiced — at that point it's real billing history, not a mistake
+ * to undo, and must be corrected some other way instead. */
+export async function deletePrintingRecord(id: string, userId: string) {
+  return prisma.$transaction(async (tx) => {
+    const record = await tx.printingRecord.findUnique({
+      where: { id },
+      include: { invoiceItem: true },
+    });
+    if (!record) throw new ApiError(404, "Printing record not found.");
+    if (record.invoiceItem) {
+      throw new ApiError(409, "This job has already been invoiced and can't be deleted.");
+    }
+
+    const lot = await tx.inventoryLot.findUnique({
+      where: { id: record.lotId },
+      include: { inventoryItem: { select: { minStock: true } } },
+    });
+    if (lot) {
+      const restored = record.physicalSheets + record.wastedSheets;
+      const newQuantity = lot.currentQuantity + restored;
+      const nextStatus = computeStatus(newQuantity, lot.inventoryItem.minStock, lot.status);
+
+      await tx.inventoryLot.update({
+        where: { id: lot.id },
+        data: { currentQuantity: newQuantity, status: nextStatus },
+      });
+
+      await tx.stockTransaction.create({
+        data: {
+          type: "MANUAL_ADJUSTMENT",
+          inventoryItemId: lot.inventoryItemId,
+          lotId: lot.id,
+          quantityChange: restored,
+          previousQuantity: lot.currentQuantity,
+          newQuantity,
+          userId,
+          reason: `Printing record ${record.printingCode} deleted — ${restored} sheet(s) restored`,
+        },
+      });
+    }
+
+    await tx.stockTransaction.deleteMany({ where: { printingRecordId: id } });
+    await tx.printingRecord.delete({ where: { id } });
+
+    return record;
   });
 }

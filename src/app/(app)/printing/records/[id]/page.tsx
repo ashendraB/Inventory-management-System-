@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPrintingRecord } from "@/server/printing-service";
+import { PrintingRecordActions } from "@/components/printing/PrintingRecordActions";
+import { EditPrintingRecordForm } from "@/components/printing/EditPrintingRecordForm";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -16,9 +18,12 @@ export default async function PrintingRecordDetailPage({
 
   return (
     <div className="max-w-2xl space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">Printing Summary</h1>
-        <p className="text-sm text-slate-500">{record.printingCode}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900">Printing Summary</h1>
+          <p className="text-sm text-slate-500">{record.printingCode}</p>
+        </div>
+        <PrintingRecordActions recordId={record.id} />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -44,6 +49,12 @@ export default async function PrintingRecordDetailPage({
 
         <dl className="space-y-2 text-sm">
           <Row label="Physical Sheets" value={record.physicalSheets.toLocaleString()} />
+          {record.wastedSheets > 0 && (
+            <Row
+              label="Wasted Sheets"
+              value={`${record.wastedSheets.toLocaleString()} (not billed)`}
+            />
+          )}
           <Row
             label={
               <Link href={`/inventory/lots/${record.lotId}`} className="text-indigo-600 hover:underline">
@@ -65,6 +76,13 @@ export default async function PrintingRecordDetailPage({
             <p className="text-sm text-slate-700">{record.notes}</p>
           </div>
         )}
+
+        <div className="mt-4">
+          <EditPrintingRecordForm
+            recordId={record.id}
+            initialValues={{ wastedSheets: record.wastedSheets, notes: record.notes ?? "" }}
+          />
+        </div>
       </div>
 
       <Link

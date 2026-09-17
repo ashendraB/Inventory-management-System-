@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { listPrintingRecords } from "@/server/printing-service";
 import { Pagination } from "@/components/ui/Pagination";
+import { PrintingRecordRowActions } from "@/components/printing/PrintingRecordRowActions";
+import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -53,12 +55,13 @@ export default async function PrintingRecordsPage({
               <th className="px-4 py-3">Sheets</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Operator</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {result.records.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={11} className="px-4 py-10 text-center text-slate-400">
                   No printing records yet.
                 </td>
               </tr>
@@ -81,9 +84,19 @@ export default async function PrintingRecordsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-500">{r.colourMode === "BW" ? "B&W" : "Colour"}</td>
                   <td className="px-4 py-3 text-slate-500">{r.sides === "SINGLE" ? "Single" : "Double"}</td>
-                  <td className="px-4 py-3">{r.physicalSheets.toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    {r.physicalSheets.toLocaleString()}
+                    {r.wastedSheets > 0 && (
+                      <Badge tone="warning" className="ml-2">
+                        +{r.wastedSheets} wasted
+                      </Badge>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(Number(r.totalCost))}</td>
                   <td className="px-4 py-3 text-slate-500">{r.operator.name}</td>
+                  <td className="px-4 py-3">
+                    <PrintingRecordRowActions recordId={r.id} />
+                  </td>
                 </tr>
               ))
             )}

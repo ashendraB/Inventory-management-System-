@@ -22,7 +22,7 @@ export function statusFromQuantity(currentQuantity: number, minStock: number): L
 
 /** A lot's status reacts to its quantity, but never overrides a manual
  * FINISHED/INACTIVE state — those only change via explicit operator action. */
-function computeStatus(
+export function computeStatus(
   currentQuantity: number,
   minStock: number,
   currentStatus: LotStatus

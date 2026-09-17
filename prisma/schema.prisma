@@ -348,6 +348,13 @@ model PrintingRecord {
   pages   Int
   copies  Int
   physicalSheets Int
+  // Sheets spoiled by a printing-time error (jam, misalignment, ...) on top
+  // of physicalSheets — tracked separately because it's an inventory loss,
+  // not something the lecturer is billed for; totalCost never changes when
+  // this does. Corrected via updatePrintingRecord, which deducts/restores
+  // the delta from the same lot and logs a StockTransaction, same as any
+  // other audited stock change.
+  wastedSheets Int @default(0)
 
   lotId   String
   lot     InventoryLot @relation(fields: [lotId], references: [id])
