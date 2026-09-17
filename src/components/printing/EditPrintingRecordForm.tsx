@@ -8,16 +8,26 @@ import { FieldWrapper, TextInput, TextArea, Button } from "@/components/ui/Field
 export function EditPrintingRecordForm({
   recordId,
   initialValues,
+  defaultOpen,
 }: {
   recordId: string;
   initialValues: { wastedSheets: number; notes: string };
+  defaultOpen?: boolean;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!defaultOpen);
   const [wastedSheets, setWastedSheets] = useState(String(initialValues.wastedSheets));
   const [notes, setNotes] = useState(initialValues.notes);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Closing (whether by Cancel or a successful save) drops any ?edit=1 the
+  // list page's Edit link arrived with, so a refresh or back-navigation
+  // doesn't reopen the form on its own.
+  function close() {
+    setOpen(false);
+    router.replace(`/printing/records/${recordId}`);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,7 +48,7 @@ export function EditPrintingRecordForm({
         return;
       }
       toast.success("Printing record updated");
-      setOpen(false);
+      close();
       router.refresh();
     } catch {
       setError("Could not reach the server.");
@@ -87,7 +97,7 @@ export function EditPrintingRecordForm({
         <Button type="submit" disabled={submitting}>
           {submitting ? "Saving..." : "Save Changes"}
         </Button>
-        <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+        <Button type="button" variant="secondary" onClick={close}>
           Cancel
         </Button>
       </div>

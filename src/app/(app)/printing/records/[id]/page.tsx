@@ -9,10 +9,13 @@ export const dynamic = "force-dynamic";
 
 export default async function PrintingRecordDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const record = await getPrintingRecord(id);
   if (!record) notFound();
 
@@ -23,7 +26,15 @@ export default async function PrintingRecordDetailPage({
           <h1 className="text-xl font-semibold text-slate-900">Printing Summary</h1>
           <p className="text-sm text-slate-500">{record.printingCode}</p>
         </div>
-        <PrintingRecordActions recordId={record.id} />
+        <div className="flex gap-2">
+          <Link
+            href={`/printing/records/${record.id}?edit=1`}
+            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          >
+            Edit
+          </Link>
+          <PrintingRecordActions recordId={record.id} />
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -81,6 +92,7 @@ export default async function PrintingRecordDetailPage({
           <EditPrintingRecordForm
             recordId={record.id}
             initialValues={{ wastedSheets: record.wastedSheets, notes: record.notes ?? "" }}
+            defaultOpen={sp.edit === "1"}
           />
         </div>
       </div>

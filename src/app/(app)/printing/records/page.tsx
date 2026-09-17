@@ -95,7 +95,15 @@ export default async function PrintingRecordsPage({
                   <td className="px-4 py-3 font-medium">{formatCurrency(Number(r.totalCost))}</td>
                   <td className="px-4 py-3 text-slate-500">{r.operator.name}</td>
                   <td className="px-4 py-3">
-                    <PrintingRecordRowActions recordId={r.id} />
+                    <div className="flex items-center gap-3 text-sm">
+                      <Link
+                        href={`/printing/records/${r.id}?edit=1`}
+                        className="text-indigo-600 hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <PrintingRecordRowActions recordId={r.id} />
+                    </div>
                   </td>
                 </tr>
               ))
