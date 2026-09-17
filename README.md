@@ -60,6 +60,11 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 
 This completes the phased build plan from the original spec.
 
+## Beyond the 8 phases
+
+- [x] **Settings → Users** — add/edit a user (name, username, email, password, role, and the two extra per-user grants from spec §4), deactivate/reactivate. No delete — a user is tied to real history (their own printing records, stock transactions, audit log entries), same reasoning as lecturers/price rules once they have usage. Deactivating your own account is blocked, both in the UI and the API, since it's the one way an admin could lock themselves out. Fixed a real gap this surfaced: a duplicate-value error (e.g. username already taken) fell through the shared error handler to a generic 500 for *every* route in the app — now a proper 409 naming the field, everywhere.
+- [ ] Settings → System Settings — still unbuilt.
+
 ## Key design decisions
 
 - **Roles**: `ADMINISTRATOR`, `INVENTORY_OPERATOR`, `PRINTING_OPERATOR`, stored
