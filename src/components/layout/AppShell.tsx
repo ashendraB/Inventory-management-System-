@@ -105,7 +105,7 @@ export function AppShell({
     <SessionProvider session={user}>
     <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
+      <aside className="no-print hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-slate-200 px-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
             IB
@@ -143,7 +143,7 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
+        <header className="no-print flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
           <button
             className="text-slate-500 md:hidden"
             onClick={() => setMobileOpen(true)}

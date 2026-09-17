@@ -65,9 +65,9 @@ export const NAV: NavSection[] = [
     label: "Billing",
     roles: ADMIN,
     links: [
-      { label: "Monthly Billing", href: "/billing/monthly", roles: ADMIN, implemented: false },
-      { label: "Invoices", href: "/billing/invoices", roles: ADMIN, implemented: false },
-      { label: "Invoice History", href: "/billing/invoices/history", roles: ADMIN, implemented: false },
+      { label: "Monthly Billing", href: "/billing/monthly", roles: ADMIN, implemented: true },
+      { label: "Invoices", href: "/billing/invoices", roles: ADMIN, implemented: true },
+      { label: "Invoice History", href: "/billing/invoices/history", roles: ADMIN, implemented: true },
     ],
   },
   {

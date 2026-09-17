@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Used by the invoice detail page's "Print / Save as PDF" button (and the
+   app shell's sidebar/header) to print just the invoice, not the app
+   chrome around it. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
