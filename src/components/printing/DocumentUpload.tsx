@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Field";
 
 /**
- * Lets the operator attach the actual document being printed. Page count is
- * auto-detected client-side for PDFs only — PDF is the one common format
- * with a real, unambiguous page count baked into the file; Word documents
- * don't store one (it depends on fonts/margins/printer at render time), so
- * for those we ask the operator to enter it manually.
+ * Lets the operator attach the actual document being printed, shows it
+ * inline on the page, and prints it from there. Page count is auto-detected
+ * client-side for PDFs only — PDF is the one common format with a real,
+ * unambiguous page count baked into the file; Word documents don't store
+ * one (it depends on fonts/margins/printer at render time), so for those we
+ * ask the operator to enter it manually.
  *
- * Printing itself is triggered by the parent form (via the exposed `print`
- * handle) at the moment the printing record is saved — see
- * PrintingCalculatorForm's "Submit & Print" button. `print()` opens the PDF
- * in a new browser tab using its native PDF viewer (Edge/Chrome both ship
- * one), which has its own Print button and responds to Ctrl+P — that native
- * viewer's print flow is more consistent than scripting `.print()` on an
- * embedded iframe, which routes through a stripped-down plugin UI instead.
+ * Printing calls `.print()` on the *embedded preview* shown on this page —
+ * not `window.open()` to a new tab. A new tab is a new browsing context, and
+ * browsers only allow opening one as a direct result of a user click within
+ * the same tick; by the time an async save request resolves, that window
+ * has closed and the browser silently blocks it as an unrequested popup.
+ * Printing the embedded content instead doesn't create a new window at all,
+ * so there's nothing for a popup blocker to catch — the browser just shows
+ * its normal print dialog for the visible PDF, same as Ctrl+P.
  */
 export interface DocumentUploadHandle {
   print: () => void;
@@ -37,9 +39,11 @@ export function DocumentUpload({
   const [detectedPages, setDetectedPages] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
+  const [previewReady, setPreviewReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const printable = !unsupported && !!fileUrl;
+  const printable = !unsupported && !!fileUrl && previewReady;
 
   // Object URLs must be revoked or they leak memory for the life of the tab.
   useEffect(() => {
@@ -53,21 +57,17 @@ export function DocumentUpload({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [printable]);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      print: () => {
-        if (!fileUrl) return;
-        const win = window.open(fileUrl, "_blank");
-        if (!win) {
-          // Popup blocked (browser setting/extension) — the record still
-          // saves either way, so just point them at the manual fallback.
-          toast.error('Pop-up blocked. Click "Open in New Tab" below to print the document.');
-        }
-      },
-    }),
-    [fileUrl]
-  );
+  const handlePrint = useCallback(() => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) {
+      toast.error("The preview hasn't finished loading yet — try again in a moment.");
+      return;
+    }
+    win.focus();
+    win.print();
+  }, []);
+
+  useImperativeHandle(ref, () => ({ print: handlePrint }), [handlePrint]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -76,6 +76,7 @@ export function DocumentUpload({
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setDetectedPages(null);
     setUnsupported(false);
+    setPreviewReady(false);
     setFileName(file.name);
 
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -114,6 +115,7 @@ export function DocumentUpload({
     setFileUrl(null);
     setDetectedPages(null);
     setUnsupported(false);
+    setPreviewReady(false);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -121,8 +123,8 @@ export function DocumentUpload({
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
       <p className="mb-3 text-xs text-slate-500">
-        Optional — attach the file to auto-fill the page count. When attached, the Submit
-        button below also opens it in a new tab for printing.
+        Optional — attach the file to auto-fill the page count and preview it below. The Submit
+        button prints this preview directly (your browser&apos;s own print dialog).
       </p>
       <input
         ref={inputRef}
@@ -148,6 +150,9 @@ export function DocumentUpload({
               the page count manually below, and print this file from Word/your PDF viewer.
             </p>
           )}
+          {!unsupported && fileUrl && !previewReady && (
+            <p className="text-slate-400">Loading preview...</p>
+          )}
 
           <div className="flex flex-wrap gap-2">
             {fileUrl && (
@@ -165,6 +170,16 @@ export function DocumentUpload({
             </Button>
           </div>
         </div>
+      )}
+
+      {!unsupported && fileUrl && (
+        <iframe
+          ref={iframeRef}
+          src={fileUrl}
+          title="Document preview"
+          onLoad={() => setPreviewReady(true)}
+          className="mt-4 h-80 w-full rounded-md border border-slate-200"
+        />
       )}
     </div>
   );

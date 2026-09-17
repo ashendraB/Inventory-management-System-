@@ -239,11 +239,6 @@ export function PrintingCalculatorForm({
       return;
     }
 
-    // window.open() must happen synchronously inside the click handler —
-    // browsers only honor it as a real user action within this same tick.
-    // Calling it after an `await` (e.g. once the save request resolves) is
-    // silently treated as an unrequested popup and blocked. The file is
-    // already in memory client-side, so there's nothing to wait for anyway.
     if (documentReady) {
       documentRef.current?.print();
     }
@@ -426,8 +421,8 @@ export function PrintingCalculatorForm({
         {printedRecord && (
           <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             <span>
-              Printing record {printedRecord.printingCode} saved. Finish printing in the new tab,
-              then view it whenever you&apos;re ready.
+              Printing record {printedRecord.printingCode} saved. Finish printing in the dialog
+              that just opened, then view it whenever you&apos;re ready.
             </span>
             <a
               href={`/printing/records/${printedRecord.id}`}
