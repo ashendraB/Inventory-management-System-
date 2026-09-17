@@ -9,6 +9,8 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { LotStatus } from "@prisma/client";
 
+const isPaperCategory = (categoryName: string) => categoryName.toLowerCase() === "paper";
+
 export const dynamic = "force-dynamic";
 
 export default async function StockLotsPage({
@@ -31,8 +33,15 @@ export default async function StockLotsPage({
   // the full item objects carry Prisma Decimal fields, which React can't
   // send across the server/client boundary.
   const paperItems = itemsResult.items
-    .filter((i) => i.category.name.toLowerCase() === "paper")
+    .filter((i) => isPaperCategory(i.category.name))
     .map((i) => ({ id: i.id, name: i.name, itemCode: i.itemCode }));
+
+  // Non-paper items never get a stock lot (createGenericInventoryItem just
+  // tracks a plain currentQuantity on the item itself) — the lots table
+  // above would never show them, so list them here too. Otherwise an item
+  // like "Air Fresh" added from Inventory Items never appears anywhere on
+  // this page at all.
+  const otherItems = itemsResult.items.filter((i) => !isPaperCategory(i.category.name));
 
   function pageHref(page: number) {
     const params = new URLSearchParams(sp as Record<string, string>);
@@ -43,9 +52,11 @@ export default async function StockLotsPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Stock / Lots</h1>
+        <h1 className="text-xl font-semibold text-slate-900">Stock</h1>
         <p className="text-sm text-slate-500">
           {result.total} lot{result.total === 1 ? "" : "s"}
+          {otherItems.length > 0 &&
+            `, ${otherItems.length} other item${otherItems.length === 1 ? "" : "s"}`}
         </p>
       </div>
 
@@ -54,6 +65,8 @@ export default async function StockLotsPage({
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <LotsFilterBar items={paperItems} />
       </div>
+
+      <h2 className="text-sm font-semibold text-slate-900">Paper Stock Lots</h2>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-sm">
@@ -105,6 +118,74 @@ export default async function StockLotsPage({
       </div>
 
       <Pagination page={result.page} totalPages={result.totalPages} makeHref={pageHref} />
+
+      <h2 className="text-sm font-semibold text-slate-900">Other Inventory Items</h2>
+      <p className="-mt-2 text-xs text-slate-500">
+        These items aren&apos;t paper, so they don&apos;t use stock lots — their Count is tracked
+        directly on the item.
+      </p>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="px-4 py-3">Item</th>
+              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Quantity</th>
+              <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Listing</th>
+              <th className="px-4 py-3">Added</th>
+              <th className="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {otherItems.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
+                  No non-paper inventory items yet.
+                </td>
+              </tr>
+            ) : (
+              otherItems.map((item) => (
+                <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/inventory/items/${item.id}`}
+                      className="font-medium text-indigo-600 hover:underline"
+                    >
+                      {item.itemCode} — {item.name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">{item.category.name}</td>
+                  <td className="px-4 py-3">
+                    {item.currentQuantity.toLocaleString()}
+                    {item.currentQuantity === 0 && (
+                      <Badge tone="danger" className="ml-2">
+                        out of stock
+                      </Badge>
+                    )}
+                    {item.currentQuantity > 0 && item.currentQuantity <= item.minStock && (
+                      <Badge tone="warning" className="ml-2">
+                        low
+                      </Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">{formatCurrency(Number(item.defaultPrice))}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={item.status} />
+                  </td>
+                  <td className="px-4 py-3 text-slate-400">{formatDate(item.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/inventory/items/${item.id}`} className="text-slate-500 hover:underline">
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
