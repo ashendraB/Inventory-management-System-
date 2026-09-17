@@ -45,6 +45,7 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 
 - [x] **Phase 1** — project setup, database schema, authentication, roles, dashboard shell
 - [x] **Phase 2** — inventory items (with generated Item ID + barcode), categories, suppliers
+  - Extra: delete an item (Administrator-only). This is a soft delete — it sets `deletedAt` and nothing else, so the item just stops appearing in Inventory Items, Stock Lots, Active Paper Stock, and the printing calculator's paper picker/barcode scan. Its stock lots, stock transactions, and any printing records/invoices already built from it are never touched, so deleting an item can never change existing reports or billing.
 - [x] **Phase 3** — stock lots (add/activate/finish), stock transactions, barcode scanning
 - [x] **Phase 4** — paper size/GSM/type config, printing price configuration
 - [x] **Phase 5** — printing calculator (active-lot lookup, cost calculation, atomic stock deduction), printing records
