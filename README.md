@@ -56,7 +56,9 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
   - Extra: edit and delete a printing record. Edit only allows Notes and a Wasted Sheets count (sheets spoiled by a printing-time error) — raising/lowering it deducts/restores the delta from the same stock lot but never changes what's billed. Delete fully undoes a job: restores its sheets (including any wasted) to the lot and removes the record; blocked once it's been invoiced.
 - [x] **Phase 6** — lecturer management (list, add, edit, deactivate/reactivate, delete). Lecturer IDs (`LEC-0001`, ...) come from the same Counter mechanism as item/lot/printing codes. Deactivating a lecturer removes them from the Printing Calculator's picker without touching their existing printing records. Delete is blocked once a lecturer has any printing records (deactivate instead). Add/Edit/Delete are Administrator-only; Printing Operator can view the list (per spec §4, "view lecturer info").
 - [x] **Phase 7** — monthly billing (pick a month, generate each lecturer's invoice from their unbilled printing records — idempotent, tops up an existing draft rather than erroring or duplicating), invoice detail with status workflow (DRAFT → GENERATED → ISSUED → PAID, or Cancel), invoice history, and a Print/Save-as-PDF button via the browser's native print dialog (no PDF library — same approach as printing calculator documents). All Administrator-only.
-- [ ] Phase 8 — reports, exports, audit log UI
+- [x] **Phase 8** — reports (Inventory, Stock Usage, Printing, Lecturer, Cost — the date-range ones default to the last 30 days), a CSV "Download" link on every report (plain GET routes under `/api/reports/*/export`, no library needed), and an Audit Log viewer (filterable by action/entity type/search, with old/new value diffs). All Administrator-only.
+
+This completes the phased build plan from the original spec.
 
 ## Key design decisions
 
