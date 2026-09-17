@@ -94,6 +94,17 @@ async function main() {
       },
     });
   }
+  // These codes are hardcoded above rather than generated through
+  // nextSequence("lecturer"), so the counter needs to be caught up to match
+  // — otherwise the first lecturer created through the app would collide
+  // with LEC-0001. Only safe to re-run before any real lecturer has been
+  // added through the app; re-seeding after that would move the counter
+  // backwards and risk a future collision.
+  await prisma.counter.upsert({
+    where: { id: "lecturer" },
+    create: { id: "lecturer", value: lecturers.length },
+    update: { value: lecturers.length },
+  });
 
   console.log("Seed complete.");
   console.log("Login with: admin / admin123, inventory.op / inventory123, printing.op / printing123");

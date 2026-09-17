@@ -57,8 +57,8 @@ export const NAV: NavSection[] = [
     label: "Lecturers",
     roles: ADMIN_PRINT,
     links: [
-      { label: "Lecturer List", href: "/lecturers", roles: ADMIN_PRINT, implemented: false },
-      { label: "Add Lecturer", href: "/lecturers/new", roles: ADMIN, implemented: false },
+      { label: "Lecturer List", href: "/lecturers", roles: ADMIN_PRINT, implemented: true },
+      { label: "Add Lecturer", href: "/lecturers/new", roles: ADMIN, implemented: true },
     ],
   },
   {
@@ -94,22 +94,33 @@ export const NAV: NavSection[] = [
   },
 ];
 
-/** Flat list of every route this app knows about, for middleware access checks. */
+/** Flat list of every route this app knows about, for middleware access checks.
+ * Picks the *most specific* (longest href) match rather than the first one
+ * found — e.g. "/lecturers/new" (Administrator only) must win over the more
+ * general "/lecturers" (Administrator + Printing Operator) it's nested
+ * under, even though "Lecturer List" is declared first for sidebar-ordering
+ * reasons. */
 export function findRouteRule(pathname: string): {
   roles: UserRole[];
   implemented: boolean;
 } | null {
-  for (const section of NAV) {
-    if (section.href && pathname.startsWith(section.href)) {
-      return { roles: section.roles, implemented: section.implemented ?? true };
+  let best: { href: string; roles: UserRole[]; implemented: boolean } | null = null;
+
+  function consider(href: string, roles: UserRole[], implemented: boolean) {
+    if (pathname !== href && !pathname.startsWith(href + "/")) return;
+    if (!best || href.length > best.href.length) {
+      best = { href, roles, implemented };
     }
+  }
+
+  for (const section of NAV) {
+    if (section.href) consider(section.href, section.roles, section.implemented ?? true);
     if (section.links) {
       for (const link of section.links) {
-        if (pathname === link.href || pathname.startsWith(link.href + "/")) {
-          return { roles: link.roles, implemented: link.implemented };
-        }
+        consider(link.href, link.roles, link.implemented);
       }
     }
   }
-  return null;
+
+  return best;
 }
