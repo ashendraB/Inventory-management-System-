@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
-import type { UserRole } from "@prisma/client";
+import { Prisma, type UserRole } from "@prisma/client";
 import { getSession, type SessionPayload } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -44,6 +44,16 @@ export async function requireRole(
 export function handleApiError(error: unknown): NextResponse {
   if (error instanceof ApiError) {
     return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  // A unique-constraint violation (e.g. a username/email/code that's
+  // already taken) is a normal, expected user error, not a server fault —
+  // surface it as one instead of an opaque 500.
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    const fields = (error.meta?.target as string[] | undefined)?.join(", ") ?? "value";
+    return NextResponse.json(
+      { error: `That ${fields} is already in use.` },
+      { status: 409 }
+    );
   }
   console.error(error);
   return NextResponse.json(

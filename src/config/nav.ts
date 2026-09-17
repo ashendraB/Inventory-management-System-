@@ -86,7 +86,7 @@ export const NAV: NavSection[] = [
     label: "Settings",
     roles: ADMIN,
     links: [
-      { label: "Users", href: "/settings/users", roles: ADMIN, implemented: false },
+      { label: "Users", href: "/settings/users", roles: ADMIN, implemented: true },
       { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN, implemented: true },
       { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
       { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
