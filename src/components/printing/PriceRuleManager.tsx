@@ -51,6 +51,11 @@ export function PriceRuleManager({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCharge, setEditCharge] = useState("");
+  const [editEffectiveTo, setEditEffectiveTo] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -99,6 +104,56 @@ export function PriceRuleManager({
       return;
     }
     toast.success(nextStatus === "ACTIVE" ? "Rule reactivated" : "Rule deactivated");
+    router.refresh();
+  }
+
+  function startEdit(rule: PriceRuleRow) {
+    setEditingId(rule.id);
+    setEditCharge(rule.chargePerSheet);
+    setEditEffectiveTo(rule.effectiveTo ? rule.effectiveTo.slice(0, 10) : "");
+  }
+
+  async function saveEdit(rule: PriceRuleRow) {
+    setEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/printing/price-rules/${rule.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chargePerSheet: Number(editCharge),
+          effectiveTo: editEffectiveTo,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Could not save changes.");
+        return;
+      }
+      toast.success("Pricing rule updated");
+      setEditingId(null);
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server.");
+    } finally {
+      setEditSubmitting(false);
+    }
+  }
+
+  async function deleteRule(rule: PriceRuleRow) {
+    const confirmed = window.confirm(
+      `Delete this pricing rule (${rule.paperSize.name}/${rule.gsm.value}/${rule.paperType.name}, ${
+        rule.colourMode === "BW" ? "B&W" : "Colour"
+      }, ${rule.sides === "SINGLE" ? "Single" : "Double"})? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/printing/price-rules/${rule.id}`, { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      toast.error(data?.error ?? "Could not delete this rule.");
+      return;
+    }
+    toast.success("Pricing rule deleted");
     router.refresh();
   }
 
@@ -235,28 +290,81 @@ export function PriceRuleManager({
                 </td>
               </tr>
             ) : (
-              rules.map((rule) => (
-                <tr key={rule.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-3">{rule.paperSize.name}</td>
-                  <td className="px-4 py-3">{rule.gsm.value}</td>
-                  <td className="px-4 py-3">{rule.paperType.name}</td>
-                  <td className="px-4 py-3">{rule.colourMode === "BW" ? "B&W" : "Colour"}</td>
-                  <td className="px-4 py-3">{rule.sides === "SINGLE" ? "Single" : "Double"}</td>
-                  <td className="px-4 py-3">{formatCurrency(Number(rule.chargePerSheet))}</td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {formatDate(rule.effectiveFrom)}
-                    {rule.effectiveTo ? ` – ${formatDate(rule.effectiveTo)}` : " – ongoing"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge tone={rule.status === "ACTIVE" ? "success" : "neutral"}>{rule.status}</Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => toggleStatus(rule)} className="text-indigo-600 hover:underline">
-                      {rule.status === "ACTIVE" ? "Deactivate" : "Reactivate"}
-                    </button>
-                  </td>
-                </tr>
-              ))
+              rules.map((rule) => {
+                const isEditing = editingId === rule.id;
+                return (
+                  <tr key={rule.id} className="border-b border-slate-100 last:border-0">
+                    <td className="px-4 py-3">{rule.paperSize.name}</td>
+                    <td className="px-4 py-3">{rule.gsm.value}</td>
+                    <td className="px-4 py-3">{rule.paperType.name}</td>
+                    <td className="px-4 py-3">{rule.colourMode === "BW" ? "B&W" : "Colour"}</td>
+                    <td className="px-4 py-3">{rule.sides === "SINGLE" ? "Single" : "Double"}</td>
+                    <td className="px-4 py-3">
+                      {isEditing ? (
+                        <TextInput
+                          type="number"
+                          min={0}
+                          step="any"
+                          value={editCharge}
+                          onChange={(e) => setEditCharge(e.target.value)}
+                          className="w-24"
+                        />
+                      ) : (
+                        formatCurrency(Number(rule.chargePerSheet))
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {isEditing ? (
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <span>{formatDate(rule.effectiveFrom)} –</span>
+                          <TextInput
+                            type="date"
+                            value={editEffectiveTo}
+                            onChange={(e) => setEditEffectiveTo(e.target.value)}
+                            className="w-36"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          {formatDate(rule.effectiveFrom)}
+                          {rule.effectiveTo ? ` – ${formatDate(rule.effectiveTo)}` : " – ongoing"}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={rule.status === "ACTIVE" ? "success" : "neutral"}>{rule.status}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {isEditing ? (
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => saveEdit(rule)}
+                            disabled={editSubmitting}
+                            className="text-indigo-600 hover:underline disabled:opacity-60"
+                          >
+                            {editSubmitting ? "Saving..." : "Save"}
+                          </button>
+                          <button onClick={() => setEditingId(null)} className="text-slate-500 hover:underline">
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-3">
+                          <button onClick={() => startEdit(rule)} className="text-indigo-600 hover:underline">
+                            Edit
+                          </button>
+                          <button onClick={() => toggleStatus(rule)} className="text-slate-500 hover:underline">
+                            {rule.status === "ACTIVE" ? "Deactivate" : "Reactivate"}
+                          </button>
+                          <button onClick={() => deleteRule(rule)} className="text-red-600 hover:underline">
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

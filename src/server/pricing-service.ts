@@ -68,6 +68,13 @@ export async function createPriceRule(
   });
 }
 
+export async function getPriceRule(id: string) {
+  return prisma.printingPriceRule.findUnique({
+    where: { id },
+    include: { paperSize: true, gsm: true, paperType: true },
+  });
+}
+
 export async function updatePriceRule(
   id: string,
   data: z.infer<typeof updatePriceRuleSchema>
@@ -82,6 +89,21 @@ export async function updatePriceRule(
       ...(data.status !== undefined && { status: data.status }),
     },
   });
+}
+
+/** Whether any printing job has already been priced with this rule.
+ * PrintingRecord snapshots its own chargePerSheet/totalCost, so deleting a
+ * used rule can't change a job's billed amount — but it would null out
+ * priceRuleId's traceability back to which rule produced it, so it's
+ * blocked anyway; Deactivate (updatePriceRule) is the right move once a
+ * rule has real usage, same pattern as inventory items/lots. */
+export async function priceRuleInUse(id: string) {
+  const count = await prisma.printingRecord.count({ where: { priceRuleId: id } });
+  return count > 0;
+}
+
+export async function deletePriceRule(id: string) {
+  return prisma.printingPriceRule.delete({ where: { id } });
 }
 
 /** Price rule matching (spec §24): paperSize + GSM + paperType + colour +
