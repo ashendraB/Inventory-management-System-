@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { FieldWrapper, TextInput, TextArea, Select, Button } from "@/components/ui/Field";
+import { DocumentUpload } from "@/components/printing/DocumentUpload";
 import { formatCurrency } from "@/lib/format";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 
@@ -286,6 +287,8 @@ export function PrintingCalculatorForm({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
+        <DocumentUpload onPagesDetected={(n) => setPages(String(n))} />
+
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex gap-2">
             <TextInput

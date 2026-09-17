@@ -43,3 +43,6 @@ next-env.d.ts
 # database
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# generated — copied from node_modules/pdfjs-dist by the postinstall script
+/public/pdf.worker.min.mjs
