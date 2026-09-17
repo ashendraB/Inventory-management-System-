@@ -59,3 +59,18 @@ export async function updateLecturer(
     },
   });
 }
+
+/** Whether this lecturer has any printing history. PrintingRecord.lecturerId
+ * is required (not nullable), so a lecturer with printing records can't be
+ * hard-deleted at all — the delete would fail on the foreign key. Blocked
+ * here with a clear message instead of a raw DB error; Deactivate is the
+ * right move once a lecturer has real usage, same pattern as inventory
+ * items/lots and printing price rules. */
+export async function lecturerInUse(id: string) {
+  const count = await prisma.printingRecord.count({ where: { lecturerId: id } });
+  return count > 0;
+}
+
+export async function deleteLecturer(id: string) {
+  return prisma.lecturer.delete({ where: { id } });
+}
