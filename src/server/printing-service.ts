@@ -6,11 +6,7 @@ import { statusFromQuantity } from "@/server/lot-service";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 import { ApiError } from "@/lib/api-auth";
 import type { z } from "zod";
-import type {
-  previewJobInputSchema,
-  printingJobInputSchema,
-  createPrintingProfileSchema,
-} from "@/lib/validation/printing";
+import type { previewJobInputSchema, printingJobInputSchema } from "@/lib/validation/printing";
 
 /** Paper items available to the calculator, each with its current active
  * lot (if any) — this is what "Paper Size/GSM/Paper Type" dropdowns would
@@ -356,49 +352,4 @@ export async function getPrintingRecord(id: string) {
       operator: { select: { name: true } },
     },
   });
-}
-
-// ---------------------------------------------------------------------------
-// Printing profiles — saved paper+colour+sides presets for repeat jobs
-// ---------------------------------------------------------------------------
-
-export async function listPrintingProfiles() {
-  const profiles = await prisma.printingProfile.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      inventoryItem: {
-        select: { id: true, name: true, status: true },
-      },
-    },
-  });
-  // An item can be deactivated after a profile was saved against it — drop
-  // those rather than offering a preset that can't actually be used.
-  return profiles.filter((p) => p.inventoryItem.status === "ACTIVE");
-}
-
-export async function createPrintingProfile(
-  data: z.infer<typeof createPrintingProfileSchema>,
-  userId: string
-) {
-  const item = await prisma.inventoryItem.findUnique({ where: { id: data.inventoryItemId } });
-  if (!item) throw new ApiError(404, "Paper item not found.");
-
-  const existing = await prisma.printingProfile.findUnique({ where: { name: data.name } });
-  if (existing) throw new ApiError(409, `A profile named "${data.name}" already exists.`);
-
-  return prisma.printingProfile.create({
-    data: {
-      name: data.name,
-      inventoryItemId: data.inventoryItemId,
-      colourMode: data.colourMode,
-      sides: data.sides,
-      createdById: userId,
-    },
-  });
-}
-
-export async function deletePrintingProfile(id: string) {
-  const profile = await prisma.printingProfile.findUnique({ where: { id } });
-  if (!profile) throw new ApiError(404, "Profile not found.");
-  await prisma.printingProfile.delete({ where: { id } });
 }

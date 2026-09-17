@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Field";
 
@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/Field";
  *
  * Printing itself is triggered by the parent form (via the exposed `print`
  * handle) at the moment the printing record is saved — see
- * PrintingCalculatorForm's "Submit & Print" button. No web page can
- * silently send a job to a printer (a deliberate browser security
- * restriction); `print()` here just opens the native print dialog for the
- * uploaded file, the same as Ctrl+P.
+ * PrintingCalculatorForm's "Submit & Print" button. `print()` opens the PDF
+ * in a new browser tab using its native PDF viewer (Edge/Chrome both ship
+ * one), which has its own Print button and responds to Ctrl+P — that native
+ * viewer's print flow is more consistent than scripting `.print()` on an
+ * embedded iframe, which routes through a stripped-down plugin UI instead.
  */
 export interface DocumentUploadHandle {
   print: () => void;
@@ -36,11 +37,9 @@ export function DocumentUpload({
   const [detectedPages, setDetectedPages] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
-  const [iframeReady, setIframeReady] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const printable = !unsupported && !!fileUrl && iframeReady;
+  const printable = !unsupported && !!fileUrl;
 
   // Object URLs must be revoked or they leak memory for the life of the tab.
   useEffect(() => {
@@ -54,21 +53,21 @@ export function DocumentUpload({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [printable]);
 
-  const handlePrint = useCallback(() => {
-    const iframe = iframeRef.current;
-    try {
-      if (iframe?.contentWindow) {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        return;
-      }
-    } catch {
-      // fall through to the new-tab fallback below
-    }
-    if (fileUrl) window.open(fileUrl, "_blank");
-  }, [fileUrl]);
-
-  useImperativeHandle(ref, () => ({ print: handlePrint }), [handlePrint]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      print: () => {
+        if (!fileUrl) return;
+        const win = window.open(fileUrl, "_blank");
+        if (!win) {
+          // Popup blocked (browser setting/extension) — the record still
+          // saves either way, so just point them at the manual fallback.
+          toast.error('Pop-up blocked. Click "Open in New Tab" below to print the document.');
+        }
+      },
+    }),
+    [fileUrl]
+  );
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -77,7 +76,6 @@ export function DocumentUpload({
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setDetectedPages(null);
     setUnsupported(false);
-    setIframeReady(false);
     setFileName(file.name);
 
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -116,7 +114,6 @@ export function DocumentUpload({
     setFileUrl(null);
     setDetectedPages(null);
     setUnsupported(false);
-    setIframeReady(false);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -125,7 +122,7 @@ export function DocumentUpload({
       <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
       <p className="mb-3 text-xs text-slate-500">
         Optional — attach the file to auto-fill the page count. When attached, the Submit
-        button below also opens the print dialog for it.
+        button below also opens it in a new tab for printing.
       </p>
       <input
         ref={inputRef}
@@ -168,16 +165,6 @@ export function DocumentUpload({
             </Button>
           </div>
         </div>
-      )}
-
-      {!unsupported && fileUrl && (
-        <iframe
-          ref={iframeRef}
-          src={fileUrl}
-          title="Document preview"
-          onLoad={() => setIframeReady(true)}
-          className="mt-4 h-64 w-full rounded-md border border-slate-200"
-        />
       )}
     </div>
   );

@@ -25,14 +25,6 @@ interface PaperItem {
   activeLot: { id: string; lotCode: string; currentQuantity: number; costPerSheet: string } | null;
 }
 
-interface Profile {
-  id: string;
-  name: string;
-  inventoryItemId: string;
-  colourMode: "BW" | "COLOUR";
-  sides: "SINGLE" | "DOUBLE";
-}
-
 interface PreviewState {
   loading: boolean;
   error: string | null;
@@ -43,11 +35,9 @@ interface PreviewState {
 export function PrintingCalculatorForm({
   lecturers,
   initialItems,
-  initialProfiles,
 }: {
   lecturers: Lecturer[];
   initialItems: PaperItem[];
-  initialProfiles: Profile[];
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -59,12 +49,6 @@ export function PrintingCalculatorForm({
   const [pages, setPages] = useState("");
   const [copies, setCopies] = useState("");
   const [notes, setNotes] = useState("");
-
-  const [profiles, setProfiles] = useState(initialProfiles);
-  const [profileId, setProfileId] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [newProfileName, setNewProfileName] = useState("");
-  const [showSaveProfile, setShowSaveProfile] = useState(false);
 
   const [scanValue, setScanValue] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -243,75 +227,31 @@ export function PrintingCalculatorForm({
     setPages("");
     setCopies("");
     setNotes("");
-    setProfileId("");
     setSubmitError(null);
     setPrintedRecord(null);
   }
 
-  function handleApplyProfile(id: string) {
-    setProfileId(id);
-    const profile = profiles.find((p) => p.id === id);
-    if (!profile) return;
-    setItemId(profile.inventoryItemId);
-    setColourMode(profile.colourMode);
-    setSides(profile.sides);
-    toast.success(`Loaded profile "${profile.name}"`);
-  }
-
-  async function handleSaveProfile() {
-    if (!newProfileName.trim() || !itemId) return;
-    setSavingProfile(true);
-    try {
-      const res = await fetch("/api/printing/profiles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newProfileName.trim(),
-          inventoryItemId: itemId,
-          colourMode,
-          sides,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Could not save this profile.");
-        return;
-      }
-      setProfiles((list) =>
-        [...list, { ...data.profile }].sort((a, b) => a.name.localeCompare(b.name))
-      );
-      setProfileId(data.profile.id);
-      setNewProfileName("");
-      setShowSaveProfile(false);
-      toast.success(`Profile "${data.profile.name}" saved`);
-    } catch {
-      toast.error("Could not reach the server.");
-    } finally {
-      setSavingProfile(false);
-    }
-  }
-
-  async function handleDeleteProfile() {
-    const profile = profiles.find((p) => p.id === profileId);
-    if (!profile) return;
-    if (!window.confirm(`Delete the profile "${profile.name}"?`)) return;
-    const res = await fetch(`/api/printing/profiles/${profile.id}`, { method: "DELETE" });
-    if (!res.ok) {
-      toast.error("Could not delete this profile.");
-      return;
-    }
-    setProfiles((list) => list.filter((p) => p.id !== profile.id));
-    setProfileId("");
-    toast.success("Profile deleted");
-  }
-
-  async function handleSubmit() {
+  function handleSubmit() {
     setSubmitError(null);
     setPrintedRecord(null);
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
       setSubmitError("Please fill in all required fields.");
       return;
     }
+
+    // window.open() must happen synchronously inside the click handler —
+    // browsers only honor it as a real user action within this same tick.
+    // Calling it after an `await` (e.g. once the save request resolves) is
+    // silently treated as an unrequested popup and blocked. The file is
+    // already in memory client-side, so there's nothing to wait for anyway.
+    if (documentReady) {
+      documentRef.current?.print();
+    }
+
+    void submitRecord();
+  }
+
+  async function submitRecord() {
     setSubmitting(true);
     try {
       const res = await fetch("/api/printing/records", {
@@ -335,9 +275,6 @@ export function PrintingCalculatorForm({
       }
 
       if (documentReady) {
-        // Print first, before navigating anywhere — leaving the page while
-        // the native print dialog is open can dismiss it in some browsers.
-        documentRef.current?.print();
         setPrintedRecord({ id: data.record.id, printingCode: data.record.printingCode });
         toast.success(`Printing record ${data.record.printingCode} saved`);
       } else {
@@ -371,57 +308,6 @@ export function PrintingCalculatorForm({
         />
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex flex-wrap items-end gap-2">
-            <FieldWrapper
-              label="Profile"
-              htmlFor="profileId"
-              hint="Load a saved paper/colour/sides preset"
-              className="min-w-[220px] flex-1"
-            >
-              <Select
-                id="profileId"
-                value={profileId}
-                onChange={(e) => (e.target.value ? handleApplyProfile(e.target.value) : setProfileId(""))}
-              >
-                <option value="">None — choose manually</option>
-                {profiles.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </Select>
-            </FieldWrapper>
-            {profileId && (
-              <Button type="button" variant="secondary" onClick={handleDeleteProfile}>
-                Delete Profile
-              </Button>
-            )}
-            {itemId && !showSaveProfile && (
-              <Button type="button" variant="secondary" onClick={() => setShowSaveProfile(true)}>
-                Save as Profile
-              </Button>
-            )}
-          </div>
-
-          {showSaveProfile && (
-            <div className="mb-4 flex flex-wrap items-end gap-2 rounded-md bg-slate-50 p-3">
-              <FieldWrapper label="New Profile Name" htmlFor="newProfileName" className="min-w-[200px] flex-1">
-                <TextInput
-                  id="newProfileName"
-                  value={newProfileName}
-                  onChange={(e) => setNewProfileName(e.target.value)}
-                  placeholder="A3 Booklet Tute"
-                />
-              </FieldWrapper>
-              <Button type="button" onClick={handleSaveProfile} disabled={savingProfile || !newProfileName.trim()}>
-                {savingProfile ? "Saving..." : "Save"}
-              </Button>
-              <Button type="button" variant="secondary" onClick={() => setShowSaveProfile(false)}>
-                Cancel
-              </Button>
-            </div>
-          )}
-
           <div className="mb-4 flex gap-2">
             <TextInput
               value={scanValue}
@@ -524,7 +410,6 @@ export function PrintingCalculatorForm({
                 onChange={(e) => setCopies(e.target.value)}
               />
             </FieldWrapper>
-
           </div>
 
           <div className="mt-4">
@@ -541,7 +426,7 @@ export function PrintingCalculatorForm({
         {printedRecord && (
           <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             <span>
-              Printing record {printedRecord.printingCode} saved. Finish printing in the dialog,
+              Printing record {printedRecord.printingCode} saved. Finish printing in the new tab,
               then view it whenever you&apos;re ready.
             </span>
             <a

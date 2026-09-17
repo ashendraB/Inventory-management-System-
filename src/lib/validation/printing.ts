@@ -22,10 +22,3 @@ export const previewJobInputSchema = printingJobInputSchema.pick({
   pages: true,
   copies: true,
 });
-
-export const createPrintingProfileSchema = z.object({
-  name: z.string().trim().min(1, "Profile name is required").max(100),
-  inventoryItemId: z.string().trim().min(1, "Paper is required"),
-  colourMode: z.enum(["BW", "COLOUR"]),
-  sides: z.enum(["SINGLE", "DOUBLE"]),
-});

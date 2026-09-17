@@ -48,8 +48,7 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
 - [x] **Phase 3** — stock lots (add/activate/finish), stock transactions, barcode scanning
 - [x] **Phase 4** — paper size/GSM/type config, printing price configuration
 - [x] **Phase 5** — printing calculator (active-lot lookup, cost calculation, atomic stock deduction), printing records
-  - Extra: attach the actual document (PDF) being printed — page count is auto-detected client-side and fills "Number of Pages". "Submit & Print" saves the record and opens the browser's native print dialog for it in one click. Word/.docx files don't have a real page count in the file itself, so those need manual entry and printing from Word/your own viewer.
-  - Extra: Printing Profiles — save a paper + colour + sides combo as a named preset (e.g. "A3 Booklet Tute") and reload it instantly instead of reselecting every field each time.
+  - Extra: attach the actual document (PDF) being printed — page count is auto-detected client-side and fills "Number of Pages". "Submit & Print" saves the record and opens the file in a new tab (the browser's own PDF viewer, e.g. Edge) for printing, in one click. Word/.docx files don't have a real page count in the file itself, so those need manual entry and printing from Word/your own viewer.
   - Removed Subject/Course/Batch/Printing Machine fields from the calculator (unused in practice).
 - [ ] Phase 6 — lecturer management (calculator uses existing seeded lecturers for now)
 - [ ] Phase 7 — monthly billing, invoice generation (PDF)
