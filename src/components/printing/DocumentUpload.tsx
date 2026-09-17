@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Field";
 
@@ -11,15 +11,25 @@ import { Button } from "@/components/ui/Field";
  * don't store one (it depends on fonts/margins/printer at render time), so
  * for those we ask the operator to enter it manually.
  *
- * "Print Document" opens the browser's native print dialog for the file —
- * no web page can silently send a job to a printer (that's a deliberate
- * browser security restriction), so this is the same thing Ctrl+P does,
- * just one click away and scoped to the uploaded file instead of the page.
+ * Printing itself is triggered by the parent form (via the exposed `print`
+ * handle) at the moment the printing record is saved — see
+ * PrintingCalculatorForm's "Submit & Print" button. No web page can
+ * silently send a job to a printer (a deliberate browser security
+ * restriction); `print()` here just opens the native print dialog for the
+ * uploaded file, the same as Ctrl+P.
  */
+export interface DocumentUploadHandle {
+  print: () => void;
+}
+
 export function DocumentUpload({
   onPagesDetected,
+  onReadyChange,
+  ref,
 }: {
   onPagesDetected: (pages: number) => void;
+  onReadyChange?: (ready: boolean) => void;
+  ref?: React.Ref<DocumentUploadHandle>;
 }) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -30,12 +40,35 @@ export function DocumentUpload({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const printable = !unsupported && !!fileUrl && iframeReady;
+
   // Object URLs must be revoked or they leak memory for the life of the tab.
   useEffect(() => {
     return () => {
       if (fileUrl) URL.revokeObjectURL(fileUrl);
     };
   }, [fileUrl]);
+
+  useEffect(() => {
+    onReadyChange?.(printable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [printable]);
+
+  const handlePrint = useCallback(() => {
+    const iframe = iframeRef.current;
+    try {
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        return;
+      }
+    } catch {
+      // fall through to the new-tab fallback below
+    }
+    if (fileUrl) window.open(fileUrl, "_blank");
+  }, [fileUrl]);
+
+  useImperativeHandle(ref, () => ({ print: handlePrint }), [handlePrint]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -77,20 +110,6 @@ export function DocumentUpload({
     }
   }
 
-  function handlePrint() {
-    const iframe = iframeRef.current;
-    try {
-      if (iframe?.contentWindow) {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        return;
-      }
-    } catch {
-      // fall through to the new-tab fallback below
-    }
-    if (fileUrl) window.open(fileUrl, "_blank");
-  }
-
   function handleClear() {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setFileName(null);
@@ -105,7 +124,8 @@ export function DocumentUpload({
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
       <p className="mb-3 text-xs text-slate-500">
-        Optional — attach the file to auto-fill the page count and print it from here.
+        Optional — attach the file to auto-fill the page count. When attached, the Submit
+        button below also opens the print dialog for it.
       </p>
       <input
         ref={inputRef}
@@ -127,17 +147,12 @@ export function DocumentUpload({
           )}
           {unsupported && (
             <p className="text-amber-700">
-              Automatic page count only works for PDF files. Please enter the page count
-              manually below, and use your own Word/PDF viewer to print this file.
+              Automatic page count and in-app printing only work for PDF files. Please enter
+              the page count manually below, and print this file from Word/your PDF viewer.
             </p>
           )}
 
           <div className="flex flex-wrap gap-2">
-            {!unsupported && fileUrl && (
-              <Button type="button" variant="secondary" onClick={handlePrint} disabled={!iframeReady}>
-                {iframeReady ? "Print Document" : "Loading preview..."}
-              </Button>
-            )}
             {fileUrl && (
               <a
                 href={fileUrl}

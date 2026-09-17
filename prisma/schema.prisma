@@ -47,6 +47,7 @@ model User {
 
   stockTransactions StockTransaction[]
   printingRecords   PrintingRecord[]
+  printingProfiles  PrintingProfile[]
   auditLogs         AuditLog[]
 }
 
@@ -163,6 +164,7 @@ model InventoryItem {
 
   lots               InventoryLot[]
   stockTransactions  StockTransaction[]
+  printingProfiles   PrintingProfile[]
 
   @@index([categoryId])
   @@index([status])
@@ -311,6 +313,26 @@ model PrintingPriceRule {
   printingRecords PrintingRecord[]
 
   @@index([paperSizeId, gsmId, paperTypeId, colourMode, sides, status])
+}
+
+// ---------------------------------------------------------------------------
+// Printing profiles — saved presets ("A3 Booklet Tute") so a paper + colour
+// + sides combo doesn't need reselecting every time. Not in the original
+// spec; added per user request to speed up repeat print jobs.
+// ---------------------------------------------------------------------------
+
+model PrintingProfile {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  colourMode      ColourMode
+  sides           PrintSides
+  createdById     String
+  createdBy       User @relation(fields: [createdById], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@index([inventoryItemId])
 }
 
 // ---------------------------------------------------------------------------

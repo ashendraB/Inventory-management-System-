@@ -9,6 +9,7 @@ export function FieldWrapper({
   required,
   error,
   hint,
+  className,
   children,
 }: {
   label: string;
@@ -16,10 +17,11 @@ export function FieldWrapper({
   required?: boolean;
   error?: string;
   hint?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className={className}>
       <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">
         {label}
         {required && <span className="text-red-500"> *</span>}

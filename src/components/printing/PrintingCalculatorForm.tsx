@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { FieldWrapper, TextInput, TextArea, Select, Button } from "@/components/ui/Field";
-import { DocumentUpload } from "@/components/printing/DocumentUpload";
+import { DocumentUpload, type DocumentUploadHandle } from "@/components/printing/DocumentUpload";
 import { formatCurrency } from "@/lib/format";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 
@@ -25,6 +25,14 @@ interface PaperItem {
   activeLot: { id: string; lotCode: string; currentQuantity: number; costPerSheet: string } | null;
 }
 
+interface Profile {
+  id: string;
+  name: string;
+  inventoryItemId: string;
+  colourMode: "BW" | "COLOUR";
+  sides: "SINGLE" | "DOUBLE";
+}
+
 interface PreviewState {
   loading: boolean;
   error: string | null;
@@ -35,24 +43,28 @@ interface PreviewState {
 export function PrintingCalculatorForm({
   lecturers,
   initialItems,
+  initialProfiles,
 }: {
   lecturers: Lecturer[];
   initialItems: PaperItem[];
+  initialProfiles: Profile[];
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [lecturerId, setLecturerId] = useState("");
   const [documentName, setDocumentName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [course, setCourse] = useState("");
-  const [batchClass, setBatchClass] = useState("");
   const [colourMode, setColourMode] = useState<"BW" | "COLOUR">("BW");
   const [itemId, setItemId] = useState("");
   const [sides, setSides] = useState<"SINGLE" | "DOUBLE">("SINGLE");
   const [pages, setPages] = useState("");
   const [copies, setCopies] = useState("");
-  const [printingMachine, setPrintingMachine] = useState("");
   const [notes, setNotes] = useState("");
+
+  const [profiles, setProfiles] = useState(initialProfiles);
+  const [profileId, setProfileId] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [newProfileName, setNewProfileName] = useState("");
+  const [showSaveProfile, setShowSaveProfile] = useState(false);
 
   const [scanValue, setScanValue] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -66,6 +78,10 @@ export function PrintingCalculatorForm({
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [printedRecord, setPrintedRecord] = useState<{ id: string; printingCode: string } | null>(null);
+
+  const documentRef = useRef<DocumentUploadHandle>(null);
+  const [documentReady, setDocumentReady] = useState(false);
 
   const selectedItem = items.find((i) => i.id === itemId) ?? null;
 
@@ -221,21 +237,77 @@ export function PrintingCalculatorForm({
   function handleReset() {
     setLecturerId("");
     setDocumentName("");
-    setSubject("");
-    setCourse("");
-    setBatchClass("");
     setColourMode("BW");
     setItemId("");
     setSides("SINGLE");
     setPages("");
     setCopies("");
-    setPrintingMachine("");
     setNotes("");
+    setProfileId("");
     setSubmitError(null);
+    setPrintedRecord(null);
+  }
+
+  function handleApplyProfile(id: string) {
+    setProfileId(id);
+    const profile = profiles.find((p) => p.id === id);
+    if (!profile) return;
+    setItemId(profile.inventoryItemId);
+    setColourMode(profile.colourMode);
+    setSides(profile.sides);
+    toast.success(`Loaded profile "${profile.name}"`);
+  }
+
+  async function handleSaveProfile() {
+    if (!newProfileName.trim() || !itemId) return;
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/printing/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newProfileName.trim(),
+          inventoryItemId: itemId,
+          colourMode,
+          sides,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Could not save this profile.");
+        return;
+      }
+      setProfiles((list) =>
+        [...list, { ...data.profile }].sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setProfileId(data.profile.id);
+      setNewProfileName("");
+      setShowSaveProfile(false);
+      toast.success(`Profile "${data.profile.name}" saved`);
+    } catch {
+      toast.error("Could not reach the server.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function handleDeleteProfile() {
+    const profile = profiles.find((p) => p.id === profileId);
+    if (!profile) return;
+    if (!window.confirm(`Delete the profile "${profile.name}"?`)) return;
+    const res = await fetch(`/api/printing/profiles/${profile.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      toast.error("Could not delete this profile.");
+      return;
+    }
+    setProfiles((list) => list.filter((p) => p.id !== profile.id));
+    setProfileId("");
+    toast.success("Profile deleted");
   }
 
   async function handleSubmit() {
     setSubmitError(null);
+    setPrintedRecord(null);
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
       setSubmitError("Please fill in all required fields.");
       return;
@@ -249,14 +321,10 @@ export function PrintingCalculatorForm({
           lecturerId,
           inventoryItemId: itemId,
           documentName,
-          subject,
-          course,
-          batchClass,
           colourMode,
           sides,
           pages: Number(pages),
           copies: Number(copies),
-          printingMachine,
           notes,
         }),
       });
@@ -265,8 +333,17 @@ export function PrintingCalculatorForm({
         setSubmitError(data.error ?? "Could not submit this printing job.");
         return;
       }
-      toast.success(`Printing record ${data.record.printingCode} submitted`);
-      router.push(`/printing/records/${data.record.id}`);
+
+      if (documentReady) {
+        // Print first, before navigating anywhere — leaving the page while
+        // the native print dialog is open can dismiss it in some browsers.
+        documentRef.current?.print();
+        setPrintedRecord({ id: data.record.id, printingCode: data.record.printingCode });
+        toast.success(`Printing record ${data.record.printingCode} saved`);
+      } else {
+        toast.success(`Printing record ${data.record.printingCode} submitted`);
+        router.push(`/printing/records/${data.record.id}`);
+      }
     } catch {
       setSubmitError("Could not reach the server. Please try again.");
     } finally {
@@ -287,9 +364,64 @@ export function PrintingCalculatorForm({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <DocumentUpload onPagesDetected={(n) => setPages(String(n))} />
+        <DocumentUpload
+          ref={documentRef}
+          onPagesDetected={(n) => setPages(String(n))}
+          onReadyChange={setDocumentReady}
+        />
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex flex-wrap items-end gap-2">
+            <FieldWrapper
+              label="Profile"
+              htmlFor="profileId"
+              hint="Load a saved paper/colour/sides preset"
+              className="min-w-[220px] flex-1"
+            >
+              <Select
+                id="profileId"
+                value={profileId}
+                onChange={(e) => (e.target.value ? handleApplyProfile(e.target.value) : setProfileId(""))}
+              >
+                <option value="">None — choose manually</option>
+                {profiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
+            {profileId && (
+              <Button type="button" variant="secondary" onClick={handleDeleteProfile}>
+                Delete Profile
+              </Button>
+            )}
+            {itemId && !showSaveProfile && (
+              <Button type="button" variant="secondary" onClick={() => setShowSaveProfile(true)}>
+                Save as Profile
+              </Button>
+            )}
+          </div>
+
+          {showSaveProfile && (
+            <div className="mb-4 flex flex-wrap items-end gap-2 rounded-md bg-slate-50 p-3">
+              <FieldWrapper label="New Profile Name" htmlFor="newProfileName" className="min-w-[200px] flex-1">
+                <TextInput
+                  id="newProfileName"
+                  value={newProfileName}
+                  onChange={(e) => setNewProfileName(e.target.value)}
+                  placeholder="A3 Booklet Tute"
+                />
+              </FieldWrapper>
+              <Button type="button" onClick={handleSaveProfile} disabled={savingProfile || !newProfileName.trim()}>
+                {savingProfile ? "Saving..." : "Save"}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setShowSaveProfile(false)}>
+                Cancel
+              </Button>
+            </div>
+          )}
+
           <div className="mb-4 flex gap-2">
             <TextInput
               value={scanValue}
@@ -393,22 +525,6 @@ export function PrintingCalculatorForm({
               />
             </FieldWrapper>
 
-            <FieldWrapper label="Subject" htmlFor="subject">
-              <TextInput id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
-            </FieldWrapper>
-            <FieldWrapper label="Course" htmlFor="course">
-              <TextInput id="course" value={course} onChange={(e) => setCourse(e.target.value)} />
-            </FieldWrapper>
-            <FieldWrapper label="Batch/Class" htmlFor="batchClass">
-              <TextInput id="batchClass" value={batchClass} onChange={(e) => setBatchClass(e.target.value)} />
-            </FieldWrapper>
-            <FieldWrapper label="Printing Machine" htmlFor="printingMachine">
-              <TextInput
-                id="printingMachine"
-                value={printingMachine}
-                onChange={(e) => setPrintingMachine(e.target.value)}
-              />
-            </FieldWrapper>
           </div>
 
           <div className="mt-4">
@@ -422,9 +538,28 @@ export function PrintingCalculatorForm({
           <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</div>
         )}
 
+        {printedRecord && (
+          <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+            <span>
+              Printing record {printedRecord.printingCode} saved. Finish printing in the dialog,
+              then view it whenever you&apos;re ready.
+            </span>
+            <a
+              href={`/printing/records/${printedRecord.id}`}
+              className="font-medium text-emerald-900 underline"
+            >
+              View Summary
+            </a>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Button type="button" onClick={handleSubmit} disabled={!canSubmit || submitting}>
-            {submitting ? "Submitting..." : "Submit Printing Record"}
+            {submitting
+              ? "Submitting..."
+              : documentReady
+                ? "Submit & Print"
+                : "Submit Printing Record"}
           </Button>
           <Button type="button" variant="secondary" onClick={handleReset}>
             Reset
