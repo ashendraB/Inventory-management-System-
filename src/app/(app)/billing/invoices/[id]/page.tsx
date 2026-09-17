@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getInvoice } from "@/server/billing-service";
+import { getAllSettings } from "@/server/system-settings-service";
 import { InvoiceStatusActions } from "@/components/billing/InvoiceStatusActions";
 import { InvoiceDraftEditForm } from "@/components/billing/InvoiceDraftEditForm";
 import { StatusBadge } from "@/components/ui/Badge";
@@ -19,8 +20,11 @@ export default async function InvoiceDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const invoice = await getInvoice(id);
+  const [invoice, settings] = await Promise.all([getInvoice(id), getAllSettings()]);
   if (!invoice) notFound();
+
+  const hasInstituteDetails =
+    settings.institute_name || settings.institute_address || settings.institute_phone || settings.institute_email;
 
   return (
     <div className="max-w-3xl space-y-4">
@@ -34,6 +38,21 @@ export default async function InvoiceDetailPage({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none">
+        {hasInstituteDetails && (
+          <div className="mb-4 border-b border-slate-200 pb-4">
+            {settings.institute_name && (
+              <p className="text-lg font-semibold text-slate-900">{settings.institute_name}</p>
+            )}
+            {settings.institute_address && (
+              <p className="text-sm text-slate-500">{settings.institute_address}</p>
+            )}
+            {(settings.institute_phone || settings.institute_email) && (
+              <p className="text-sm text-slate-500">
+                {[settings.institute_phone, settings.institute_email].filter(Boolean).join(" · ")}
+              </p>
+            )}
+          </div>
+        )}
         <div className="flex items-start justify-between border-b border-slate-200 pb-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">Invoice</h1>
@@ -122,6 +141,12 @@ export default async function InvoiceDetailPage({
           <div className="mt-6 border-t border-slate-200 pt-4">
             <p className="text-xs font-medium uppercase text-slate-400">Notes</p>
             <p className="text-sm text-slate-700">{invoice.notes}</p>
+          </div>
+        )}
+
+        {settings.invoice_footer_note && (
+          <div className="mt-6 border-t border-dashed border-slate-300 pt-4">
+            <p className="text-xs text-slate-500">{settings.invoice_footer_note}</p>
           </div>
         )}
       </div>

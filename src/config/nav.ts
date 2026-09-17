@@ -90,7 +90,7 @@ export const NAV: NavSection[] = [
       { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN, implemented: true },
       { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
       { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
-      { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: false },
+      { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: true },
     ],
   },
 ];
