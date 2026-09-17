@@ -74,11 +74,12 @@ export const NAV: NavSection[] = [
     label: "Reports",
     roles: ADMIN,
     links: [
-      { label: "Inventory Reports", href: "/reports/inventory", roles: ADMIN, implemented: false },
-      { label: "Stock Usage", href: "/reports/stock-usage", roles: ADMIN, implemented: false },
-      { label: "Printing Reports", href: "/reports/printing", roles: ADMIN, implemented: false },
-      { label: "Lecturer Reports", href: "/reports/lecturers", roles: ADMIN, implemented: false },
-      { label: "Cost Reports", href: "/reports/costs", roles: ADMIN, implemented: false },
+      { label: "Inventory Reports", href: "/reports/inventory", roles: ADMIN, implemented: true },
+      { label: "Stock Usage", href: "/reports/stock-usage", roles: ADMIN, implemented: true },
+      { label: "Printing Reports", href: "/reports/printing", roles: ADMIN, implemented: true },
+      { label: "Lecturer Reports", href: "/reports/lecturers", roles: ADMIN, implemented: true },
+      { label: "Cost Reports", href: "/reports/costs", roles: ADMIN, implemented: true },
+      { label: "Audit Log", href: "/reports/audit-log", roles: ADMIN, implemented: true },
     ],
   },
   {
