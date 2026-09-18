@@ -67,6 +67,10 @@ This completes the phased build plan from the original spec.
 
 Every page in the original nav is now built.
 
+## Visual design
+
+Branded to "Eminent Edification" (crest at `public/logo.png`, also the favicon): a navy (`brand-*`) and gold (`gold-*`) palette defined as Tailwind v4 theme tokens in `globals.css`, applied through the shared `Button`/`Field`/`Badge` primitives so it's consistent everywhere — navy sidebar with a gold active-state accent, gold-topped stat cards, gold "Sign in" on a navy gradient login page. The crest's PNG fails Next's image optimizer (sharp) for reasons not worth chasing down, so every `<Image>` using it passes `unoptimized` — fine for a small fixed-size static asset. Also fixed `proxy.ts`'s middleware matcher, which was redirecting unauthenticated requests for static files like `/logo.png` itself to `/login`, breaking the logo on the login page for exactly the visitors who'd see it.
+
 ## Key design decisions
 
 - **Roles**: `ADMINISTRATOR`, `INVENTORY_OPERATOR`, `PRINTING_OPERATOR`, stored
