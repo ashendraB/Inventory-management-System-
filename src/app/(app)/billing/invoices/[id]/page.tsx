@@ -34,7 +34,11 @@ export default async function InvoiceDetailPage({
             ← Back to Invoices
           </Link>
         </div>
-        <InvoiceStatusActions invoiceId={invoice.id} status={invoice.status} />
+        <InvoiceStatusActions
+          invoiceId={invoice.id}
+          status={invoice.status}
+          lecturerEmail={invoice.lecturer.email}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none">
@@ -61,6 +65,11 @@ export default async function InvoiceDetailPage({
           <div className="text-right">
             <StatusBadge status={invoice.status} />
             <p className="mt-1 text-sm text-slate-500">{formatDate(invoice.invoiceDate)}</p>
+            {invoice.emailedAt && (
+              <p className="no-print mt-1 text-xs text-slate-400">
+                Emailed {formatDate(invoice.emailedAt)}
+              </p>
+            )}
           </div>
         </div>
 

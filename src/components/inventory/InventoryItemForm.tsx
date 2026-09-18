@@ -19,6 +19,7 @@ export interface LookupOption {
 export interface EditableItemValues {
   name: string;
   categoryId: string;
+  barcode: string;
   brand: string;
   defaultPrice: string;
   currentQuantity: string;
@@ -30,11 +31,14 @@ export interface EditableItemValues {
   paperSizeId: string;
   gsmId: string;
   paperTypeId: string;
+  expiryDate: string;
+  warrantyExpiryDate: string;
 }
 
 const EMPTY_EDIT: EditableItemValues = {
   name: "",
   categoryId: "",
+  barcode: "",
   brand: "",
   defaultPrice: "0",
   currentQuantity: "0",
@@ -46,10 +50,12 @@ const EMPTY_EDIT: EditableItemValues = {
   paperSizeId: "",
   gsmId: "",
   paperTypeId: "",
+  expiryDate: "",
+  warrantyExpiryDate: "",
 };
 
-function isPaperCategory(categories: Category[], categoryId: string) {
-  return categories.find((c) => c.id === categoryId)?.name.toLowerCase() === "paper";
+function categoryNameOf(categories: Category[], categoryId: string) {
+  return categories.find((c) => c.id === categoryId)?.name.toLowerCase() ?? "";
 }
 
 export function InventoryItemForm({
@@ -60,8 +66,6 @@ export function InventoryItemForm({
   paperTypes,
   initialValues,
   itemId,
-  isPaperItem = false,
-  allowNewCategory = false,
 }: {
   categories: Category[];
   suppliers: { id: string; name: string }[];
@@ -70,8 +74,6 @@ export function InventoryItemForm({
   paperTypes: LookupOption[];
   initialValues?: Partial<EditableItemValues>;
   itemId?: string; // presence = edit mode (always the plain generic field set)
-  isPaperItem?: boolean; // edit mode only: is the item being edited a Paper item?
-  allowNewCategory?: boolean;
 }) {
   const router = useRouter();
   const isEdit = Boolean(itemId);
@@ -84,13 +86,15 @@ export function InventoryItemForm({
   const [sheetsPerPack, setSheetsPerPack] = useState("");
   const [packPrice, setPackPrice] = useState("");
 
-  const [categoryList, setCategoryList] = useState(categories);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [addingCategory, setAddingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
 
-  const paperMode = isEdit ? isPaperItem : isPaperCategory(categoryList, values.categoryId);
+  const categoryName = categoryNameOf(categories, values.categoryId);
+  const paperMode = categoryName === "paper";
+  const isTecItem = categoryName === "tec item";
+  // Office Supplies and Others both get expiry + warranty date tracking;
+  // Tec Item gets warranty only (spare parts don't "expire").
+  const showsExpiryFields = categoryName === "others" || categoryName === "office supplies";
 
   const costPerSheet = useMemo(() => {
     const p = Number(packPrice);
@@ -101,30 +105,6 @@ export function InventoryItemForm({
 
   function set<K extends keyof EditableItemValues>(key: K, value: EditableItemValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
-  }
-
-  async function handleAddCategory() {
-    if (!newCategoryName.trim()) return;
-    try {
-      const res = await fetch("/api/inventory/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newCategoryName.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Could not add category.");
-        return;
-      }
-      const category = data.category as Category;
-      setCategoryList((list) => [...list, category].sort((a, b) => a.name.localeCompare(b.name)));
-      set("categoryId", category.id);
-      setNewCategoryName("");
-      setAddingCategory(false);
-      toast.success(`Category "${category.name}" added`);
-    } catch {
-      toast.error("Could not add category.");
-    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -148,7 +128,9 @@ export function InventoryItemForm({
             defaultPrice: Number(values.defaultPrice || 0),
             currentQuantity: Number(values.currentQuantity || 0),
             minStock: Number(values.minStock || 0),
-            ...(isPaperItem && {
+            expiryDate: values.expiryDate,
+            warrantyExpiryDate: values.warrantyExpiryDate,
+            ...(paperMode && {
               paperSizeId: values.paperSizeId,
               gsmId: values.gsmId,
               paperTypeId: values.paperTypeId,
@@ -158,6 +140,7 @@ export function InventoryItemForm({
           ? {
               ...common,
               kind: "paper" as const,
+              barcode: values.barcode,
               paperSizeId: values.paperSizeId,
               gsmId: values.gsmId,
               paperTypeId: values.paperTypeId,
@@ -168,10 +151,13 @@ export function InventoryItemForm({
           : {
               ...common,
               kind: "generic" as const,
+              barcode: values.barcode,
               brand: values.brand,
               defaultPrice: Number(values.defaultPrice || 0),
               currentQuantity: Number(values.currentQuantity || 0),
               minStock: Number(values.minStock || 0),
+              expiryDate: values.expiryDate,
+              warrantyExpiryDate: values.warrantyExpiryDate,
             };
 
       const res = await fetch(
@@ -214,53 +200,37 @@ export function InventoryItemForm({
           />
         </FieldWrapper>
 
+        {!isEdit && (
+          <FieldWrapper
+            label="Barcode"
+            htmlFor="barcode"
+            hint="Scan the item's own barcode here, or leave blank to auto-generate one"
+          >
+            <TextInput
+              id="barcode"
+              autoFocus={Boolean(values.barcode)}
+              value={values.barcode}
+              onChange={(e) => set("barcode", e.target.value)}
+              placeholder="Scan or type a barcode..."
+            />
+          </FieldWrapper>
+        )}
+
         <FieldWrapper label="Category" htmlFor="categoryId" required>
-          {!addingCategory ? (
-            <div className="flex gap-2">
-              <Select
-                id="categoryId"
-                required
-                disabled={isEdit}
-                value={values.categoryId}
-                onChange={(e) => set("categoryId", e.target.value)}
-              >
-                <option value="">Select category</option>
-                {categoryList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-              {allowNewCategory && !isEdit && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setAddingCategory(true)}
-                >
-                  + New
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <TextInput
-                autoFocus
-                placeholder="New category name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-              />
-              <Button type="button" onClick={handleAddCategory}>
-                Add
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setAddingCategory(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
+          <Select
+            id="categoryId"
+            required
+            disabled={isEdit}
+            value={values.categoryId}
+            onChange={(e) => set("categoryId", e.target.value)}
+          >
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
         </FieldWrapper>
 
         {paperMode ? (
@@ -407,6 +377,34 @@ export function InventoryItemForm({
                 onChange={(e) => set("minStock", e.target.value)}
               />
             </FieldWrapper>
+            {showsExpiryFields && (
+              <FieldWrapper
+                label="Expiry Date"
+                htmlFor="expiryDate"
+                hint="Optional — leave blank if this item doesn't expire"
+              >
+                <TextInput
+                  id="expiryDate"
+                  type="date"
+                  value={values.expiryDate}
+                  onChange={(e) => set("expiryDate", e.target.value)}
+                />
+              </FieldWrapper>
+            )}
+            {(isTecItem || showsExpiryFields) && (
+              <FieldWrapper
+                label="Warranty Expiry Date"
+                htmlFor="warrantyExpiryDate"
+                hint="Optional — leave blank if this item has no warranty"
+              >
+                <TextInput
+                  id="warrantyExpiryDate"
+                  type="date"
+                  value={values.warrantyExpiryDate}
+                  onChange={(e) => set("warrantyExpiryDate", e.target.value)}
+                />
+              </FieldWrapper>
+            )}
           </>
         )}
 

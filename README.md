@@ -32,6 +32,32 @@ Open http://localhost:3000.
 
 Change these before any real deployment.
 
+## Setting up "Email Invoice"
+
+The invoice page's "Email Invoice" button sends over SMTP, configured with
+these vars in `.env` (all required, or the button shows a clear error
+instead of failing silently):
+
+```
+SMTP_HOST=""
+SMTP_PORT=""
+SMTP_SECURE=""   # "true" for port 465, "false" for 587/others
+SMTP_USER=""
+SMTP_PASS=""
+SMTP_FROM=""     # optional — defaults to SMTP_USER if blank
+```
+
+**Gmail:** `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`,
+`SMTP_USER` = your Gmail address, `SMTP_PASS` = a 16-character
+[App Password](https://myaccount.google.com/apppasswords) (not your normal
+Gmail password — requires 2-Step Verification to be turned on first).
+
+**Office365:** `SMTP_HOST=smtp.office365.com`, `SMTP_PORT=587`,
+`SMTP_SECURE=false`, `SMTP_USER`/`SMTP_PASS` = your normal sign-in email and
+password (or an app password if MFA is enforced on the account).
+
+Restart `npm run dev` after editing `.env`.
+
 ## Switching to PostgreSQL later
 
 1. Set `DATABASE_URL` in `.env` to your Postgres connection string.
@@ -56,6 +82,7 @@ This is being built in phases (see the sidebar — unbuilt pages are marked
   - Extra: edit and delete a printing record. Edit only allows Notes and a Wasted Sheets count (sheets spoiled by a printing-time error) — raising/lowering it deducts/restores the delta from the same stock lot but never changes what's billed. Delete fully undoes a job: restores its sheets (including any wasted) to the lot and removes the record; blocked once it's been invoiced.
 - [x] **Phase 6** — lecturer management (list, add, edit, deactivate/reactivate, delete). Lecturer IDs (`LEC-0001`, ...) come from the same Counter mechanism as item/lot/printing codes. Deactivating a lecturer removes them from the Printing Calculator's picker without touching their existing printing records. Delete is blocked once a lecturer has any printing records (deactivate instead). Add/Edit/Delete are Administrator-only; Printing Operator can view the list (per spec §4, "view lecturer info").
 - [x] **Phase 7** — monthly billing (pick a month, generate each lecturer's invoice from their unbilled printing records — idempotent, tops up an existing draft rather than erroring or duplicating), invoice detail with status workflow (DRAFT → GENERATED → ISSUED → PAID, or Cancel), invoice history, and a Print/Save-as-PDF button via the browser's native print dialog (no PDF library — same approach as printing calculator documents). All Administrator-only.
+  - Extra: "Email Invoice" button on the invoice detail page — sends the lecturer (their email address on file) the invoice as a formatted HTML email via SMTP (`nodemailer`), and stamps/shows "Emailed <date>" on success. Disabled with a tooltip if the lecturer has no email on file. Requires SMTP setup — see below.
 - [x] **Phase 8** — reports (Inventory, Stock Usage, Printing, Lecturer, Cost — the date-range ones default to the last 30 days), a CSV "Download" link on every report (plain GET routes under `/api/reports/*/export`, no library needed), and an Audit Log viewer (filterable by action/entity type/search, with old/new value diffs). All Administrator-only.
 
 This completes the phased build plan from the original spec.

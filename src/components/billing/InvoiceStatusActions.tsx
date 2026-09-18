@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Field";
@@ -19,11 +20,14 @@ const NEXT_STATUS: Partial<Record<InvoiceStatus, InvoiceStatus>> = {
 export function InvoiceStatusActions({
   invoiceId,
   status,
+  lecturerEmail,
 }: {
   invoiceId: string;
   status: InvoiceStatus;
+  lecturerEmail: string | null;
 }) {
   const router = useRouter();
+  const [emailing, setEmailing] = useState(false);
 
   async function transition(target: InvoiceStatus) {
     const res = await fetch(`/api/billing/invoices/${invoiceId}`, {
@@ -64,12 +68,39 @@ export function InvoiceStatusActions({
     router.refresh();
   }
 
+  async function handleEmail() {
+    setEmailing(true);
+    try {
+      const res = await fetch(`/api/billing/invoices/${invoiceId}/email`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Could not send the email.");
+        return;
+      }
+      toast.success(`Invoice emailed to ${lecturerEmail}`);
+      router.refresh();
+    } catch {
+      toast.error("Could not reach the server.");
+    } finally {
+      setEmailing(false);
+    }
+  }
+
   const nextStatus = NEXT_STATUS[status];
 
   return (
     <div className="no-print flex flex-wrap gap-2">
       <Button type="button" variant="secondary" onClick={() => window.print()}>
         Print / Save as PDF
+      </Button>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={handleEmail}
+        disabled={emailing || !lecturerEmail}
+        title={lecturerEmail ? undefined : "This lecturer has no email address on file"}
+      >
+        {emailing ? "Sending..." : "Email Invoice"}
       </Button>
       {nextStatus && (
         <Button type="button" onClick={() => transition(nextStatus)}>

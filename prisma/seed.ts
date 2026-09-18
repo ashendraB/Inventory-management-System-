@@ -67,13 +67,12 @@ async function main() {
 
   console.log("Seeding inventory categories...");
   await Promise.all(
-    ["Paper", "Toner", "Ink", "Stationery", "Office Supplies", "Equipment", "Other"].map(
-      (name) =>
-        prisma.inventoryCategory.upsert({
-          where: { name },
-          update: {},
-          create: { name },
-        })
+    ["Paper", "Office Supplies", "Tec Item", "Others"].map((name) =>
+      prisma.inventoryCategory.upsert({
+        where: { name },
+        update: {},
+        create: { name },
+      })
     )
   );
 

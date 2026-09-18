@@ -7,6 +7,7 @@ import { LotRowActions } from "@/components/inventory/LotRowActions";
 import { Pagination } from "@/components/ui/Pagination";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { expiryLabel } from "@/lib/inventory-expiry";
 import type { LotStatus } from "@prisma/client";
 
 const isPaperCategory = (categoryName: string) => categoryName.toLowerCase() === "paper";
@@ -91,7 +92,7 @@ export default async function StockLotsPage({
               </tr>
             ) : (
               result.lots.map((lot) => (
-                <tr key={lot.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={lot.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3">
                     <Link href={`/inventory/lots/${lot.id}`} className="font-medium text-brand-800 hover:underline">
                       {lot.lotCode}
@@ -147,7 +148,7 @@ export default async function StockLotsPage({
               </tr>
             ) : (
               otherItems.map((item) => (
-                <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={item.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3">
                     <Link
                       href={`/inventory/items/${item.id}`}
@@ -155,6 +156,11 @@ export default async function StockLotsPage({
                     >
                       {item.itemCode} — {item.name}
                     </Link>
+                    {expiryLabel(item) && (
+                      <Badge tone="danger" className="ml-2">
+                        {expiryLabel(item)}
+                      </Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-500">{item.category.name}</td>
                   <td className="px-4 py-3">

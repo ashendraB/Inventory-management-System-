@@ -7,6 +7,7 @@ import { LotRowActions } from "@/components/inventory/LotRowActions";
 import { AdjustItemStockForm } from "@/components/inventory/AdjustItemStockForm";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { expiryLabel } from "@/lib/inventory-expiry";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ export default async function InventoryItemDetailPage({
               <span className="text-xs text-slate-400">Listing:</span>
               <StatusBadge status={item.status} />
             </span>
+            {expiryLabel(item) && <Badge tone="danger">{expiryLabel(item)}</Badge>}
           </div>
           <p className="text-sm text-slate-500">{item.itemCode}</p>
         </div>
@@ -59,6 +61,10 @@ export default async function InventoryItemDetailPage({
             <Detail label="Unit" value={item.unit} />
             <Detail label="Minimum Stock" value={item.minStock.toLocaleString()} />
             <Detail label="Price" value={formatCurrency(Number(item.defaultPrice))} />
+            {item.expiryDate && <Detail label="Expiry Date" value={formatDate(item.expiryDate)} />}
+            {item.warrantyExpiryDate && (
+              <Detail label="Warranty Expiry Date" value={formatDate(item.warrantyExpiryDate)} />
+            )}
             <div>
               <dt className="text-xs font-medium text-slate-500">Current Stock</dt>
               <dd className="flex items-center gap-2 text-slate-800">

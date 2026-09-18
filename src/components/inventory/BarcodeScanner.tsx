@@ -104,7 +104,15 @@ export function BarcodeScanner() {
       </form>
 
       {error && (
-        <div className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p>{error}</p>
+          <Link
+            href={`/inventory/items/new?barcode=${encodeURIComponent(value.trim())}`}
+            className="mt-1 inline-block font-medium text-brand-800 hover:underline"
+          >
+            + Add as new inventory item →
+          </Link>
+        </div>
       )}
 
       {result?.type === "item" && (

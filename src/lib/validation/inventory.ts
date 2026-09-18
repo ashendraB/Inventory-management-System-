@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-export const createCategorySchema = z.object({
-  name: z.string().trim().min(1, "Category name is required").max(100),
-});
-
 export const createSupplierSchema = z.object({
   name: z.string().trim().min(1, "Supplier name is required").max(200),
   contactPerson: z.string().trim().max(200).optional().or(z.literal("")),
@@ -24,10 +20,16 @@ const baseItemFields = {
   supplierId: z.string().trim().optional().or(z.literal("")),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
+  // Scanned from the physical item's own printed barcode (e.g. a book's ISBN
+  // barcode) when the operator has one. Left blank, the item's auto-generated
+  // itemCode doubles as its barcode instead, same as before this field existed.
+  barcode: z.string().trim().max(100).optional().or(z.literal("")),
 };
 
-// Generic items (toner, ink, stationery, equipment, ...): a plain on-hand
-// count, no lot tracking.
+// Generic items (Office Supplies, Tec Item, Others, ...): a plain on-hand
+// count, no lot tracking. expiryDate/warrantyExpiryDate are only surfaced in
+// the UI for the "Others"/"Tec Item" categories respectively, but are plain
+// optional fields on every generic item either way.
 export const createGenericItemSchema = z.object({
   ...baseItemFields,
   kind: z.literal("generic"),
@@ -35,6 +37,8 @@ export const createGenericItemSchema = z.object({
   defaultPrice: z.coerce.number().min(0, "Price cannot be negative").default(0),
   currentQuantity: z.coerce.number().min(0, "Count cannot be negative").default(0),
   minStock: z.coerce.number().min(0, "Minimum stock cannot be negative").default(0),
+  expiryDate: z.string().trim().optional().or(z.literal("")),
+  warrantyExpiryDate: z.string().trim().optional().or(z.literal("")),
 });
 
 // Paper items: entered as packs, which become the item's initial stock lot
@@ -89,4 +93,6 @@ export const updateInventoryItemSchema = z.object({
   paperSizeId: z.string().trim().optional().or(z.literal("")),
   gsmId: z.string().trim().optional().or(z.literal("")),
   paperTypeId: z.string().trim().optional().or(z.literal("")),
+  expiryDate: z.string().trim().optional().or(z.literal("")),
+  warrantyExpiryDate: z.string().trim().optional().or(z.literal("")),
 });

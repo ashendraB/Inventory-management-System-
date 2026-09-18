@@ -294,6 +294,13 @@ export async function transitionInvoiceStatus(
   });
 }
 
+/** Emails the invoice to the lecturer on file and stamps emailedAt (audit +
+ * a "Last emailed" note on the page double as the send history — no
+ * separate log table needed for something this simple). */
+export async function markInvoiceEmailed(id: string) {
+  return prisma.invoice.update({ where: { id }, data: { emailedAt: new Date() } });
+}
+
 /** Only a DRAFT invoice can be deleted outright — it hasn't been sent
  * anywhere yet, so undoing it is just undoing a generation run. Anything
  * past DRAFT is cancelled instead (transitionInvoiceStatus), never deleted. */

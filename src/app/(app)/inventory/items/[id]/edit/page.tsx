@@ -27,8 +27,6 @@ export default async function EditInventoryItemPage({
   ]);
   if (!item) notFound();
 
-  const isPaperItem = item.category.name.toLowerCase() === "paper";
-
   return (
     <div className="max-w-3xl space-y-4">
       <div>
@@ -38,7 +36,6 @@ export default async function EditInventoryItemPage({
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <InventoryItemForm
           itemId={item.id}
-          isPaperItem={isPaperItem}
           categories={categories}
           suppliers={suppliers.some((s) => s.id === item.supplierId) || !item.supplierId
             ? suppliers
@@ -46,7 +43,6 @@ export default async function EditInventoryItemPage({
           paperSizes={paperSizes.map((p) => ({ id: p.id, label: p.name }))}
           gsmTypes={gsmTypes.map((g) => ({ id: g.id, label: String(g.value) }))}
           paperTypes={paperTypes.map((p) => ({ id: p.id, label: p.name }))}
-          allowNewCategory
           initialValues={{
             name: item.name,
             categoryId: item.categoryId,
@@ -61,6 +57,10 @@ export default async function EditInventoryItemPage({
             paperSizeId: item.paperSizeId ?? "",
             gsmId: item.gsmId ?? "",
             paperTypeId: item.paperTypeId ?? "",
+            expiryDate: item.expiryDate ? item.expiryDate.toISOString().slice(0, 10) : "",
+            warrantyExpiryDate: item.warrantyExpiryDate
+              ? item.warrantyExpiryDate.toISOString().slice(0, 10)
+              : "",
           }}
         />
       </div>

@@ -11,7 +11,6 @@ import type {
   adjustItemQuantitySchema,
   createSupplierSchema,
   updateSupplierSchema,
-  createCategorySchema,
 } from "@/lib/validation/inventory";
 
 // ---------------------------------------------------------------------------
@@ -27,12 +26,6 @@ export async function listCategories() {
 
 export async function getCategory(id: string) {
   return prisma.inventoryCategory.findUnique({ where: { id } });
-}
-
-export async function createCategory(
-  data: z.infer<typeof createCategorySchema>
-) {
-  return prisma.inventoryCategory.create({ data: { name: data.name } });
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +45,10 @@ export async function getSupplier(id: string) {
 
 function cleanOptional(v?: string) {
   return v && v.length > 0 ? v : null;
+}
+
+function parseOptionalDate(v?: string) {
+  return v && v.length > 0 ? new Date(v) : null;
 }
 
 export async function createSupplier(
@@ -200,7 +197,10 @@ export async function createGenericInventoryItem(
     const item = await tx.inventoryItem.create({
       data: {
         itemCode,
-        barcode: itemCode, // Code128-compatible; scanning it looks up this same record.
+        // A scanned real-world barcode (e.g. a book's own printed barcode)
+        // takes priority; otherwise the itemCode doubles as the barcode, same
+        // as before this field existed.
+        barcode: cleanOptional(data.barcode) ?? itemCode,
         name: data.name,
         categoryId: data.categoryId,
         description: cleanOptional(data.description),
@@ -212,6 +212,8 @@ export async function createGenericInventoryItem(
         supplierId: cleanOptional(data.supplierId),
         location: cleanOptional(data.location),
         notes: cleanOptional(data.notes),
+        expiryDate: parseOptionalDate(data.expiryDate),
+        warrantyExpiryDate: parseOptionalDate(data.warrantyExpiryDate),
       },
     });
 
@@ -248,7 +250,7 @@ export async function createPaperInventoryItem(
     const item = await tx.inventoryItem.create({
       data: {
         itemCode,
-        barcode: itemCode,
+        barcode: cleanOptional(data.barcode) ?? itemCode,
         name: data.name,
         categoryId: data.categoryId,
         description: cleanOptional(data.description),
@@ -326,6 +328,10 @@ export async function updateInventoryItem(
       ...(data.paperSizeId !== undefined && { paperSizeId: cleanOptional(data.paperSizeId) }),
       ...(data.gsmId !== undefined && { gsmId: cleanOptional(data.gsmId) }),
       ...(data.paperTypeId !== undefined && { paperTypeId: cleanOptional(data.paperTypeId) }),
+      ...(data.expiryDate !== undefined && { expiryDate: parseOptionalDate(data.expiryDate) }),
+      ...(data.warrantyExpiryDate !== undefined && {
+        warrantyExpiryDate: parseOptionalDate(data.warrantyExpiryDate),
+      }),
     },
   });
 }

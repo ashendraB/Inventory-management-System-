@@ -158,6 +158,12 @@ model InventoryItem {
   location    String?
   status      InventoryItemStatus @default(ACTIVE)
   notes       String?
+  // Only shown/settable in the UI for the "Tec Item" (warranty only) and
+  // "Others" (both) categories — used to flag an item as expired on the
+  // Inventory Items section. Both optional: an item with neither is never
+  // flagged.
+  expiryDate         DateTime?
+  warrantyExpiryDate DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   // Soft delete only — never hard-deleted, because lots/stock transactions/
@@ -423,6 +429,7 @@ model Invoice {
   grandTotal          Decimal
 
   notes     String?
+  emailedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
