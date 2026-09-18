@@ -356,6 +356,13 @@ export async function adjustItemQuantity(
       data: { currentQuantity: newQuantity },
     });
 
+    const DEFAULT_REASON: Record<typeof data.type, string> = {
+      MANUAL_ADJUSTMENT: "Used",
+      DAMAGED: "",
+      RETURN: "Returned to stock",
+      TRANSFER: "Transferred",
+    };
+
     await tx.stockTransaction.create({
       data: {
         type: data.type,
@@ -364,7 +371,7 @@ export async function adjustItemQuantity(
         previousQuantity: item.currentQuantity,
         newQuantity,
         userId,
-        reason: data.reason,
+        reason: cleanOptional(data.reason) ?? DEFAULT_REASON[data.type],
       },
     });
 

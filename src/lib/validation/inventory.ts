@@ -60,14 +60,20 @@ export const createInventoryItemSchema = z.discriminatedUnion("kind", [
 ]);
 
 // For non-paper items only (a plain on-hand count, no lots) — mirrors
-// adjustLotQuantitySchema exactly, so "used 1" / "stock is finished" go
-// through the same audited delta+type+reason pattern lots already use,
-// instead of silently overwriting currentQuantity.
-export const adjustItemQuantitySchema = z.object({
-  delta: z.coerce.number().refine((v) => v !== 0, "Change must not be zero"),
-  type: z.enum(["MANUAL_ADJUSTMENT", "DAMAGED", "RETURN", "TRANSFER"]),
-  reason: z.string().trim().min(1, "Reason is required").max(500),
-});
+// adjustLotQuantitySchema's delta+type+reason pattern, so "used 1" / "stock
+// is finished" go through the same audited path instead of silently
+// overwriting currentQuantity. Reason is only required for Damaged — Use/
+// Returned/Transferred don't ask for one.
+export const adjustItemQuantitySchema = z
+  .object({
+    delta: z.coerce.number().refine((v) => v !== 0, "Change must not be zero"),
+    type: z.enum(["MANUAL_ADJUSTMENT", "DAMAGED", "RETURN", "TRANSFER"]),
+    reason: z.string().trim().max(500).optional().or(z.literal("")),
+  })
+  .refine((data) => data.type !== "DAMAGED" || !!data.reason?.trim(), {
+    message: "Reason is required for damaged stock",
+    path: ["reason"],
+  });
 
 export const updateInventoryItemSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),

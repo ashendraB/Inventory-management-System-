@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { FieldWrapper, TextInput, Select, Button } from "@/components/ui/Field";
 
 const TYPES = [
-  { value: "MANUAL_ADJUSTMENT", label: "Used / manual correction" },
+  { value: "MANUAL_ADJUSTMENT", label: "Use" },
   { value: "DAMAGED", label: "Damaged / unusable" },
   { value: "RETURN", label: "Returned to stock" },
   { value: "TRANSFER", label: "Transferred" },
@@ -90,7 +90,14 @@ export function AdjustItemStockForm({
           />
         </FieldWrapper>
         <FieldWrapper label="Type" htmlFor="item-adjust-type" required>
-          <Select id="item-adjust-type" value={type} onChange={(e) => setType(e.target.value)}>
+          <Select
+            id="item-adjust-type"
+            value={type}
+            onChange={(e) => {
+              setType(e.target.value);
+              if (e.target.value !== "DAMAGED") setReason("");
+            }}
+          >
             {TYPES.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
@@ -98,15 +105,17 @@ export function AdjustItemStockForm({
             ))}
           </Select>
         </FieldWrapper>
-        <FieldWrapper label="Reason" htmlFor="item-adjust-reason" required>
-          <TextInput
-            id="item-adjust-reason"
-            required
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g. used one"
-          />
-        </FieldWrapper>
+        {type === "DAMAGED" && (
+          <FieldWrapper label="Reason" htmlFor="item-adjust-reason" required>
+            <TextInput
+              id="item-adjust-reason"
+              required
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. water damage"
+            />
+          </FieldWrapper>
+        )}
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={submitting}>
