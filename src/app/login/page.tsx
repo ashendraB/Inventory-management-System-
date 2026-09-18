@@ -61,7 +61,7 @@ function LoginForm() {
             unoptimized
           />
           <h1 className="text-xl font-semibold text-white">Eminent Edification</h1>
-          <p className="mt-1 text-sm text-slate-300">Inventory &amp; Lecturer Billing System</p>
+          <p className="mt-1 text-sm text-slate-300">Inventory &amp; Printing Billing System</p>
           <p className="mt-2 text-[11px] font-semibold uppercase tracking-widest text-gold-400">
             Knowledge is Power
           </p>

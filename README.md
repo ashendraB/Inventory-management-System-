@@ -1,4 +1,4 @@
-# Inventory Management & Lecturer Billing System
+# Inventory Management & Printing Billing System
 
 Institute inventory, paper-lot tracking, printing cost calculation, and
 lecturer billing — built to the spec in the original brief (see

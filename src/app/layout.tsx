@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Inventory & Lecturer Billing System",
+  title: "Inventory & Printing Billing System",
   description: "Inventory, printing cost calculation, and lecturer billing for the institute.",
 };
 
