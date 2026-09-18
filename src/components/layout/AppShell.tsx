@@ -68,10 +68,10 @@ export function AppShell({
               href={section.href!}
               onClick={() => setMobileOpen(false)}
               className={clsx(
-                "block rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+                "block rounded-md px-3 py-2 text-sm font-semibold transition-all duration-150",
                 pathname === section.href
                   ? "bg-gold-500 text-brand-900"
-                  : "text-slate-200 hover:bg-white/10 hover:text-white"
+                  : "text-slate-200 hover:translate-x-0.5 hover:bg-white/10 hover:text-white"
               )}
             >
               {section.label}
@@ -107,10 +107,10 @@ export function AppShell({
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={clsx(
-                      "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
+                      "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-all duration-150",
                       active
                         ? "border-gold-500 bg-white/10 font-medium text-white"
-                        : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+                        : "border-transparent text-slate-300 hover:translate-x-0.5 hover:bg-white/5 hover:text-white"
                     )}
                   >
                     {link.label}
@@ -183,13 +183,17 @@ export function AppShell({
             </div>
             <button
               onClick={handleLogout}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors hover:border-brand-300 hover:bg-slate-100"
             >
               Sign out
             </button>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div key={pathname} className="animate-fade-in">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
     </SessionProvider>

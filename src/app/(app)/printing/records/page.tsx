@@ -35,7 +35,7 @@ export default async function PrintingRecordsPage({
         </div>
         <Link
           href="/printing/calculator"
-          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
+          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
         >
           + New Printing Job
         </Link>
@@ -67,7 +67,7 @@ export default async function PrintingRecordsPage({
               </tr>
             ) : (
               result.records.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={r.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3">
                     <Link
                       href={`/printing/records/${r.id}`}

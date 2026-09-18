@@ -29,7 +29,7 @@ export default async function PrintingRecordDetailPage({
         <div className="flex gap-2">
           <Link
             href={`/printing/records/${record.id}?edit=1`}
-            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
           >
             Edit
           </Link>
@@ -100,7 +100,7 @@ export default async function PrintingRecordDetailPage({
 
       <Link
         href="/printing/calculator"
-        className="inline-block rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
+        className="inline-block rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
       >
         + New Printing Job
       </Link>

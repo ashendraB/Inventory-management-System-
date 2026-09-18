@@ -37,7 +37,7 @@ export default async function AuditLogPage({
         </div>
         <a
           href={`/api/reports/audit-log/export?${new URLSearchParams(sp as Record<string, string>).toString()}`}
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
         >
           Download CSV
         </a>
@@ -67,7 +67,7 @@ export default async function AuditLogPage({
               </tr>
             ) : (
               result.logs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={log.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3 text-slate-500">{formatDate(log.createdAt)}</td>
                   <td className="px-4 py-3">{log.user?.name ?? "system"}</td>
                   <td className="px-4 py-3 font-medium">{log.action}</td>

@@ -1,4 +1,4 @@
-import { getPrintingReport, parseDateRange } from "@/server/report-service";
+﻿import { getPrintingReport, parseDateRange } from "@/server/report-service";
 import { DateRangeFilterBar } from "@/components/reports/DateRangeFilterBar";
 import { StatCard } from "@/components/reports/StatCard";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -86,7 +86,7 @@ export default async function PrintingReportPage({
               </tr>
             ) : (
               report.records.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={r.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3 text-slate-500">{r.printingCode}</td>
                   <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
                   <td className="px-4 py-3">{r.lecturer.name}</td>

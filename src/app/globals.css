@@ -50,6 +50,49 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* Brand-colored focus ring wherever the browser default would otherwise
+   show, so keyboard navigation stays on-palette without touching every
+   interactive element individually. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Applied to each page's content wrapper (keyed by route in AppShell) so
+   navigating between pages feels like a soft transition instead of a hard
+   cut, without the cost/complexity of a real route-transition library. */
+.animate-fade-in {
+  animation: fade-in-up 0.28s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-slow {
+  animation: fade-in 0.5s ease-out both;
+}
+
 /* Used by the invoice detail page's "Print / Save as PDF" button (and the
    app shell's sidebar/header) to print just the invoice, not the app
    chrome around it. */

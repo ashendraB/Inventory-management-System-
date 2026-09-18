@@ -23,7 +23,7 @@ export default async function LecturersPage() {
         {session?.role === "ADMINISTRATOR" && (
           <Link
             href="/lecturers/new"
-            className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
+            className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
           >
             + Add Lecturer
           </Link>
@@ -53,7 +53,7 @@ export default async function LecturersPage() {
               </tr>
             ) : (
               lecturers.map((l) => (
-                <tr key={l.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={l.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3 font-medium text-slate-700">{l.lecturerCode}</td>
                   <td className="px-4 py-3">{l.name}</td>
                   <td className="px-4 py-3 text-slate-500">{l.department ?? "—"}</td>

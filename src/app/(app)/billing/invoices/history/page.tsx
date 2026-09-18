@@ -48,7 +48,7 @@ export default async function InvoiceHistoryPage() {
               </tr>
             ) : (
               invoices.map((inv) => (
-                <tr key={inv.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={inv.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3">
                     <Link
                       href={`/billing/invoices/${inv.id}`}

@@ -53,7 +53,7 @@ export default async function LecturerReportPage({
               report.rows.map((r) => {
                 const unbilled = r.jobCount - r.billedJobCount;
                 return (
-                  <tr key={r.lecturerId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <tr key={r.lecturerId} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                     <td className="px-4 py-3">
                       <span className="font-medium">{r.lecturerName}</span>{" "}
                       <span className="text-slate-400">({r.lecturerCode})</span>

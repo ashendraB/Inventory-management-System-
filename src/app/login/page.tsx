@@ -48,15 +48,19 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-brand-900 via-brand-800 to-brand-900 px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-brand-900 via-brand-800 to-brand-900 px-4">
+      {/* Soft gold glow accents — purely decorative, sit behind the card. */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-gold-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-gold-500/10 blur-3xl" />
+
+      <div className="animate-fade-in-slow relative w-full max-w-sm">
         <div className="mb-8 text-center">
           <Image
             src="/logo.png"
             alt="Eminent Edification"
             width={92}
             height={92}
-            className="mx-auto mb-4 h-[92px] w-[92px]"
+            className="mx-auto mb-4 h-[92px] w-[92px] drop-shadow-lg"
             priority
             unoptimized
           />
@@ -69,7 +73,7 @@ function LoginForm() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl border border-white/10 bg-white p-6 shadow-xl"
+          className="space-y-4 rounded-2xl border border-white/10 bg-white p-6 shadow-xl transition-shadow duration-300 hover:shadow-2xl"
         >
           {error && (
             <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -91,7 +95,7 @@ function LoginForm() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
             />
           </div>
 
@@ -110,14 +114,14 @@ function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-brand-900 transition hover:bg-gold-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-brand-900 transition-all duration-150 hover:bg-gold-600 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Signing in..." : "Sign in"}
           </button>

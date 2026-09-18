@@ -17,7 +17,7 @@ export default async function InventoryReportPage() {
         </div>
         <a
           href="/api/reports/inventory/export"
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
         >
           Download CSV
         </a>
@@ -75,7 +75,7 @@ export default async function InventoryReportPage() {
               </tr>
             ) : (
               report.rows.map((r) => (
-                <tr key={r.itemCode} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={r.itemCode} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
                   <td className="px-4 py-3 text-slate-500">{r.itemCode}</td>
                   <td className="px-4 py-3">{r.name}</td>
                   <td className="px-4 py-3 text-slate-500">{r.category}</td>
