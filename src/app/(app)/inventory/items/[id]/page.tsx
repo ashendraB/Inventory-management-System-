@@ -4,6 +4,7 @@ import { getInventoryItem, totalStockOf } from "@/server/inventory-service";
 import { BarcodeDisplay } from "@/components/inventory/BarcodeDisplay";
 import { ItemActions } from "@/components/inventory/ItemActions";
 import { LotRowActions } from "@/components/inventory/LotRowActions";
+import { AdjustItemStockForm } from "@/components/inventory/AdjustItemStockForm";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
@@ -11,10 +12,13 @@ export const dynamic = "force-dynamic";
 
 export default async function InventoryItemDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ adjust?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const item = await getInventoryItem(id);
   if (!item) notFound();
 
@@ -80,6 +84,9 @@ export default async function InventoryItemDetailPage({
               <p className="text-xs font-medium text-slate-500">Notes</p>
               <p className="text-sm text-slate-700">{item.notes}</p>
             </div>
+          )}
+          {!isPaper && (
+            <AdjustItemStockForm itemId={item.id} defaultOpen={sp.adjust === "1"} />
           )}
         </div>
 

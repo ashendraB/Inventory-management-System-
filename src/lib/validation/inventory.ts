@@ -59,6 +59,16 @@ export const createInventoryItemSchema = z.discriminatedUnion("kind", [
   createPaperItemSchema,
 ]);
 
+// For non-paper items only (a plain on-hand count, no lots) — mirrors
+// adjustLotQuantitySchema exactly, so "used 1" / "stock is finished" go
+// through the same audited delta+type+reason pattern lots already use,
+// instead of silently overwriting currentQuantity.
+export const adjustItemQuantitySchema = z.object({
+  delta: z.coerce.number().refine((v) => v !== 0, "Change must not be zero"),
+  type: z.enum(["MANUAL_ADJUSTMENT", "DAMAGED", "RETURN", "TRANSFER"]),
+  reason: z.string().trim().min(1, "Reason is required").max(500),
+});
+
 export const updateInventoryItemSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
   categoryId: z.string().trim().min(1).optional(),

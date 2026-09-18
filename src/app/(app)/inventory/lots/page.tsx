@@ -176,9 +176,17 @@ export default async function StockLotsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-400">{formatDate(item.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <Link href={`/inventory/items/${item.id}`} className="text-slate-500 hover:underline">
-                      View
-                    </Link>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Link href={`/inventory/items/${item.id}`} className="text-slate-500 hover:underline">
+                        View
+                      </Link>
+                      <Link
+                        href={`/inventory/items/${item.id}?adjust=1`}
+                        className="text-brand-800 hover:underline"
+                      >
+                        Use Stock
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

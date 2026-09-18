@@ -1,12 +1,14 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { nextSequence, padSequence } from "@/server/sequence-service";
+import { ApiError } from "@/lib/api-auth";
 import type { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import type {
   createGenericItemSchema,
   createPaperItemSchema,
   updateInventoryItemSchema,
+  adjustItemQuantitySchema,
   createSupplierSchema,
   updateSupplierSchema,
   createCategorySchema,
@@ -325,6 +327,48 @@ export async function updateInventoryItem(
       ...(data.gsmId !== undefined && { gsmId: cleanOptional(data.gsmId) }),
       ...(data.paperTypeId !== undefined && { paperTypeId: cleanOptional(data.paperTypeId) }),
     },
+  });
+}
+
+/** Audited stock quantity change for a non-paper item (plain on-hand count,
+ * no lots) — "used 1", "stock is finished" (delta down to 0), a correction,
+ * etc. Mirrors adjustLotQuantity in lot-service.ts: never silently mutate
+ * currentQuantity, always log a StockTransaction (spec §17). */
+export async function adjustItemQuantity(
+  id: string,
+  data: z.infer<typeof adjustItemQuantitySchema>,
+  userId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const item = await tx.inventoryItem.findUnique({ where: { id } });
+    if (!item) throw new ApiError(404, "Inventory item not found.");
+
+    const newQuantity = item.currentQuantity + data.delta;
+    if (newQuantity < 0) {
+      throw new ApiError(
+        400,
+        `Adjustment would bring stock below zero (current: ${item.currentQuantity.toLocaleString()}, change: ${data.delta}).`
+      );
+    }
+
+    const updated = await tx.inventoryItem.update({
+      where: { id },
+      data: { currentQuantity: newQuantity },
+    });
+
+    await tx.stockTransaction.create({
+      data: {
+        type: data.type,
+        inventoryItemId: id,
+        quantityChange: data.delta,
+        previousQuantity: item.currentQuantity,
+        newQuantity,
+        userId,
+        reason: data.reason,
+      },
+    });
+
+    return updated;
   });
 }
 
