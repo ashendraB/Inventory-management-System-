@@ -9,6 +9,7 @@ export const printingJobInputSchema = z.object({
   batchClass: z.string().trim().max(200).optional().or(z.literal("")),
   colourMode: z.enum(["BW", "COLOUR"]),
   sides: z.enum(["SINGLE", "DOUBLE"]),
+  layout: z.enum(["NORMAL", "BOOKLET"]).default("NORMAL"),
   pages: z.coerce.number().int().positive("Pages must be greater than 0"),
   copies: z.coerce.number().int().positive("Copies must be greater than 0"),
   printingMachine: z.string().trim().max(100).optional().or(z.literal("")),
@@ -19,6 +20,7 @@ export const previewJobInputSchema = printingJobInputSchema.pick({
   inventoryItemId: true,
   colourMode: true,
   sides: true,
+  layout: true,
   pages: true,
   copies: true,
 });

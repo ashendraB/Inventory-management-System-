@@ -48,6 +48,7 @@ export default async function PrintingRecordDetailPage({
           />
           <Detail label="Printing" value={record.colourMode === "BW" ? "Black & White" : "Colour"} />
           <Detail label="Sides" value={record.sides === "SINGLE" ? "Single" : "Double"} />
+          <Detail label="Layout" value={record.layout === "BOOKLET" ? "Booklet" : "Normal"} />
           <Detail label="Pages" value={String(record.pages)} />
           <Detail label="Copies" value={String(record.copies)} />
           {record.subject && <Detail label="Subject" value={record.subject} />}

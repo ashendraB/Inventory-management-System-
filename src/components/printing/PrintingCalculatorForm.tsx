@@ -46,6 +46,7 @@ export function PrintingCalculatorForm({
   const [colourMode, setColourMode] = useState<"BW" | "COLOUR">("BW");
   const [itemId, setItemId] = useState("");
   const [sides, setSides] = useState<"SINGLE" | "DOUBLE">("SINGLE");
+  const [layout, setLayout] = useState<"NORMAL" | "BOOKLET">("NORMAL");
   const [pages, setPages] = useState("");
   const [copies, setCopies] = useState("");
   const [notes, setNotes] = useState("");
@@ -78,13 +79,14 @@ export function PrintingCalculatorForm({
     if (!p || !c) return null;
     return calculatePrintingJob({
       sides,
+      layout,
       pages: p,
       copies: c,
       paperCostPerSheet: 0,
       printingChargePerSheet: 0,
       availableStock: 0,
     }).physicalSheets;
-  }, [pages, copies, sides]);
+  }, [pages, copies, sides, layout]);
 
   // Fetch the real preview (active lot cost + price rule + stock check)
   // whenever the inputs that affect it change.
@@ -108,6 +110,7 @@ export function PrintingCalculatorForm({
             inventoryItemId: itemId,
             colourMode,
             sides,
+            layout,
             pages: Number(pages),
             copies: Number(copies),
           }),
@@ -156,7 +159,7 @@ export function PrintingCalculatorForm({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [itemId, colourMode, sides, pages, copies]);
+  }, [itemId, colourMode, sides, layout, pages, copies]);
 
   const calculation = useMemo(() => {
     if (!selectedItem?.activeLot || preview.chargePerSheet === null || !pages || !copies) {
@@ -164,13 +167,14 @@ export function PrintingCalculatorForm({
     }
     return calculatePrintingJob({
       sides,
+      layout,
       pages: Number(pages),
       copies: Number(copies),
       paperCostPerSheet: Number(selectedItem.activeLot.costPerSheet),
       printingChargePerSheet: preview.chargePerSheet,
       availableStock: selectedItem.activeLot.currentQuantity,
     });
-  }, [selectedItem, preview.chargePerSheet, sides, pages, copies]);
+  }, [selectedItem, preview.chargePerSheet, sides, layout, pages, copies]);
 
   async function handleScan() {
     if (!scanValue.trim()) return;
@@ -224,6 +228,7 @@ export function PrintingCalculatorForm({
     setColourMode("BW");
     setItemId("");
     setSides("SINGLE");
+    setLayout("NORMAL");
     setPages("");
     setCopies("");
     setNotes("");
@@ -258,6 +263,7 @@ export function PrintingCalculatorForm({
           documentName,
           colourMode,
           sides,
+          layout,
           pages: Number(pages),
           copies: Number(copies),
           notes,
@@ -383,7 +389,17 @@ export function PrintingCalculatorForm({
                 <option value="DOUBLE">Double Side</option>
               </Select>
             </FieldWrapper>
-            <div />
+            <FieldWrapper
+              label="Layout"
+              htmlFor="layout"
+              required
+              hint={layout === "BOOKLET" ? "2 pages per side, folded (e.g. A4 pages on A3)" : undefined}
+            >
+              <Select id="layout" value={layout} onChange={(e) => setLayout(e.target.value as "NORMAL" | "BOOKLET")}>
+                <option value="NORMAL">Normal</option>
+                <option value="BOOKLET">Booklet</option>
+              </Select>
+            </FieldWrapper>
 
             <FieldWrapper label="Number of Pages" htmlFor="pages" required>
               <TextInput

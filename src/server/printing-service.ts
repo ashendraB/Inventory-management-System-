@@ -152,6 +152,7 @@ export async function previewPrintingJob(data: z.infer<typeof previewJobInputSch
 
   const calculation = calculatePrintingJob({
     sides: data.sides,
+    layout: data.layout,
     pages: data.pages,
     copies: data.copies,
     paperCostPerSheet: Number(activeLot.costPerSheet),
@@ -221,6 +222,7 @@ export async function submitPrintingJob(
 
     const calc = calculatePrintingJob({
       sides: data.sides,
+      layout: data.layout,
       pages: data.pages,
       copies: data.copies,
       paperCostPerSheet: Number(activeLot.costPerSheet),
@@ -253,6 +255,7 @@ export async function submitPrintingJob(
         paperTypeId: item.paperTypeId,
         colourMode: data.colourMode,
         sides: data.sides,
+        layout: data.layout,
         pages: data.pages,
         copies: data.copies,
         physicalSheets: calc.physicalSheets,

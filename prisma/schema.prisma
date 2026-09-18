@@ -292,6 +292,17 @@ enum PrintSides {
   DOUBLE
 }
 
+// NORMAL = 1 page per side. BOOKLET = 2 pages per side (a double-sided
+// sheet folded down the middle holds 4 pages) - e.g. two A4 pages imposed
+// on each side of an A3 sheet. Only changes the physical-sheet math in
+// src/lib/printing-calculation.ts; price rules still match on paper size/
+// gsm/type/colour/sides alone, so the lower sheet count for the same page
+// count naturally lowers total cost, no extra pricing dimension needed.
+enum PrintLayout {
+  NORMAL
+  BOOKLET
+}
+
 enum PriceRuleStatus {
   ACTIVE
   INACTIVE
@@ -344,6 +355,7 @@ model PrintingRecord {
   paperType   PaperType @relation(fields: [paperTypeId], references: [id])
   colourMode  ColourMode
   sides       PrintSides
+  layout      PrintLayout @default(NORMAL)
 
   pages   Int
   copies  Int
