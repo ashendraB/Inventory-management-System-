@@ -33,7 +33,7 @@ export function Pagination({
             href={makeHref(p)}
             className={
               p === page
-                ? "rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white"
+                ? "rounded-md bg-brand-800 px-3 py-1.5 text-sm text-white"
                 : "rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
             }
           >

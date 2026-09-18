@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import toast from "react-hot-toast";
@@ -14,6 +15,28 @@ const ROLE_LABEL: Record<UserRole, string> = {
   INVENTORY_OPERATOR: "Inventory Operator",
   PRINTING_OPERATOR: "Printing Operator",
 };
+
+function Brand() {
+  return (
+    <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
+      <Image
+        src="/logo.png"
+        alt="Eminent Edification"
+        width={38}
+        height={38}
+        className="h-[38px] w-[38px] shrink-0"
+        priority
+        unoptimized
+      />
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-white">Eminent Edification</p>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-gold-400">
+          Knowledge is Power
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function AppShell({
   nav,
@@ -45,10 +68,10 @@ export function AppShell({
               href={section.href!}
               onClick={() => setMobileOpen(false)}
               className={clsx(
-                "block rounded-md px-3 py-2 text-sm font-semibold",
+                "block rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                 pathname === section.href
-                  ? "bg-indigo-600 text-white"
-                  : "text-slate-700 hover:bg-slate-100"
+                  ? "bg-gold-500 text-brand-900"
+                  : "text-slate-200 hover:bg-white/10 hover:text-white"
               )}
             >
               {section.label}
@@ -57,7 +80,7 @@ export function AppShell({
         }
         return (
           <div key={section.label}>
-            <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wide text-gold-400/80">
               {section.label}
             </p>
             <div className="mt-1 space-y-0.5">
@@ -69,7 +92,7 @@ export function AppShell({
                     <span
                       key={link.href}
                       title="Coming soon"
-                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm text-slate-300"
+                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm text-slate-500"
                     >
                       {link.label}
                       <span className="text-[10px] uppercase tracking-wide">
@@ -84,10 +107,10 @@ export function AppShell({
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={clsx(
-                      "block rounded-md px-3 py-1.5 text-sm",
+                      "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
                       active
-                        ? "bg-indigo-50 font-medium text-indigo-700"
-                        : "text-slate-600 hover:bg-slate-100"
+                        ? "border-gold-500 bg-white/10 font-medium text-white"
+                        : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
                     )}
                   >
                     {link.label}
@@ -105,15 +128,8 @@ export function AppShell({
     <SessionProvider session={user}>
     <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
-      <aside className="no-print hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
-        <div className="flex h-14 items-center gap-2 border-b border-slate-200 px-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-            IB
-          </div>
-          <span className="text-sm font-semibold text-slate-900">
-            Inventory &amp; Billing
-          </span>
-        </div>
+      <aside className="no-print hidden w-64 flex-col bg-brand-900 md:flex">
+        <Brand />
         {sidebarContent}
       </aside>
 
@@ -124,14 +140,22 @@ export function AppShell({
             className="fixed inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative z-50 flex w-64 flex-col bg-white shadow-xl">
-            <div className="flex h-14 items-center justify-between border-b border-slate-200 px-4">
-              <span className="text-sm font-semibold text-slate-900">
-                Inventory &amp; Billing
-              </span>
+          <aside className="relative z-50 flex w-64 flex-col bg-brand-900 shadow-xl">
+            <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="Eminent Edification"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                  unoptimized
+                />
+                <span className="text-sm font-semibold text-white">Eminent Edification</span>
+              </div>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="text-slate-500"
+                className="text-slate-300 hover:text-white"
                 aria-label="Close menu"
               >
                 ✕
@@ -143,7 +167,7 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="no-print flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
+        <header className="no-print flex h-14 items-center justify-between border-b border-gold-500/40 bg-white px-4 shadow-sm">
           <button
             className="text-slate-500 md:hidden"
             onClick={() => setMobileOpen(true)}

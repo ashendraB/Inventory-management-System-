@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
 
 const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50 disabled:text-slate-400";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 disabled:bg-slate-50 disabled:text-slate-400";
 
 export function FieldWrapper({
   label,
@@ -65,16 +65,17 @@ export function Button({
   className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "accent";
 }) {
   return (
     <button
       className={clsx(
         "rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60",
-        variant === "primary" && "bg-indigo-600 text-white hover:bg-indigo-700",
+        variant === "primary" && "bg-brand-800 text-white hover:bg-brand-900",
         variant === "secondary" &&
           "border border-slate-300 text-slate-700 hover:bg-slate-100",
         variant === "danger" && "bg-red-600 text-white hover:bg-red-700",
+        variant === "accent" && "bg-gold-500 text-brand-900 hover:bg-gold-600",
         className
       )}
       {...props}

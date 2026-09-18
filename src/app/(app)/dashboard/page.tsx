@@ -102,10 +102,6 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      <p className="text-xs text-slate-400">
-        Billing modules are being built next — see the sidebar for what&apos;s live today. Coming
-        next: Lecturer Management, Monthly Billing, and Invoices.
-      </p>
     </div>
   );
 }

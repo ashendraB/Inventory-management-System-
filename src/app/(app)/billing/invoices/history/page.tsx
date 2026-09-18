@@ -22,7 +22,7 @@ export default async function InvoiceHistoryPage() {
             {invoices.length} paid or cancelled invoice{invoices.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link href="/billing/invoices" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/billing/invoices" className="text-sm text-brand-800 hover:underline">
           ← Back to Invoices
         </Link>
       </div>
@@ -52,7 +52,7 @@ export default async function InvoiceHistoryPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/billing/invoices/${inv.id}`}
-                      className="font-medium text-indigo-600 hover:underline"
+                      className="font-medium text-brand-800 hover:underline"
                     >
                       {inv.invoiceNumber}
                     </Link>

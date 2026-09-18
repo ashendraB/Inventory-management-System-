@@ -115,7 +115,7 @@ export function BarcodeScanner() {
           </p>
           <Link
             href={`/inventory/items/${result.item.id}`}
-            className="mt-2 inline-block text-indigo-600 hover:underline"
+            className="mt-2 inline-block text-brand-800 hover:underline"
           >
             View item →
           </Link>
@@ -153,7 +153,7 @@ export function BarcodeScanner() {
             )}
             <Link
               href={`/inventory/items/${result.lot.inventoryItem.id}`}
-              className="text-indigo-600 hover:underline"
+              className="text-brand-800 hover:underline"
             >
               View item →
             </Link>

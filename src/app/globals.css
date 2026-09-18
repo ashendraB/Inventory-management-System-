@@ -10,6 +10,31 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand palette, taken from the Eminent Edification crest — navy as the
+     primary interactive color (buttons, links, focus rings, the sidebar),
+     gold as the accent (active states, highlights, the crest itself). */
+  --color-brand-50: #eef2f8;
+  --color-brand-100: #d6e0ef;
+  --color-brand-200: #aec2df;
+  --color-brand-300: #7e9dc8;
+  --color-brand-400: #4f73a3;
+  --color-brand-500: #34517d;
+  --color-brand-600: #243c62;
+  --color-brand-700: #182d4c;
+  --color-brand-800: #12213d;
+  --color-brand-900: #0b1526;
+
+  --color-gold-50: #fbf6e9;
+  --color-gold-100: #f5e8c4;
+  --color-gold-200: #ebd189;
+  --color-gold-300: #dfb85a;
+  --color-gold-400: #d2a340;
+  --color-gold-500: #c0912f;
+  --color-gold-600: #a17325;
+  --color-gold-700: #7d591e;
+  --color-gold-800: #5e441b;
+  --color-gold-900: #453218;
 }
 
 @media (prefers-color-scheme: dark) {

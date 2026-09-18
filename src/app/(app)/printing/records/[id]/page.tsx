@@ -68,7 +68,7 @@ export default async function PrintingRecordDetailPage({
           )}
           <Row
             label={
-              <Link href={`/inventory/lots/${record.lotId}`} className="text-indigo-600 hover:underline">
+              <Link href={`/inventory/lots/${record.lotId}`} className="text-brand-800 hover:underline">
                 Stock Lot Used
               </Link>
             }
@@ -99,7 +99,7 @@ export default async function PrintingRecordDetailPage({
 
       <Link
         href="/printing/calculator"
-        className="inline-block rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        className="inline-block rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
       >
         + New Printing Job
       </Link>

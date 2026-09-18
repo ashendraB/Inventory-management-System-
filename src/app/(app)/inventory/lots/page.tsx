@@ -93,7 +93,7 @@ export default async function StockLotsPage({
               result.lots.map((lot) => (
                 <tr key={lot.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <Link href={`/inventory/lots/${lot.id}`} className="font-medium text-indigo-600 hover:underline">
+                    <Link href={`/inventory/lots/${lot.id}`} className="font-medium text-brand-800 hover:underline">
                       {lot.lotCode}
                     </Link>
                   </td>
@@ -151,7 +151,7 @@ export default async function StockLotsPage({
                   <td className="px-4 py-3">
                     <Link
                       href={`/inventory/items/${item.id}`}
-                      className="font-medium text-indigo-600 hover:underline"
+                      className="font-medium text-brand-800 hover:underline"
                     >
                       {item.itemCode} — {item.name}
                     </Link>

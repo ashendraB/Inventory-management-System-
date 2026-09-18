@@ -42,7 +42,7 @@ export default async function InventoryItemsPage({
         </div>
         <Link
           href="/inventory/items/new"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
         >
           + Add Inventory Item
         </Link>
@@ -85,7 +85,7 @@ export default async function InventoryItemsPage({
                   <td className="px-4 py-3">
                     <Link
                       href={`/inventory/items/${item.id}`}
-                      className="font-medium text-indigo-600 hover:underline"
+                      className="font-medium text-brand-800 hover:underline"
                     >
                       {item.itemCode}
                     </Link>

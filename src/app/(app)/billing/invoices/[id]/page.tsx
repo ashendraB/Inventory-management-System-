@@ -30,7 +30,7 @@ export default async function InvoiceDetailPage({
     <div className="max-w-3xl space-y-4">
       <div className="no-print flex items-start justify-between">
         <div>
-          <Link href="/billing/invoices" className="text-sm text-indigo-600 hover:underline">
+          <Link href="/billing/invoices" className="text-sm text-brand-800 hover:underline">
             ← Back to Invoices
           </Link>
         </div>

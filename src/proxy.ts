@@ -57,5 +57,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api/auth/login|_next/static|_next/image|favicon.ico).*)"],
+  // Excludes _next internals plus any static file served straight out of
+  // public/ (logo.png, icon.png, ...) by extension — those aren't pages and
+  // must never redirect to /login just because the visitor isn't signed in
+  // yet, or the login page's own logo would be invisible to exactly the
+  // people who need to see it.
+  matcher: [
+    "/((?!api/auth/login|_next/static|_next/image|.*\\.(?:ico|png|jpg|jpeg|svg|webp|gif|mjs|css|woff2?)$).*)",
+  ],
 };

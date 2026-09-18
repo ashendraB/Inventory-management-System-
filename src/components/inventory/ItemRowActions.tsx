@@ -62,7 +62,7 @@ export function ItemRowActions({
         <>
           <Link
             href={`/inventory/items/${itemId}/edit`}
-            className="text-indigo-600 hover:underline"
+            className="text-brand-800 hover:underline"
           >
             Edit
           </Link>

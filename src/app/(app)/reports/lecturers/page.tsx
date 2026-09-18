@@ -76,7 +76,7 @@ export default async function LecturerReportPage({
         </table>
       </div>
 
-      <Link href="/billing/monthly" className="text-sm text-indigo-600 hover:underline">
+      <Link href="/billing/monthly" className="text-sm text-brand-800 hover:underline">
         Go to Monthly Billing →
       </Link>
     </div>

@@ -35,7 +35,7 @@ export default async function PrintingRecordsPage({
         </div>
         <Link
           href="/printing/calculator"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
         >
           + New Printing Job
         </Link>
@@ -71,7 +71,7 @@ export default async function PrintingRecordsPage({
                   <td className="px-4 py-3">
                     <Link
                       href={`/printing/records/${r.id}`}
-                      className="font-medium text-indigo-600 hover:underline"
+                      className="font-medium text-brand-800 hover:underline"
                     >
                       {r.printingCode}
                     </Link>
@@ -98,7 +98,7 @@ export default async function PrintingRecordsPage({
                     <div className="flex items-center gap-3 text-sm">
                       <Link
                         href={`/printing/records/${r.id}?edit=1`}
-                        className="text-indigo-600 hover:underline"
+                        className="text-brand-800 hover:underline"
                       >
                         Edit
                       </Link>

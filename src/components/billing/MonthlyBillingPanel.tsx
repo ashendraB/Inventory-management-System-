@@ -162,7 +162,7 @@ export function MonthlyBillingPanel() {
                     <button
                       onClick={() => generateOne(row.lecturerId)}
                       disabled={generatingId === row.lecturerId}
-                      className="text-indigo-600 hover:underline disabled:opacity-60"
+                      className="text-brand-800 hover:underline disabled:opacity-60"
                     >
                       {generatingId === row.lecturerId ? "Generating..." : "Generate Invoice"}
                     </button>
@@ -174,7 +174,7 @@ export function MonthlyBillingPanel() {
         </table>
       </div>
 
-      <Link href="/billing/invoices" className="text-sm text-indigo-600 hover:underline">
+      <Link href="/billing/invoices" className="text-sm text-brand-800 hover:underline">
         View all invoices →
       </Link>
     </div>

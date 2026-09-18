@@ -340,7 +340,7 @@ export function PriceRuleManager({
                           <button
                             onClick={() => saveEdit(rule)}
                             disabled={editSubmitting}
-                            className="text-indigo-600 hover:underline disabled:opacity-60"
+                            className="text-brand-800 hover:underline disabled:opacity-60"
                           >
                             {editSubmitting ? "Saving..." : "Save"}
                           </button>
@@ -350,7 +350,7 @@ export function PriceRuleManager({
                         </div>
                       ) : (
                         <div className="flex gap-3">
-                          <button onClick={() => startEdit(rule)} className="text-indigo-600 hover:underline">
+                          <button onClick={() => startEdit(rule)} className="text-brand-800 hover:underline">
                             Edit
                           </button>
                           <button onClick={() => toggleStatus(rule)} className="text-slate-500 hover:underline">

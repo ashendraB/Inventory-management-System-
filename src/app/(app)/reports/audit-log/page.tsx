@@ -80,7 +80,7 @@ export default async function AuditLogPage({
                   <td className="px-4 py-3">
                     {(log.oldValue || log.newValue) && (
                       <details>
-                        <summary className="cursor-pointer text-indigo-600 hover:underline">
+                        <summary className="cursor-pointer text-brand-800 hover:underline">
                           View
                         </summary>
                         <div className="mt-2 max-w-md space-y-1">

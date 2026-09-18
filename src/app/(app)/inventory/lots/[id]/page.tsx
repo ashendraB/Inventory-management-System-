@@ -36,7 +36,7 @@ export default async function LotDetailPage({
           </div>
           <Link
             href={`/inventory/items/${lot.inventoryItemId}`}
-            className="text-sm text-indigo-600 hover:underline"
+            className="text-sm text-brand-800 hover:underline"
           >
             {lot.inventoryItem.name} ({lot.inventoryItem.itemCode})
           </Link>

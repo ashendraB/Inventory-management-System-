@@ -207,7 +207,7 @@ export function SupplierManager({ suppliers }: { suppliers: SupplierRow[] }) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(s)}
-                        className="text-indigo-600 hover:underline"
+                        className="text-brand-800 hover:underline"
                       >
                         Edit
                       </button>

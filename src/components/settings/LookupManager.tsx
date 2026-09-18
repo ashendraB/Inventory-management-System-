@@ -116,7 +116,7 @@ export function LookupManager({
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleActive(item)}
-                      className="text-indigo-600 hover:underline"
+                      className="text-brand-800 hover:underline"
                     >
                       {item.isActive ? "Deactivate" : "Reactivate"}
                     </button>

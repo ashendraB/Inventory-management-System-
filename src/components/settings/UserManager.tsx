@@ -293,7 +293,7 @@ export function UserManager({
                   <td className="px-4 py-3 text-slate-400">{formatDate(u.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button onClick={() => startEdit(u)} className="text-indigo-600 hover:underline">
+                      <button onClick={() => startEdit(u)} className="text-brand-800 hover:underline">
                         Edit
                       </button>
                       <button

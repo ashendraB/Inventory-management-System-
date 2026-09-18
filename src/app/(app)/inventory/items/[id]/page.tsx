@@ -94,7 +94,7 @@ export default async function InventoryItemDetailPage({
           {isPaper && (
             <Link
               href={`/inventory/items/${item.id}/lots/new`}
-              className="text-sm font-medium text-indigo-600 hover:underline"
+              className="text-sm font-medium text-brand-800 hover:underline"
             >
               + Add Stock Lot
             </Link>
@@ -122,7 +122,7 @@ export default async function InventoryItemDetailPage({
               {item.lots.map((lot) => (
                 <tr key={lot.id} className="border-b border-slate-100 last:border-0">
                   <td className="py-2">
-                    <Link href={`/inventory/lots/${lot.id}`} className="text-indigo-600 hover:underline">
+                    <Link href={`/inventory/lots/${lot.id}`} className="text-brand-800 hover:underline">
                       {lot.lotCode}
                     </Link>
                   </td>
