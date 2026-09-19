@@ -396,6 +396,25 @@ export async function getPrintingRecordDocument(id: string) {
   });
 }
 
+/** Settings > Stored Documents — bulk space reclaim. Only ever clears the
+ * saved PDF (documentFileName/documentData); the printing record itself,
+ * its cost, and its place in billing/reports/audit are never touched, so
+ * this can never affect history or invoices — it just makes Reprint
+ * unavailable for the records it touches. */
+export async function countDocumentsOlderThan(before: Date) {
+  return prisma.printingRecord.count({
+    where: { date: { lt: before }, documentFileName: { not: null } },
+  });
+}
+
+export async function clearDocumentsOlderThan(before: Date) {
+  const result = await prisma.printingRecord.updateMany({
+    where: { date: { lt: before }, documentFileName: { not: null } },
+    data: { documentFileName: null, documentData: null },
+  });
+  return result.count;
+}
+
 /** Narrow, safe edits only — notes and wasted-sheet count. Everything else
  * on a printing record (lecturer, paper, pages, pricing) is locked in at
  * submission time; to fix one of those, delete the record and resubmit it

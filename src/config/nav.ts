@@ -91,6 +91,7 @@ export const NAV: NavSection[] = [
       { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
       { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
       { label: "Subjects & Grades", href: "/settings/subjects-grades", roles: ADMIN, implemented: true },
+      { label: "Stored Documents", href: "/settings/stored-documents", roles: ADMIN, implemented: true },
       { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: true },
     ],
   },

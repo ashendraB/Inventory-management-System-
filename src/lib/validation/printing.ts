@@ -30,6 +30,10 @@ export const previewJobInputSchema = printingJobInputSchema.pick({
   copies: true,
 });
 
+export const clearDocumentsSchema = z.object({
+  before: z.string().min(1, "Date is required"),
+});
+
 export const updatePrintingRecordSchema = z.object({
   wastedSheets: z.coerce.number().int().min(0, "Wasted sheets can't be negative").optional(),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
