@@ -5,6 +5,7 @@ import { findMatchingPriceRule } from "@/server/pricing-service";
 import { statusFromQuantity, computeStatus } from "@/server/lot-service";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 import { ApiError } from "@/lib/api-auth";
+import { Prisma } from "@prisma/client";
 import type { z } from "zod";
 import type {
   previewJobInputSchema,
@@ -396,23 +397,60 @@ export async function getPrintingRecordDocument(id: string) {
   });
 }
 
-/** Settings > Stored Documents — bulk space reclaim. Only ever clears the
- * saved PDF (documentFileName/documentData); the printing record itself,
- * its cost, and its place in billing/reports/audit are never touched, so
- * this can never affect history or invoices — it just makes Reprint
- * unavailable for the records it touches. */
-export async function countDocumentsOlderThan(before: Date) {
-  return prisma.printingRecord.count({
-    where: { date: { lt: before }, documentFileName: { not: null } },
-  });
+// ---------------------------------------------------------------------------
+// Settings > Stored Documents — browse/delete saved print files individually
+// to reclaim database space. Only ever touches documentFileName/documentData;
+// the printing record itself, its cost, and its place in billing/reports/
+// audit are never affected — deleting one just makes Reprint unavailable for
+// that record. Raw SQL because Prisma has no octet_length()-equivalent, and
+// pulling every row's full PDF bytes into Node just to report a size would
+// defeat the point of this page.
+// ---------------------------------------------------------------------------
+
+export async function getStoredDocumentsStats() {
+  const rows = await prisma.$queryRaw<{ count: bigint; bytes: bigint }[]>`
+    SELECT COUNT(*)::bigint AS count, COALESCE(SUM(OCTET_LENGTH("documentData")), 0)::bigint AS bytes
+    FROM "PrintingRecord"
+    WHERE "documentFileName" IS NOT NULL
+  `;
+  return { count: Number(rows[0].count), bytes: Number(rows[0].bytes) };
 }
 
-export async function clearDocumentsOlderThan(before: Date) {
-  const result = await prisma.printingRecord.updateMany({
-    where: { date: { lt: before }, documentFileName: { not: null } },
+export interface StoredDocumentFilters {
+  from?: Date;
+  to?: Date;
+}
+
+export async function listStoredDocuments(filters: StoredDocumentFilters = {}) {
+  const conditions = [Prisma.sql`pr."documentFileName" IS NOT NULL`];
+  if (filters.from) conditions.push(Prisma.sql`pr."date" >= ${filters.from}`);
+  if (filters.to) conditions.push(Prisma.sql`pr."date" < ${filters.to}`);
+
+  return prisma.$queryRaw<
+    {
+      id: string;
+      printingCode: string;
+      documentName: string;
+      documentFileName: string;
+      date: Date;
+      lecturerName: string;
+      bytes: bigint;
+    }[]
+  >`
+    SELECT pr."id", pr."printingCode", pr."documentName", pr."documentFileName", pr."date",
+           l."name" AS "lecturerName", OCTET_LENGTH(pr."documentData")::bigint AS "bytes"
+    FROM "PrintingRecord" pr
+    JOIN "Lecturer" l ON l."id" = pr."lecturerId"
+    WHERE ${Prisma.join(conditions, " AND ")}
+    ORDER BY pr."date" DESC
+  `.then((rows) => rows.map((r) => ({ ...r, bytes: Number(r.bytes) })));
+}
+
+export async function clearDocument(id: string) {
+  return prisma.printingRecord.update({
+    where: { id },
     data: { documentFileName: null, documentData: null },
   });
-  return result.count;
 }
 
 /** Narrow, safe edits only — notes and wasted-sheet count. Everything else
