@@ -305,6 +305,9 @@ export async function submitPrintingJob(
 
 export interface PrintingRecordFilters {
   lecturerId?: string;
+  subjectId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
   search?: string;
   page?: number;
   pageSize?: number;
@@ -316,6 +319,16 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
 
   const where = {
     ...(filters.lecturerId && { lecturerId: filters.lecturerId }),
+    ...(filters.subjectId && { subjectId: filters.subjectId }),
+    // dateTo is exclusive — callers pass the day *after* the last day they
+    // want included (see parseDateRange in report-service.ts), so a whole
+    // day's records aren't cut off by the time-of-day component.
+    ...((filters.dateFrom || filters.dateTo) && {
+      date: {
+        ...(filters.dateFrom && { gte: filters.dateFrom }),
+        ...(filters.dateTo && { lt: filters.dateTo }),
+      },
+    }),
     ...(filters.search && {
       OR: [
         { documentName: { contains: filters.search } },
@@ -332,6 +345,7 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
       take: pageSize,
       include: {
         lecturer: { select: { name: true } },
+        subject: { select: { name: true } },
         paperSize: true,
         gsm: true,
         paperType: true,

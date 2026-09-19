@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { listPrintingRecords } from "@/server/printing-service";
+import { listActiveLecturers } from "@/server/lecturer-service";
+import { listSubjects } from "@/server/paper-config-service";
 import { Pagination } from "@/components/ui/Pagination";
 import { PrintingRecordRowActions } from "@/components/printing/PrintingRecordRowActions";
+import { PrintingRecordsFilterBar } from "@/components/printing/PrintingRecordsFilterBar";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 
@@ -13,10 +16,18 @@ export default async function PrintingRecordsPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
-  const result = await listPrintingRecords({
-    search: sp.search,
-    page: sp.page ? Number(sp.page) : undefined,
-  });
+  const [result, lecturers, subjects] = await Promise.all([
+    listPrintingRecords({
+      lecturerId: sp.lecturerId,
+      subjectId: sp.subjectId,
+      dateFrom: sp.from ? new Date(sp.from) : undefined,
+      dateTo: sp.to ? new Date(new Date(sp.to).getTime() + 24 * 60 * 60 * 1000) : undefined,
+      search: sp.search,
+      page: sp.page ? Number(sp.page) : undefined,
+    }),
+    listActiveLecturers(),
+    listSubjects(),
+  ]);
 
   function pageHref(page: number) {
     const params = new URLSearchParams(sp as Record<string, string>);
@@ -41,6 +52,11 @@ export default async function PrintingRecordsPage({
         </Link>
       </div>
 
+      <PrintingRecordsFilterBar
+        lecturers={lecturers.map((l) => ({ id: l.id, name: l.name }))}
+        subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
+      />
+
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead>
@@ -48,6 +64,7 @@ export default async function PrintingRecordsPage({
               <th className="px-4 py-3">Printing ID</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Lecturer</th>
+              <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3">Document</th>
               <th className="px-4 py-3">Paper</th>
               <th className="px-4 py-3">Colour</th>
@@ -61,7 +78,7 @@ export default async function PrintingRecordsPage({
           <tbody>
             {result.records.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={12} className="px-4 py-10 text-center text-slate-400">
                   No printing records yet.
                 </td>
               </tr>
@@ -78,6 +95,7 @@ export default async function PrintingRecordsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
                   <td className="px-4 py-3">{r.lecturer.name}</td>
+                  <td className="px-4 py-3 text-slate-500">{r.subject?.name ?? "—"}</td>
                   <td className="px-4 py-3">{r.documentName}</td>
                   <td className="px-4 py-3 text-slate-500">
                     {r.paperSize.name}/{r.gsm.value}/{r.paperType.name}
