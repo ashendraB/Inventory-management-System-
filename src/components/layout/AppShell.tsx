@@ -18,7 +18,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 
 function Brand() {
   return (
-    <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
+    <div className="flex h-14 items-center gap-3 border-b border-gold-500/40 px-4">
       <Image
         src="/logo.png"
         alt="Eminent Edification"
