@@ -68,7 +68,7 @@ export function AppShell({
               href={section.href!}
               onClick={() => setMobileOpen(false)}
               className={clsx(
-                "block rounded-md px-3 py-2 text-sm font-semibold transition-all duration-150",
+                "block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-wide transition-all duration-150",
                 pathname === section.href
                   ? "bg-gold-500 text-brand-900"
                   : "text-slate-200 hover:translate-x-0.5 hover:bg-white/10 hover:text-white"
@@ -92,7 +92,7 @@ export function AppShell({
                     <span
                       key={link.href}
                       title="Coming soon"
-                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm text-slate-500"
+                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm uppercase tracking-wide text-slate-500"
                     >
                       {link.label}
                       <span className="text-[10px] uppercase tracking-wide">
@@ -107,7 +107,7 @@ export function AppShell({
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={clsx(
-                      "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-all duration-150",
+                      "block rounded-md border-l-2 px-3 py-1.5 text-sm uppercase tracking-wide transition-all duration-150",
                       active
                         ? "border-gold-500 bg-white/10 font-medium text-white"
                         : "border-transparent text-slate-300 hover:translate-x-0.5 hover:bg-white/5 hover:text-white"
