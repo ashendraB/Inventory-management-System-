@@ -1,4 +1,5 @@
 import { getStoredDocumentsStats, listStoredDocuments } from "@/server/printing-service";
+import { getDatabaseSizeStats } from "@/server/db-stats-service";
 import { StoredDocumentsFilterBar } from "@/components/settings/StoredDocumentsFilterBar";
 import { StoredDocumentRowActions } from "@/components/settings/StoredDocumentRowActions";
 import { formatDate, formatBytes } from "@/lib/format";
@@ -31,10 +32,12 @@ export default async function StoredDocumentsSettingsPage({
 }) {
   const sp = await searchParams;
   const range = resolveRange(sp);
-  const [stats, documents] = await Promise.all([
+  const [stats, documents, dbStats] = await Promise.all([
     getStoredDocumentsStats(),
     listStoredDocuments(range),
+    getDatabaseSizeStats(),
   ]);
+  const dbPercent = Math.min(100, Math.round((dbStats.bytes / dbStats.limitBytes) * 100));
 
   return (
     <div className="space-y-4">
@@ -47,14 +50,33 @@ export default async function StoredDocumentsSettingsPage({
             place in reports and invoices are never touched.
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 border-t-2 border-t-gold-500 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Storage Used
-          </p>
-          <p className="mt-1 text-2xl font-semibold text-brand-800">{formatBytes(stats.bytes)}</p>
-          <p className="mt-1 text-xs text-slate-400">
-            {stats.count} file{stats.count === 1 ? "" : "s"} stored
-          </p>
+        <div className="flex gap-3">
+          <div className="rounded-xl border border-slate-200 border-t-2 border-t-gold-500 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Print Files
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-brand-800">{formatBytes(stats.bytes)}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              {stats.count} file{stats.count === 1 ? "" : "s"} stored
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 border-t-2 border-t-gold-500 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Database Total
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-brand-800">
+              {formatBytes(dbStats.bytes)}
+            </p>
+            <div className="mt-2 h-1.5 w-40 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-brand-800"
+                style={{ width: `${dbPercent}%` }}
+              />
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+              {dbPercent}% of {formatBytes(dbStats.limitBytes)} free-tier limit
+            </p>
+          </div>
         </div>
       </div>
 
