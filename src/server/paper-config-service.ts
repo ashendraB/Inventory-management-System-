@@ -57,3 +57,41 @@ export async function createPaperType(name: string) {
 export async function setPaperTypeActive(id: string, isActive: boolean) {
   return prisma.paperType.update({ where: { id }, data: { isActive } });
 }
+
+// ---------------------------------------------------------------------------
+// Subjects
+// ---------------------------------------------------------------------------
+
+export async function listSubjects(includeInactive = false) {
+  return prisma.subject.findMany({
+    where: includeInactive ? undefined : { isActive: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function createSubject(name: string) {
+  return prisma.subject.create({ data: { name } });
+}
+
+export async function setSubjectActive(id: string, isActive: boolean) {
+  return prisma.subject.update({ where: { id }, data: { isActive } });
+}
+
+// ---------------------------------------------------------------------------
+// Grades
+// ---------------------------------------------------------------------------
+
+export async function listGrades(includeInactive = false) {
+  return prisma.grade.findMany({
+    where: includeInactive ? undefined : { isActive: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function createGrade(name: string) {
+  return prisma.grade.create({ data: { name } });
+}
+
+export async function setGradeActive(id: string, isActive: boolean) {
+  return prisma.grade.update({ where: { id }, data: { isActive } });
+}

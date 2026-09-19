@@ -90,6 +90,27 @@ model PaperType {
   printingRecords    PrintingRecord[]
 }
 
+// Operator-managed lists for the Printing Calculator's Subject/Grade
+// selects — same shape/pattern as PaperType (name + isActive), managed from
+// Settings > Subjects & Grades.
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  printingRecords PrintingRecord[]
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  printingRecords PrintingRecord[]
+}
+
 model InventoryCategory {
   id        String   @id @default(cuid())
   name      String   @unique
@@ -352,7 +373,10 @@ model PrintingRecord {
   lecturer    Lecturer @relation(fields: [lecturerId], references: [id])
 
   documentName String
-  subject      String?
+  subjectId    String?
+  subject      Subject? @relation(fields: [subjectId], references: [id])
+  gradeId      String?
+  grade        Grade?   @relation(fields: [gradeId], references: [id])
   course       String?
   batchClass   String?
 

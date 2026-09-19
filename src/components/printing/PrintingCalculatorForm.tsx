@@ -14,6 +14,11 @@ interface Lecturer {
   department: string | null;
 }
 
+interface LookupOption {
+  id: string;
+  name: string;
+}
+
 interface PaperItem {
   id: string;
   itemCode: string;
@@ -35,14 +40,20 @@ interface PreviewState {
 export function PrintingCalculatorForm({
   lecturers,
   initialItems,
+  subjects,
+  grades,
 }: {
   lecturers: Lecturer[];
   initialItems: PaperItem[];
+  subjects: LookupOption[];
+  grades: LookupOption[];
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [lecturerId, setLecturerId] = useState("");
   const [documentName, setDocumentName] = useState("");
+  const [subjectId, setSubjectId] = useState("");
+  const [gradeId, setGradeId] = useState("");
   const [colourMode, setColourMode] = useState<"BW" | "COLOUR">("BW");
   const [itemId, setItemId] = useState("");
   const [sides, setSides] = useState<"SINGLE" | "DOUBLE">("SINGLE");
@@ -225,6 +236,8 @@ export function PrintingCalculatorForm({
   function handleReset() {
     setLecturerId("");
     setDocumentName("");
+    setSubjectId("");
+    setGradeId("");
     setColourMode("BW");
     setItemId("");
     setSides("SINGLE");
@@ -261,6 +274,8 @@ export function PrintingCalculatorForm({
           lecturerId,
           inventoryItemId: itemId,
           documentName,
+          subjectId,
+          gradeId,
           colourMode,
           sides,
           layout,
@@ -359,6 +374,26 @@ export function PrintingCalculatorForm({
                 onChange={(e) => setDocumentName(e.target.value)}
                 placeholder="Economics Tutorial 03"
               />
+            </FieldWrapper>
+            <FieldWrapper label="Subject" htmlFor="subjectId">
+              <Select id="subjectId" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
+                <option value="">None</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
+            <FieldWrapper label="Grade" htmlFor="gradeId">
+              <Select id="gradeId" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
+                <option value="">None</option>
+                {grades.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </Select>
             </FieldWrapper>
 
             <FieldWrapper label="Paper" htmlFor="itemId" required>

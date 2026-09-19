@@ -51,7 +51,8 @@ export default async function PrintingRecordDetailPage({
           <Detail label="Layout" value={record.layout === "BOOKLET" ? "Booklet" : "Normal"} />
           <Detail label="Pages" value={String(record.pages)} />
           <Detail label="Copies" value={String(record.copies)} />
-          {record.subject && <Detail label="Subject" value={record.subject} />}
+          {record.subject && <Detail label="Subject" value={record.subject.name} />}
+          {record.grade && <Detail label="Grade" value={record.grade.name} />}
           {record.course && <Detail label="Course" value={record.course} />}
           {record.batchClass && <Detail label="Batch/Class" value={record.batchClass} />}
           <Detail label="Operator" value={record.operator.name} />

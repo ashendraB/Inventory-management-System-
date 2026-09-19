@@ -247,7 +247,8 @@ export async function submitPrintingJob(
         printingCode,
         lecturerId: data.lecturerId,
         documentName: data.documentName,
-        subject: data.subject || null,
+        subjectId: data.subjectId || null,
+        gradeId: data.gradeId || null,
         course: data.course || null,
         batchClass: data.batchClass || null,
         paperSizeId: item.paperSizeId,
@@ -354,6 +355,8 @@ export async function getPrintingRecord(id: string) {
     where: { id },
     include: {
       lecturer: true,
+      subject: true,
+      grade: true,
       paperSize: true,
       gsm: true,
       paperType: true,

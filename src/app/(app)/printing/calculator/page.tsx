@@ -1,13 +1,16 @@
 import { listActiveLecturers } from "@/server/lecturer-service";
 import { listPaperItemsForCalculator } from "@/server/printing-service";
+import { listSubjects, listGrades } from "@/server/paper-config-service";
 import { PrintingCalculatorForm } from "@/components/printing/PrintingCalculatorForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function PrintingCalculatorPage() {
-  const [lecturers, items] = await Promise.all([
+  const [lecturers, items, subjects, grades] = await Promise.all([
     listActiveLecturers(),
     listPaperItemsForCalculator(),
+    listSubjects(),
+    listGrades(),
   ]);
 
   return (
@@ -22,6 +25,8 @@ export default async function PrintingCalculatorPage() {
       <PrintingCalculatorForm
         lecturers={lecturers.map((l) => ({ id: l.id, name: l.name, department: l.department }))}
         initialItems={items}
+        subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
+        grades={grades.map((g) => ({ id: g.id, name: g.name }))}
       />
     </div>
   );
