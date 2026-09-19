@@ -30,10 +30,10 @@ export default async function EditInventoryItemPage({
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Edit {item.name}</h1>
-        <p className="text-sm text-slate-500">{item.itemCode}</p>
+        <h1 className="text-xl font-semibold text-gold-400">Edit {item.name}</h1>
+        <p className="text-sm text-slate-400">{item.itemCode}</p>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <InventoryItemForm
           itemId={item.id}
           categories={categories}

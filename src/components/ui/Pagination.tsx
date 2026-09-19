@@ -20,7 +20,7 @@ export function Pagination({
       <Link
         href={makeHref(Math.max(1, page - 1))}
         aria-disabled={page === 1}
-        className="rounded-md border border-slate-200 px-2.5 py-1.5 text-sm text-slate-600 hover:bg-slate-100 aria-disabled:pointer-events-none aria-disabled:opacity-40"
+        className="rounded-md border border-white/10 px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white/10 aria-disabled:pointer-events-none aria-disabled:opacity-40"
       >
         Prev
       </Link>
@@ -33,8 +33,8 @@ export function Pagination({
             href={makeHref(p)}
             className={
               p === page
-                ? "rounded-md bg-brand-800 px-3 py-1.5 text-sm text-white"
-                : "rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+                ? "rounded-md bg-gold-500 px-3 py-1.5 text-sm font-medium text-brand-900"
+                : "rounded-md px-3 py-1.5 text-sm text-slate-300 hover:bg-white/10"
             }
           >
             {p}
@@ -44,7 +44,7 @@ export function Pagination({
       <Link
         href={makeHref(Math.min(totalPages, page + 1))}
         aria-disabled={page === totalPages}
-        className="rounded-md border border-slate-200 px-2.5 py-1.5 text-sm text-slate-600 hover:bg-slate-100 aria-disabled:pointer-events-none aria-disabled:opacity-40"
+        className="rounded-md border border-white/10 px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white/10 aria-disabled:pointer-events-none aria-disabled:opacity-40"
       >
         Next
       </Link>

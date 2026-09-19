@@ -9,15 +9,15 @@ export default async function SubjectsGradesSettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Subjects &amp; Grades</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Subjects &amp; Grades</h1>
+        <p className="text-sm text-slate-400">
           Shown as dropdowns on the Printing Calculator. Deactivating one hides it from new
           selections without touching existing printing records.
         </p>
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-slate-900">Subjects</h2>
+        <h2 className="mb-2 text-sm font-semibold text-gold-400">Subjects</h2>
         <LookupManager
           apiBase="/api/settings/subjects"
           payloadKey="name"
@@ -27,7 +27,7 @@ export default async function SubjectsGradesSettingsPage() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-slate-900">Grades</h2>
+        <h2 className="mb-2 text-sm font-semibold text-gold-400">Grades</h2>
         <LookupManager
           apiBase="/api/settings/grades"
           payloadKey="name"

@@ -39,14 +39,14 @@ export default async function PrintingRecordsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Printing Records</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-gold-400">Printing Records</h1>
+          <p className="text-sm text-slate-400">
             {result.total} job{result.total === 1 ? "" : "s"}
           </p>
         </div>
         <Link
           href="/printing/calculator"
-          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
+          className="rounded-md bg-gold-500 px-4 py-2 text-sm font-medium text-brand-900 transition-all duration-150 hover:bg-gold-600 hover:shadow-md active:scale-[0.97]"
         >
           + New Printing Job
         </Link>
@@ -57,10 +57,10 @@ export default async function PrintingRecordsPage({
         subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
       />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Printing ID</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Lecturer</th>
@@ -84,24 +84,24 @@ export default async function PrintingRecordsPage({
               </tr>
             ) : (
               result.records.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
+                <tr key={r.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/printing/records/${r.id}`}
-                      className="font-medium text-brand-800 hover:underline"
+                      className="font-medium text-gold-400 hover:underline"
                     >
                       {r.printingCode}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{formatDate(r.date)}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatDate(r.date)}</td>
                   <td className="px-4 py-3">{r.lecturer.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{r.subject?.name ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{r.subject?.name ?? "—"}</td>
                   <td className="px-4 py-3">{r.documentName}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {r.paperSize.name}/{r.gsm.value}/{r.paperType.name}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{r.colourMode === "BW" ? "B&W" : "Colour"}</td>
-                  <td className="px-4 py-3 text-slate-500">{r.sides === "SINGLE" ? "Single" : "Double"}</td>
+                  <td className="px-4 py-3 text-slate-400">{r.colourMode === "BW" ? "B&W" : "Colour"}</td>
+                  <td className="px-4 py-3 text-slate-400">{r.sides === "SINGLE" ? "Single" : "Double"}</td>
                   <td className="px-4 py-3">
                     {r.physicalSheets.toLocaleString()}
                     {r.wastedSheets > 0 && (
@@ -111,12 +111,12 @@ export default async function PrintingRecordsPage({
                     )}
                   </td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(Number(r.totalCost))}</td>
-                  <td className="px-4 py-3 text-slate-500">{r.operator.name}</td>
+                  <td className="px-4 py-3 text-slate-400">{r.operator.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3 text-sm">
                       <Link
                         href={`/printing/records/${r.id}?edit=1`}
-                        className="text-brand-800 hover:underline"
+                        className="text-gold-400 hover:underline"
                       >
                         Edit
                       </Link>

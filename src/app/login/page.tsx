@@ -73,7 +73,7 @@ function LoginForm() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl border border-white/10 bg-white p-6 shadow-xl transition-shadow duration-300 hover:shadow-2xl"
+          className="space-y-4 rounded-2xl border border-white/10 bg-brand-800 p-6 shadow-xl transition-shadow duration-300 hover:shadow-2xl"
         >
           {error && (
             <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -84,7 +84,7 @@ function LoginForm() {
           <div>
             <label
               htmlFor="username"
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block text-sm font-medium text-slate-200"
             >
               Username or email
             </label>
@@ -95,14 +95,14 @@ function LoginForm() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
             />
           </div>
 
           <div>
             <label
               htmlFor="password"
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block text-sm font-medium text-slate-200"
             >
               Password
             </label>
@@ -114,7 +114,7 @@ function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-colors focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
             />
           </div>
 

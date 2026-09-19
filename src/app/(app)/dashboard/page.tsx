@@ -19,8 +19,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Dashboard</h1>
+        <p className="text-sm text-slate-400">
           Overview of inventory, printing activity, and billing.
         </p>
       </div>
@@ -51,8 +51,8 @@ export default async function DashboardPage() {
         <StatCard label="Pending Invoices" value={summary.pendingInvoices} />
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-gold-400">
           Recent Activity
         </h2>
         {!hasAnyActivity ? (
@@ -124,8 +124,8 @@ function ActivityList({
         <ul className="space-y-1.5">
           {items.map((item) => (
             <li key={item.id} className="text-sm">
-              <span className="font-medium text-slate-800">{item.primary}</span>{" "}
-              <span className="text-slate-500">— {item.secondary}</span>
+              <span className="font-medium text-slate-100">{item.primary}</span>{" "}
+              <span className="text-slate-400">— {item.secondary}</span>
             </li>
           ))}
         </ul>

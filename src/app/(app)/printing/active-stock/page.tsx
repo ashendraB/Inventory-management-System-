@@ -10,16 +10,16 @@ export default async function ActivePaperStockPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Active Paper Stock</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Active Paper Stock</h1>
+        <p className="text-sm text-slate-400">
           The lot the printing calculator will use right now for each paper item.
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Paper</th>
               <th className="px-4 py-3">Size / GSM / Type</th>
               <th className="px-4 py-3">Active Lot</th>
@@ -36,12 +36,12 @@ export default async function ActivePaperStockPage() {
               </tr>
             ) : (
               items.map((item) => (
-                <tr key={item.id} className="border-b border-slate-100 last:border-0">
+                <tr key={item.id} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3">
                     <span className="font-medium">{item.name}</span>{" "}
                     <span className="text-slate-400">({item.itemCode})</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {item.paperSizeName ?? "—"} / {item.gsmValue ?? "—"} / {item.paperTypeName ?? "—"}
                   </td>
                   <td className="px-4 py-3">
@@ -54,7 +54,7 @@ export default async function ActivePaperStockPage() {
                   <td className="px-4 py-3">
                     {item.activeLot ? item.activeLot.currentQuantity.toLocaleString() : "—"}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {item.activeLot ? formatCurrency(Number(item.activeLot.costPerSheet)) : "—"}
                   </td>
                 </tr>

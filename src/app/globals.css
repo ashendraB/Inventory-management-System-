@@ -100,4 +100,17 @@ html {
   .no-print {
     display: none !important;
   }
+
+  /* The invoice card is dark-themed on screen (matching the rest of the
+     app), but browsers don't print background colors by default — printing
+     it as-is would mean white/gold text silently vanishing on blank paper.
+     Force it back to plain black-on-white for the physical/PDF copy,
+     regardless of what color utility classes each element carries on
+     screen. */
+  .print-invoice,
+  .print-invoice * {
+    background: #fff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
 }

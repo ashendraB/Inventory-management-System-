@@ -34,7 +34,7 @@ export function StoredDocumentsFilterBar() {
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
       <div className="flex gap-1.5">
         {PRESETS.map((p) => (
           <button
@@ -44,8 +44,8 @@ export function StoredDocumentsFilterBar() {
             className={clsx(
               "rounded-md px-3 py-2 text-sm font-medium transition-colors",
               !month && preset === p.value
-                ? "bg-brand-800 text-white"
-                : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                ? "bg-gold-500 text-brand-900"
+                : "border border-white/20 text-slate-200 hover:bg-white/10"
             )}
           >
             {p.label}
@@ -53,7 +53,7 @@ export function StoredDocumentsFilterBar() {
         ))}
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Selected Month</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Selected Month</label>
         <TextInput type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
       </div>
     </div>

@@ -67,11 +67,11 @@ export function EditLotForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-slate-200 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-white/10 p-4">
       {error && (
         <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         Fixes a data-entry mistake — quantity isn&apos;t editable here, use Adjust Stock for that
         so every unit change stays logged.
       </p>

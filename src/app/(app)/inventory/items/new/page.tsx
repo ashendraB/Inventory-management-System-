@@ -21,14 +21,14 @@ export default async function NewInventoryItemPage({
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Add Inventory Item</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Add Inventory Item</h1>
+        <p className="text-sm text-slate-400">
           {sp.barcode
             ? "Barcode scanned — fill in the rest of the details and save."
             : "An Item ID and barcode are generated automatically once you save, unless you scan one in."}
         </p>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <InventoryItemForm
           categories={categories}
           suppliers={suppliers}

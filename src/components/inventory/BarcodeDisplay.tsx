@@ -55,8 +55,8 @@ export function BarcodeDisplay({
 
   return (
     <div>
-      {label && <p className="mb-1 text-xs font-medium text-slate-500">{label}</p>}
-      <div className="inline-block rounded-md border border-slate-200 bg-white p-3">
+      {label && <p className="mb-1 text-xs font-medium text-slate-400">{label}</p>}
+      <div className="inline-block rounded-md border border-brand-700 bg-brand-800 p-3">
         <svg ref={svgRef} />
       </div>
       <div className="mt-2 flex gap-2">

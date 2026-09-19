@@ -342,7 +342,7 @@ export function PrintingCalculatorForm({
           onReadyChange={setDocumentReady}
         />
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
           <div className="mb-4 flex gap-2">
             <TextInput
               value={scanValue}
@@ -514,8 +514,8 @@ export function PrintingCalculatorForm({
       </div>
 
       <div className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-slate-900">Active Stock</h2>
+        <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold text-gold-400">Active Stock</h2>
           {!itemId ? (
             <p className="text-sm text-slate-400">Select a paper to see its active lot.</p>
           ) : !selectedItem?.activeLot ? (
@@ -534,8 +534,8 @@ export function PrintingCalculatorForm({
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-slate-900">Calculation</h2>
+        <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold text-gold-400">Calculation</h2>
           {preview.priceError && (
             <p className="mb-2 text-sm text-red-600">{preview.priceError}</p>
           )}
@@ -551,7 +551,7 @@ export function PrintingCalculatorForm({
               <Row label="Physical Sheets" value={calculation.physicalSheets.toLocaleString()} />
               <Row label="Paper Cost" value={formatCurrency(calculation.totalPaperCost)} />
               <Row label="Printing Charge" value={formatCurrency(calculation.totalPrintingCharge)} />
-              <div className="border-t border-slate-200 pt-2">
+              <div className="border-t border-white/10 pt-2">
                 <Row label="TOTAL" value={formatCurrency(calculation.totalCost)} bold />
               </div>
               {!calculation.sufficientStock && (
@@ -572,8 +572,8 @@ export function PrintingCalculatorForm({
 function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={bold ? "text-base font-semibold text-slate-900" : "text-slate-800"}>{value}</dd>
+      <dt className="text-slate-400">{label}</dt>
+      <dd className={bold ? "text-base font-semibold text-white" : "text-slate-100"}>{value}</dd>
     </div>
   );
 }

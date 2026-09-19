@@ -55,18 +55,18 @@ export function ItemRowActions({
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href={`/inventory/items/${itemId}`} className="text-slate-500 hover:underline">
+      <Link href={`/inventory/items/${itemId}`} className="text-slate-400 hover:underline">
         View
       </Link>
       {role === "ADMINISTRATOR" && (
         <>
           <Link
             href={`/inventory/items/${itemId}/edit`}
-            className="text-brand-800 hover:underline"
+            className="text-gold-400 hover:underline"
           >
             Edit
           </Link>
-          <button onClick={toggleStatus} className="text-slate-500 hover:underline">
+          <button onClick={toggleStatus} className="text-slate-400 hover:underline">
             {status === "ACTIVE" ? "Deactivate" : "Reactivate"}
           </button>
           <button onClick={handleDelete} className="text-red-600 hover:underline">

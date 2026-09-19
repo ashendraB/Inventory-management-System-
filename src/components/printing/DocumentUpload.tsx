@@ -145,9 +145,9 @@ export function DocumentUpload({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
-      <p className="mb-3 text-xs text-slate-500">
+    <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
+      <h2 className="mb-1 text-sm font-semibold text-gold-400">Document to Print</h2>
+      <p className="mb-3 text-xs text-slate-400">
         Optional — attach the file to auto-fill the page count and Document Name (from the
         filename — edit or clear it below if you need to) and preview it below. The Print button
         prints this preview directly (your browser&apos;s own print dialog) and saves the record
@@ -158,21 +158,21 @@ export function DocumentUpload({
         type="file"
         accept="application/pdf,.pdf,.doc,.docx"
         onChange={handleFileChange}
-        className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-900 hover:file:bg-brand-100"
+        className="block w-full text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-900 hover:file:bg-brand-100"
       />
 
       {fileName && (
         <div className="mt-3 space-y-2 text-sm">
-          <p className="text-slate-700">{fileName}</p>
+          <p className="text-slate-200">{fileName}</p>
           {loading && <p className="text-slate-400">Reading page count...</p>}
           {detectedPages !== null && (
-            <p className="text-emerald-700">
+            <p className="text-emerald-400">
               Detected {detectedPages} page{detectedPages === 1 ? "" : "s"} — filled into
               &quot;Number of Pages&quot; below. You can still edit it if needed.
             </p>
           )}
           {unsupported && (
-            <p className="text-amber-700">
+            <p className="text-amber-400">
               Automatic page count and in-app printing only work for PDF files. Please enter
               the page count manually below, and print this file from Word/your PDF viewer.
             </p>
@@ -187,7 +187,7 @@ export function DocumentUpload({
                 href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10"
               >
                 Open in New Tab
               </a>
@@ -205,7 +205,7 @@ export function DocumentUpload({
           src={fileUrl}
           title="Document preview"
           onLoad={() => setPreviewReady(true)}
-          className="mt-4 h-80 w-full rounded-md border border-slate-200"
+          className="mt-4 h-80 w-full rounded-md border border-white/10"
         />
       )}
     </div>

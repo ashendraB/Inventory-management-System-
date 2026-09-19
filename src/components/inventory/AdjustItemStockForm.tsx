@@ -68,11 +68,11 @@ export function AdjustItemStockForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-slate-200 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-white/10 p-4">
       {error && (
         <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         Mark stock as used, damaged, returned, or corrected. Enter a negative change to remove
         stock (e.g. -1 for one used, or -2 to bring 2 in hand down to 0 / stock finished) —
         positive to add it back.

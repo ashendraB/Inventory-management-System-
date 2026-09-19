@@ -22,10 +22,10 @@ export default async function EditLecturerPage({
   return (
     <div className="max-w-2xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Edit {lecturer.name}</h1>
-        <p className="text-sm text-slate-500">{lecturer.lecturerCode}</p>
+        <h1 className="text-xl font-semibold text-gold-400">Edit {lecturer.name}</h1>
+        <p className="text-sm text-slate-400">{lecturer.lecturerCode}</p>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <LecturerForm
           lecturerId={lecturer.id}
           initialValues={{

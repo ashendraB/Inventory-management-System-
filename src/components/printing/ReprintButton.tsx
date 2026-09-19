@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
  * Printing Calculator. */
 export function ReprintButton({
   recordId,
-  className = "text-brand-800 hover:underline",
+  className = "text-gold-400 hover:underline",
 }: {
   recordId: string;
   className?: string;

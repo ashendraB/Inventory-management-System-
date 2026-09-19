@@ -18,8 +18,8 @@ export default async function StockUsageReportPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Stock Usage</h1>
-        <p className="text-sm text-slate-500">Every stock quantity change in the selected period.</p>
+        <h1 className="text-xl font-semibold text-gold-400">Stock Usage</h1>
+        <p className="text-sm text-slate-400">Every stock quantity change in the selected period.</p>
       </div>
 
       <DateRangeFilterBar exportHref="/api/reports/stock-usage/export" />
@@ -35,10 +35,10 @@ export default async function StockUsageReportPage({
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Count</th>
               <th className="px-4 py-3">Net Change</th>
@@ -46,7 +46,7 @@ export default async function StockUsageReportPage({
           </thead>
           <tbody>
             {report.typeSummary.map((t) => (
-              <tr key={t.type} className="border-b border-slate-100 last:border-0">
+              <tr key={t.type} className="border-b border-white/10 last:border-0">
                 <td className="px-4 py-3">
                   <StatusBadge status={t.type} />
                 </td>
@@ -61,10 +61,10 @@ export default async function StockUsageReportPage({
         </table>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Item</th>
@@ -84,22 +84,22 @@ export default async function StockUsageReportPage({
               </tr>
             ) : (
               report.transactions.map((t) => (
-                <tr key={t.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
-                  <td className="px-4 py-3 text-slate-500">{formatDate(t.createdAt)}</td>
+                <tr key={t.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
+                  <td className="px-4 py-3 text-slate-400">{formatDate(t.createdAt)}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={t.type} />
                   </td>
                   <td className="px-4 py-3">
                     {t.inventoryItem.itemCode} — {t.inventoryItem.name}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{t.lot?.lotCode ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{t.lot?.lotCode ?? "—"}</td>
                   <td className={`px-4 py-3 ${t.quantityChange < 0 ? "text-red-600" : "text-emerald-600"}`}>
                     {t.quantityChange > 0 ? "+" : ""}
                     {t.quantityChange.toLocaleString()}
                   </td>
                   <td className="px-4 py-3">{t.newQuantity.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-slate-500">{t.user.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{t.reason ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{t.user.name}</td>
+                  <td className="px-4 py-3 text-slate-400">{t.reason ?? "—"}</td>
                 </tr>
               ))
             )}

@@ -66,11 +66,11 @@ export function EditPrintingRecordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-slate-200 p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-white/10 p-4">
       {error && (
         <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         Lecturer, paper, pages, and pricing are locked in once a job is printed — to fix one of
         those, delete this record and submit it again. Use Wasted Sheets to record sheets spoiled
         by a printing-time error (jam, misalignment, ...); the extra sheets are deducted from the

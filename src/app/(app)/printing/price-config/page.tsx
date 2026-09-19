@@ -15,8 +15,8 @@ export default async function PriceConfigPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Printing Price Configuration</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Printing Price Configuration</h1>
+        <p className="text-sm text-slate-400">
           The printing calculator finds a rule by matching Paper Size + GSM + Paper Type + Colour
           + Sides. If none matches, a printing job can&apos;t be submitted.
         </p>

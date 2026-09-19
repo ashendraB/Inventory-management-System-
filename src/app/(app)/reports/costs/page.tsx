@@ -26,8 +26,8 @@ export default async function CostReportPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Cost Reports</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Cost Reports</h1>
+        <p className="text-sm text-slate-400">
           Paper cost vs. printing charge for the selected period, by month.
         </p>
       </div>
@@ -49,10 +49,10 @@ export default async function CostReportPage({
         <StatCard label="Months" value={report.monthly.length.toLocaleString()} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Month</th>
               <th className="px-4 py-3">Paper Cost</th>
               <th className="px-4 py-3">Printing Charge</th>
@@ -68,10 +68,10 @@ export default async function CostReportPage({
               </tr>
             ) : (
               report.monthly.map((m) => (
-                <tr key={m.month} className="border-b border-slate-100 last:border-0">
+                <tr key={m.month} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3 font-medium">{monthLabel(m.month)}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(m.paperCost)}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(m.printingCharge)}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(m.paperCost)}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(m.printingCharge)}</td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(m.total)}</td>
                 </tr>
               ))

@@ -17,20 +17,20 @@ export default async function InvoiceHistoryPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Invoice History</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-gold-400">Invoice History</h1>
+          <p className="text-sm text-slate-400">
             {invoices.length} paid or cancelled invoice{invoices.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link href="/billing/invoices" className="text-sm text-brand-800 hover:underline">
+        <Link href="/billing/invoices" className="text-sm text-gold-400 hover:underline">
           ← Back to Invoices
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Invoice #</th>
               <th className="px-4 py-3">Lecturer</th>
               <th className="px-4 py-3">Period</th>
@@ -48,11 +48,11 @@ export default async function InvoiceHistoryPage() {
               </tr>
             ) : (
               invoices.map((inv) => (
-                <tr key={inv.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
+                <tr key={inv.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/billing/invoices/${inv.id}`}
-                      className="font-medium text-brand-800 hover:underline"
+                      className="font-medium text-gold-400 hover:underline"
                     >
                       {inv.invoiceNumber}
                     </Link>
@@ -60,7 +60,7 @@ export default async function InvoiceHistoryPage() {
                   <td className="px-4 py-3">
                     {inv.lecturer.name} <span className="text-slate-400">({inv.lecturer.lecturerCode})</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {MONTH_NAMES[inv.billingMonth - 1]} {inv.billingYear}
                   </td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(Number(inv.grandTotal))}</td>

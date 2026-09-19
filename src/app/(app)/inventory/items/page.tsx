@@ -36,27 +36,27 @@ export default async function InventoryItemsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Inventory Items</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-gold-400">Inventory Items</h1>
+          <p className="text-sm text-slate-400">
             {result.total} item{result.total === 1 ? "" : "s"}
           </p>
         </div>
         <Link
           href="/inventory/items/new"
-          className="rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
+          className="rounded-md bg-gold-500 px-4 py-2 text-sm font-medium text-brand-900 transition-all duration-150 hover:bg-gold-600 hover:shadow-md active:scale-[0.97]"
         >
           + Add Inventory Item
         </Link>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
         <ItemsFilterBar categories={categories} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Item Code</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Category</th>
@@ -81,12 +81,12 @@ export default async function InventoryItemsPage({
               result.items.map((item) => (
                 <tr
                   key={item.id}
-                  className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60"
+                  className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/inventory/items/${item.id}`}
-                      className="font-medium text-brand-800 hover:underline"
+                      className="font-medium text-gold-400 hover:underline"
                     >
                       {item.itemCode}
                     </Link>
@@ -99,8 +99,8 @@ export default async function InventoryItemsPage({
                       </Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{item.category.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{item.unit}</td>
+                  <td className="px-4 py-3 text-slate-400">{item.category.name}</td>
+                  <td className="px-4 py-3 text-slate-400">{item.unit}</td>
                   <td className="px-4 py-3">
                     {item.totalStock.toLocaleString()}
                     {item.totalStock === 0 && (
@@ -114,7 +114,7 @@ export default async function InventoryItemsPage({
                       </Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {formatCurrency(Number(item.defaultPrice))}
                   </td>
                   <td className="px-4 py-3">

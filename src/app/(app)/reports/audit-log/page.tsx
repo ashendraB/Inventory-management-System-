@@ -32,25 +32,25 @@ export default async function AuditLogPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Audit Log</h1>
-          <p className="text-sm text-slate-500">{result.total} entr{result.total === 1 ? "y" : "ies"}</p>
+          <h1 className="text-xl font-semibold text-gold-400">Audit Log</h1>
+          <p className="text-sm text-slate-400">{result.total} entr{result.total === 1 ? "y" : "ies"}</p>
         </div>
         <a
           href={`/api/reports/audit-log/export?${new URLSearchParams(sp as Record<string, string>).toString()}`}
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
+          className="rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
         >
           Download CSV
         </a>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
         <AuditLogFilterBar actions={actions} entityTypes={entityTypes} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">User</th>
               <th className="px-4 py-3">Action</th>
@@ -67,11 +67,11 @@ export default async function AuditLogPage({
               </tr>
             ) : (
               result.logs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
-                  <td className="px-4 py-3 text-slate-500">{formatDate(log.createdAt)}</td>
+                <tr key={log.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
+                  <td className="px-4 py-3 text-slate-400">{formatDate(log.createdAt)}</td>
                   <td className="px-4 py-3">{log.user?.name ?? "system"}</td>
                   <td className="px-4 py-3 font-medium">{log.action}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {log.entityType ?? "—"}
                     {log.entityId && (
                       <span className="text-slate-400"> ({log.entityId.slice(0, 10)}...)</span>
@@ -80,7 +80,7 @@ export default async function AuditLogPage({
                   <td className="px-4 py-3">
                     {(log.oldValue || log.newValue) && (
                       <details>
-                        <summary className="cursor-pointer text-brand-800 hover:underline">
+                        <summary className="cursor-pointer text-gold-400 hover:underline">
                           View
                         </summary>
                         <div className="mt-2 max-w-md space-y-1">

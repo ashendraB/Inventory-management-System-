@@ -166,7 +166,7 @@ export function PriceRuleManager({
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm"
         >
           {error && (
             <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
@@ -252,7 +252,7 @@ export function PriceRuleManager({
               />
             </FieldWrapper>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             If an active rule already exists for this exact combination, it will be superseded
             (marked inactive) automatically.
           </p>
@@ -267,10 +267,10 @@ export function PriceRuleManager({
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Paper Size</th>
               <th className="px-4 py-3">GSM</th>
               <th className="px-4 py-3">Type</th>
@@ -293,7 +293,7 @@ export function PriceRuleManager({
               rules.map((rule) => {
                 const isEditing = editingId === rule.id;
                 return (
-                  <tr key={rule.id} className="border-b border-slate-100 last:border-0">
+                  <tr key={rule.id} className="border-b border-white/10 last:border-0">
                     <td className="px-4 py-3">{rule.paperSize.name}</td>
                     <td className="px-4 py-3">{rule.gsm.value}</td>
                     <td className="px-4 py-3">{rule.paperType.name}</td>
@@ -313,7 +313,7 @@ export function PriceRuleManager({
                         formatCurrency(Number(rule.chargePerSheet))
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="px-4 py-3 text-slate-400">
                       {isEditing ? (
                         <div className="flex items-center gap-1 whitespace-nowrap">
                           <span>{formatDate(rule.effectiveFrom)} –</span>
@@ -340,20 +340,20 @@ export function PriceRuleManager({
                           <button
                             onClick={() => saveEdit(rule)}
                             disabled={editSubmitting}
-                            className="text-brand-800 hover:underline disabled:opacity-60"
+                            className="text-gold-400 hover:underline disabled:opacity-60"
                           >
                             {editSubmitting ? "Saving..." : "Save"}
                           </button>
-                          <button onClick={() => setEditingId(null)} className="text-slate-500 hover:underline">
+                          <button onClick={() => setEditingId(null)} className="text-slate-400 hover:underline">
                             Cancel
                           </button>
                         </div>
                       ) : (
                         <div className="flex gap-3">
-                          <button onClick={() => startEdit(rule)} className="text-brand-800 hover:underline">
+                          <button onClick={() => startEdit(rule)} className="text-gold-400 hover:underline">
                             Edit
                           </button>
-                          <button onClick={() => toggleStatus(rule)} className="text-slate-500 hover:underline">
+                          <button onClick={() => toggleStatus(rule)} className="text-slate-400 hover:underline">
                             {rule.status === "ACTIVE" ? "Deactivate" : "Reactivate"}
                           </button>
                           <button onClick={() => deleteRule(rule)} className="text-red-600 hover:underline">

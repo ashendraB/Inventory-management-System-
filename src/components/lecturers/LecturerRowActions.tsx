@@ -57,10 +57,10 @@ export function LecturerRowActions({
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href={`/lecturers/${lecturerId}/edit`} className="text-brand-800 hover:underline">
+      <Link href={`/lecturers/${lecturerId}/edit`} className="text-gold-400 hover:underline">
         Edit
       </Link>
-      <button onClick={toggleStatus} className="text-slate-500 hover:underline">
+      <button onClick={toggleStatus} className="text-slate-400 hover:underline">
         {status === "ACTIVE" ? "Deactivate" : "Reactivate"}
       </button>
       <button onClick={handleDelete} className="text-red-600 hover:underline">

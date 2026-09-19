@@ -16,8 +16,8 @@ export default async function PrintingCalculatorPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Printing Calculator</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Printing Calculator</h1>
+        <p className="text-sm text-slate-400">
           Pick the lecturer, the paper, and the job details — cost is calculated from the
           currently active stock lot and the configured printing price, automatically.
         </p>

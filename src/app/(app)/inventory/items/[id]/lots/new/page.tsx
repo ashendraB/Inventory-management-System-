@@ -23,12 +23,12 @@ export default async function AddStockLotPage({
   return (
     <div className="max-w-2xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Add Stock Lot</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Add Stock Lot</h1>
+        <p className="text-sm text-slate-400">
           {item.name} ({item.itemCode})
         </p>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <AddStockLotForm itemId={item.id} suppliers={suppliers} hasActiveLot={hasActiveLot} />
       </div>
     </div>

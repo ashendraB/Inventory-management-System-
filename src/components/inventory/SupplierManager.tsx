@@ -110,7 +110,7 @@ export function SupplierManager({ suppliers }: { suppliers: SupplierRow[] }) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm"
         >
           {error && (
             <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
@@ -172,10 +172,10 @@ export function SupplierManager({ suppliers }: { suppliers: SupplierRow[] }) {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">Phone</th>
@@ -193,11 +193,11 @@ export function SupplierManager({ suppliers }: { suppliers: SupplierRow[] }) {
               </tr>
             ) : (
               suppliers.map((s) => (
-                <tr key={s.id} className="border-b border-slate-100 last:border-0">
+                <tr key={s.id} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3 font-medium">{s.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{s.contactPerson ?? "—"}</td>
-                  <td className="px-4 py-3 text-slate-500">{s.phone ?? "—"}</td>
-                  <td className="px-4 py-3 text-slate-500">{s.email ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{s.contactPerson ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{s.phone ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{s.email ?? "—"}</td>
                   <td className="px-4 py-3">
                     <Badge tone={s.isActive ? "success" : "neutral"}>
                       {s.isActive ? "Active" : "Inactive"}
@@ -207,13 +207,13 @@ export function SupplierManager({ suppliers }: { suppliers: SupplierRow[] }) {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(s)}
-                        className="text-brand-800 hover:underline"
+                        className="text-gold-400 hover:underline"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => toggleActive(s)}
-                        className="text-slate-500 hover:underline"
+                        className="text-slate-400 hover:underline"
                       >
                         {s.isActive ? "Deactivate" : "Reactivate"}
                       </button>

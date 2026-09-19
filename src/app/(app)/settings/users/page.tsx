@@ -10,8 +10,8 @@ export default async function UsersSettingsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Users</h1>
-        <p className="text-sm text-slate-500">{users.length} user(s)</p>
+        <h1 className="text-xl font-semibold text-gold-400">Users</h1>
+        <p className="text-sm text-slate-400">{users.length} user(s)</p>
       </div>
       <UserManager users={users} currentUserId={session?.userId ?? null} />
     </div>

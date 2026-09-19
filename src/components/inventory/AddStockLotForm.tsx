@@ -137,7 +137,7 @@ export function AddStockLotForm({
         <TextArea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </FieldWrapper>
 
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-slate-200">
         <input
           type="checkbox"
           checked={setActive}

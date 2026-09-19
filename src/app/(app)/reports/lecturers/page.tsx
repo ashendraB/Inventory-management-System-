@@ -19,8 +19,8 @@ export default async function LecturerReportPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Lecturer Reports</h1>
-        <p className="text-sm text-slate-500">Per-lecturer printing usage for the selected period.</p>
+        <h1 className="text-xl font-semibold text-gold-400">Lecturer Reports</h1>
+        <p className="text-sm text-slate-400">Per-lecturer printing usage for the selected period.</p>
       </div>
 
       <DateRangeFilterBar exportHref="/api/reports/lecturers/export" />
@@ -31,10 +31,10 @@ export default async function LecturerReportPage({
         <StatCard label="Total Cost" value={formatCurrency(report.totalCost)} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Lecturer</th>
               <th className="px-4 py-3">Jobs</th>
               <th className="px-4 py-3">Sheets</th>
@@ -53,7 +53,7 @@ export default async function LecturerReportPage({
               report.rows.map((r) => {
                 const unbilled = r.jobCount - r.billedJobCount;
                 return (
-                  <tr key={r.lecturerId} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
+                  <tr key={r.lecturerId} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                     <td className="px-4 py-3">
                       <span className="font-medium">{r.lecturerName}</span>{" "}
                       <span className="text-slate-400">({r.lecturerCode})</span>
@@ -76,7 +76,7 @@ export default async function LecturerReportPage({
         </table>
       </div>
 
-      <Link href="/billing/monthly" className="text-sm text-brand-800 hover:underline">
+      <Link href="/billing/monthly" className="text-sm text-gold-400 hover:underline">
         Go to Monthly Billing →
       </Link>
     </div>

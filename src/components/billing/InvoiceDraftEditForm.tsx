@@ -50,10 +50,10 @@ export function InvoiceDraftEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="no-print space-y-3 rounded-md border border-slate-200 bg-slate-50 p-4"
+      className="no-print space-y-3 rounded-md border border-white/10 bg-white/5 p-4"
     >
       {error && <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         Adjustable while this invoice is a draft — paper cost and printing charge come from the
         printing records themselves and aren&apos;t editable here.
       </p>

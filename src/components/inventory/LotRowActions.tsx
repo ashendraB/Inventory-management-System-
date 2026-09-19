@@ -76,12 +76,12 @@ export function LotRowActions({
   return (
     <div className="flex items-center gap-3 text-sm">
       {canActivate && (
-        <button disabled={busy} onClick={handleSetActive} className="text-brand-800 hover:underline">
+        <button disabled={busy} onClick={handleSetActive} className="text-gold-400 hover:underline">
           Set Active
         </button>
       )}
       {canFinish ? (
-        <button disabled={busy} onClick={handleFinish} className="text-slate-500 hover:underline">
+        <button disabled={busy} onClick={handleFinish} className="text-slate-400 hover:underline">
           Mark Finished
         </button>
       ) : (

@@ -29,9 +29,9 @@ export function PrintingRecordsFilterBar({
     searchParams.get("to");
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-wrap items-end gap-3 rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Lecturer</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Lecturer</label>
         <Select
           value={searchParams.get("lecturerId") ?? ""}
           onChange={(e) => updateParam("lecturerId", e.target.value)}
@@ -46,7 +46,7 @@ export function PrintingRecordsFilterBar({
         </Select>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Subject</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Subject</label>
         <Select
           value={searchParams.get("subjectId") ?? ""}
           onChange={(e) => updateParam("subjectId", e.target.value)}
@@ -61,7 +61,7 @@ export function PrintingRecordsFilterBar({
         </Select>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Printed From</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Printed From</label>
         <TextInput
           type="date"
           value={searchParams.get("from") ?? ""}
@@ -69,7 +69,7 @@ export function PrintingRecordsFilterBar({
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Printed To</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Printed To</label>
         <TextInput
           type="date"
           value={searchParams.get("to") ?? ""}

@@ -91,10 +91,10 @@ export function MonthlyBillingPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
         <div className="flex gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Month</label>
+            <label className="mb-1 block text-sm font-medium text-slate-200">Month</label>
             <Select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="w-40">
               {MONTH_NAMES.map((name, i) => (
                 <option key={name} value={i + 1}>
@@ -104,7 +104,7 @@ export function MonthlyBillingPanel() {
             </Select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Year</label>
+            <label className="mb-1 block text-sm font-medium text-slate-200">Year</label>
             <Select value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-28">
               {years.map((y) => (
                 <option key={y} value={y}>
@@ -121,10 +121,10 @@ export function MonthlyBillingPanel() {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Lecturer</th>
               <th className="px-4 py-3">Jobs</th>
               <th className="px-4 py-3">Paper Cost</th>
@@ -149,20 +149,20 @@ export function MonthlyBillingPanel() {
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.lecturerId} className="border-b border-slate-100 last:border-0">
+                <tr key={row.lecturerId} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3">
                     <span className="font-medium">{row.lecturerName}</span>{" "}
                     <span className="text-slate-400">({row.lecturerCode})</span>
                   </td>
                   <td className="px-4 py-3">{row.jobCount}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(row.totalPaperCost)}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(row.totalPrintingCharge)}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(row.totalPaperCost)}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(row.totalPrintingCharge)}</td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(row.grandTotal)}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => generateOne(row.lecturerId)}
                       disabled={generatingId === row.lecturerId}
-                      className="text-brand-800 hover:underline disabled:opacity-60"
+                      className="text-gold-400 hover:underline disabled:opacity-60"
                     >
                       {generatingId === row.lecturerId ? "Generating..." : "Generate Invoice"}
                     </button>
@@ -174,7 +174,7 @@ export function MonthlyBillingPanel() {
         </table>
       </div>
 
-      <Link href="/billing/invoices" className="text-sm text-brand-800 hover:underline">
+      <Link href="/billing/invoices" className="text-sm text-gold-400 hover:underline">
         View all invoices →
       </Link>
     </div>

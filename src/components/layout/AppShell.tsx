@@ -92,7 +92,7 @@ export function AppShell({
                     <span
                       key={link.href}
                       title="Coming soon"
-                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm uppercase tracking-wide text-slate-500"
+                      className="flex cursor-not-allowed items-center justify-between rounded-md px-3 py-1.5 text-sm uppercase tracking-wide text-slate-400"
                     >
                       {link.label}
                       <span className="text-[10px] uppercase tracking-wide">
@@ -126,7 +126,7 @@ export function AppShell({
 
   return (
     <SessionProvider session={user}>
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-brand-900">
       {/* Desktop sidebar */}
       <aside className="no-print hidden w-64 flex-col bg-brand-900 md:flex">
         <Brand />
@@ -167,9 +167,9 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="no-print flex h-14 items-center justify-between border-b border-gold-500/40 bg-white px-4 shadow-sm">
+        <header className="no-print flex h-14 items-center justify-between border-b border-gold-500/40 bg-brand-800 px-4 shadow-sm">
           <button
-            className="text-slate-500 md:hidden"
+            className="text-slate-400 md:hidden"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
@@ -178,12 +178,12 @@ export function AppShell({
           <div className="hidden md:block" />
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-slate-900">{user.name}</p>
-              <p className="text-xs text-slate-500">{ROLE_LABEL[user.role]}</p>
+              <p className="text-sm font-medium text-white">{user.name}</p>
+              <p className="text-xs text-slate-400">{ROLE_LABEL[user.role]}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors hover:border-brand-300 hover:bg-slate-100"
+              className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition-colors hover:border-gold-500/50 hover:bg-white/10"
             >
               Sign out
             </button>

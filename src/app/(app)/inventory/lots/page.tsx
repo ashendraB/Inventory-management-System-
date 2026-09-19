@@ -53,8 +53,8 @@ export default async function StockLotsPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Stock</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">Stock</h1>
+        <p className="text-sm text-slate-400">
           {result.total} lot{result.total === 1 ? "" : "s"}
           {otherItems.length > 0 &&
             `, ${otherItems.length} other item${otherItems.length === 1 ? "" : "s"}`}
@@ -63,16 +63,16 @@ export default async function StockLotsPage({
 
       <BarcodeScanner />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
         <LotsFilterBar items={paperItems} />
       </div>
 
-      <h2 className="text-sm font-semibold text-slate-900">Paper Stock Lots</h2>
+      <h2 className="text-sm font-semibold text-gold-400">Paper Stock Lots</h2>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Lot Code</th>
               <th className="px-4 py-3">Item</th>
               <th className="px-4 py-3">Quantity</th>
@@ -92,17 +92,17 @@ export default async function StockLotsPage({
               </tr>
             ) : (
               result.lots.map((lot) => (
-                <tr key={lot.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
+                <tr key={lot.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                   <td className="px-4 py-3">
-                    <Link href={`/inventory/lots/${lot.id}`} className="font-medium text-brand-800 hover:underline">
+                    <Link href={`/inventory/lots/${lot.id}`} className="font-medium text-gold-400 hover:underline">
                       {lot.lotCode}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-slate-400">
                     {lot.inventoryItem.itemCode} — {lot.inventoryItem.name}
                   </td>
                   <td className="px-4 py-3">{lot.currentQuantity.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(Number(lot.costPerSheet))}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(Number(lot.costPerSheet))}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={lot.status} />
                   </td>
@@ -120,16 +120,16 @@ export default async function StockLotsPage({
 
       <Pagination page={result.page} totalPages={result.totalPages} makeHref={pageHref} />
 
-      <h2 className="text-sm font-semibold text-slate-900">Other Inventory Items</h2>
-      <p className="-mt-2 text-xs text-slate-500">
+      <h2 className="text-sm font-semibold text-gold-400">Other Inventory Items</h2>
+      <p className="-mt-2 text-xs text-slate-400">
         These items aren&apos;t paper, so they don&apos;t use stock lots — their Count is tracked
         directly on the item.
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Item</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Quantity</th>
@@ -148,11 +148,11 @@ export default async function StockLotsPage({
               </tr>
             ) : (
               otherItems.map((item) => (
-                <tr key={item.id} className="border-b border-slate-100 last:border-0 transition-colors hover:bg-brand-50/60">
+                <tr key={item.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/inventory/items/${item.id}`}
-                      className="font-medium text-brand-800 hover:underline"
+                      className="font-medium text-gold-400 hover:underline"
                     >
                       {item.itemCode} — {item.name}
                     </Link>
@@ -162,7 +162,7 @@ export default async function StockLotsPage({
                       </Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{item.category.name}</td>
+                  <td className="px-4 py-3 text-slate-400">{item.category.name}</td>
                   <td className="px-4 py-3">
                     {item.currentQuantity.toLocaleString()}
                     {item.currentQuantity === 0 && (
@@ -176,19 +176,19 @@ export default async function StockLotsPage({
                       </Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{formatCurrency(Number(item.defaultPrice))}</td>
+                  <td className="px-4 py-3 text-slate-400">{formatCurrency(Number(item.defaultPrice))}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={item.status} />
                   </td>
                   <td className="px-4 py-3 text-slate-400">{formatDate(item.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3 text-sm">
-                      <Link href={`/inventory/items/${item.id}`} className="text-slate-500 hover:underline">
+                      <Link href={`/inventory/items/${item.id}`} className="text-slate-400 hover:underline">
                         View
                       </Link>
                       <Link
                         href={`/inventory/items/${item.id}?adjust=1`}
-                        className="text-brand-800 hover:underline"
+                        className="text-gold-400 hover:underline"
                       >
                         Use Stock
                       </Link>

@@ -24,27 +24,27 @@ export default async function PrintingRecordDetailPage({
     <div className="max-w-2xl space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Printing Summary</h1>
-          <p className="text-sm text-slate-500">{record.printingCode}</p>
+          <h1 className="text-xl font-semibold text-gold-400">Printing Summary</h1>
+          <p className="text-sm text-slate-400">{record.printingCode}</p>
         </div>
         <div className="flex gap-2">
           <Link
             href={`/printing/records/${record.id}?edit=1`}
-            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
+            className="inline-flex items-center rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
           >
             Edit
           </Link>
           {record.documentFileName && (
             <ReprintButton
               recordId={record.id}
-              className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
+              className="inline-flex items-center rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
             />
           )}
           <PrintingRecordActions recordId={record.id} />
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <Detail label="Lecturer" value={record.lecturer.name} />
           <Detail label="Date" value={formatDate(record.date)} />
@@ -65,7 +65,7 @@ export default async function PrintingRecordDetailPage({
           <Detail label="Operator" value={record.operator.name} />
         </dl>
 
-        <div className="my-4 border-t border-dashed border-slate-300" />
+        <div className="my-4 border-t border-dashed border-white/20" />
 
         <dl className="space-y-2 text-sm">
           <Row label="Physical Sheets" value={record.physicalSheets.toLocaleString()} />
@@ -77,7 +77,7 @@ export default async function PrintingRecordDetailPage({
           )}
           <Row
             label={
-              <Link href={`/inventory/lots/${record.lotId}`} className="text-brand-800 hover:underline">
+              <Link href={`/inventory/lots/${record.lotId}`} className="text-gold-400 hover:underline">
                 Stock Lot Used
               </Link>
             }
@@ -85,15 +85,15 @@ export default async function PrintingRecordDetailPage({
           />
           <Row label="Paper Cost" value={formatCurrency(Number(record.totalPaperCost))} />
           <Row label="Printing Charge" value={formatCurrency(Number(record.totalPrintingCharge))} />
-          <div className="border-t border-slate-200 pt-2">
+          <div className="border-t border-white/10 pt-2">
             <Row label="TOTAL" value={formatCurrency(Number(record.totalCost))} bold />
           </div>
         </dl>
 
         {record.notes && (
           <div className="mt-4">
-            <p className="text-xs font-medium text-slate-500">Notes</p>
-            <p className="text-sm text-slate-700">{record.notes}</p>
+            <p className="text-xs font-medium text-slate-400">Notes</p>
+            <p className="text-sm text-slate-200">{record.notes}</p>
           </div>
         )}
 
@@ -108,7 +108,7 @@ export default async function PrintingRecordDetailPage({
 
       <Link
         href="/printing/calculator"
-        className="inline-block rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-900 hover:shadow-md active:scale-[0.97]"
+        className="inline-block rounded-md bg-gold-500 px-4 py-2 text-sm font-medium text-brand-900 transition-all duration-150 hover:bg-gold-600 hover:shadow-md active:scale-[0.97]"
       >
         + New Printing Job
       </Link>
@@ -119,8 +119,8 @@ export default async function PrintingRecordDetailPage({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className="text-slate-800">{value}</dd>
+      <dt className="text-xs font-medium text-slate-400">{label}</dt>
+      <dd className="text-slate-100">{value}</dd>
     </div>
   );
 }
@@ -128,8 +128,8 @@ function Detail({ label, value }: { label: string; value: string }) {
 function Row({ label, value, bold }: { label: React.ReactNode; value: string; bold?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={bold ? "text-base font-semibold text-slate-900" : "text-slate-800"}>{value}</dd>
+      <dt className="text-slate-400">{label}</dt>
+      <dd className={bold ? "text-base font-semibold text-white" : "text-slate-100"}>{value}</dd>
     </div>
   );
 }

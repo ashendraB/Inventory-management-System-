@@ -31,7 +31,7 @@ export default async function InventoryItemDetailPage({
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-slate-900">{item.name}</h1>
+            <h1 className="text-xl font-semibold text-gold-400">{item.name}</h1>
             <span
               className="flex items-center gap-1"
               title="Whether this item is listed in the catalog — separate from stock level"
@@ -41,13 +41,13 @@ export default async function InventoryItemDetailPage({
             </span>
             {expiryLabel(item) && <Badge tone="danger">{expiryLabel(item)}</Badge>}
           </div>
-          <p className="text-sm text-slate-500">{item.itemCode}</p>
+          <p className="text-sm text-slate-400">{item.itemCode}</p>
         </div>
         <ItemActions itemId={item.id} status={item.status} />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-3">
-        <div className="sm:col-span-2 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="sm:col-span-2 space-y-4 rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <Detail label="Category" value={item.category.name} />
             {isPaper && (
@@ -66,8 +66,8 @@ export default async function InventoryItemDetailPage({
               <Detail label="Warranty Expiry Date" value={formatDate(item.warrantyExpiryDate)} />
             )}
             <div>
-              <dt className="text-xs font-medium text-slate-500">Current Stock</dt>
-              <dd className="flex items-center gap-2 text-slate-800">
+              <dt className="text-xs font-medium text-slate-400">Current Stock</dt>
+              <dd className="flex items-center gap-2 text-slate-100">
                 {totalStock.toLocaleString()} {item.unit}(s)
                 {totalStock === 0 && <Badge tone="danger">out of stock</Badge>}
                 {totalStock > 0 && totalStock <= item.minStock && (
@@ -81,14 +81,14 @@ export default async function InventoryItemDetailPage({
           </dl>
           {item.description && (
             <div>
-              <p className="text-xs font-medium text-slate-500">Description</p>
-              <p className="text-sm text-slate-700">{item.description}</p>
+              <p className="text-xs font-medium text-slate-400">Description</p>
+              <p className="text-sm text-slate-200">{item.description}</p>
             </div>
           )}
           {item.notes && (
             <div>
-              <p className="text-xs font-medium text-slate-500">Notes</p>
-              <p className="text-sm text-slate-700">{item.notes}</p>
+              <p className="text-xs font-medium text-slate-400">Notes</p>
+              <p className="text-sm text-slate-200">{item.notes}</p>
             </div>
           )}
           {!isPaper && (
@@ -96,18 +96,18 @@ export default async function InventoryItemDetailPage({
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
           <BarcodeDisplay value={item.barcode} label="Item barcode" />
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">Stock Lots</h2>
+          <h2 className="text-sm font-semibold text-gold-400">Stock Lots</h2>
           {isPaper && (
             <Link
               href={`/inventory/items/${item.id}/lots/new`}
-              className="text-sm font-medium text-brand-800 hover:underline"
+              className="text-sm font-medium text-gold-400 hover:underline"
             >
               + Add Stock Lot
             </Link>
@@ -122,7 +122,7 @@ export default async function InventoryItemDetailPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase text-slate-500">
+              <tr className="border-b border-white/10 text-left text-xs font-semibold uppercase text-slate-400">
                 <th className="py-2">Lot</th>
                 <th className="py-2">Quantity</th>
                 <th className="py-2">Cost/Sheet</th>
@@ -133,9 +133,9 @@ export default async function InventoryItemDetailPage({
             </thead>
             <tbody>
               {item.lots.map((lot) => (
-                <tr key={lot.id} className="border-b border-slate-100 last:border-0">
+                <tr key={lot.id} className="border-b border-white/10 last:border-0">
                   <td className="py-2">
-                    <Link href={`/inventory/lots/${lot.id}`} className="text-brand-800 hover:underline">
+                    <Link href={`/inventory/lots/${lot.id}`} className="text-gold-400 hover:underline">
                       {lot.lotCode}
                     </Link>
                   </td>
@@ -161,8 +161,8 @@ export default async function InventoryItemDetailPage({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className="text-slate-800">{value}</dd>
+      <dt className="text-xs font-medium text-slate-400">{label}</dt>
+      <dd className="text-slate-100">{value}</dd>
     </div>
   );
 }

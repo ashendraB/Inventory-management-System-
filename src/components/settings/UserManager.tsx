@@ -143,7 +143,7 @@ export function UserManager({
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm"
         >
           {error && (
             <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
@@ -209,11 +209,11 @@ export function UserManager({
           </div>
 
           <div>
-            <p className="mb-1 text-sm font-medium text-slate-700">
+            <p className="mb-1 text-sm font-medium text-slate-200">
               Extra Permissions <span className="text-slate-400">(Operators only — Administrators already have everything)</span>
             </p>
             <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={form.canManagePricing}
@@ -221,7 +221,7 @@ export function UserManager({
                 />
                 Can manage printing pricing
               </label>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={form.canManageSettings}
@@ -243,10 +243,10 @@ export function UserManager({
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Username</th>
               <th className="px-4 py-3">Email</th>
@@ -266,15 +266,15 @@ export function UserManager({
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="border-b border-slate-100 last:border-0">
+                <tr key={u.id} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3 font-medium">
                     {u.name}
                     {u.id === currentUserId && (
                       <span className="ml-1 text-xs text-slate-400">(you)</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{u.username}</td>
-                  <td className="px-4 py-3 text-slate-500">{u.email ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{u.username}</td>
+                  <td className="px-4 py-3 text-slate-400">{u.email ?? "—"}</td>
                   <td className="px-4 py-3">{ROLE_LABEL[u.role]}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -293,12 +293,12 @@ export function UserManager({
                   <td className="px-4 py-3 text-slate-400">{formatDate(u.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button onClick={() => startEdit(u)} className="text-brand-800 hover:underline">
+                      <button onClick={() => startEdit(u)} className="text-gold-400 hover:underline">
                         Edit
                       </button>
                       <button
                         onClick={() => toggleActive(u)}
-                        className="text-slate-500 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                        className="text-slate-400 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
                         disabled={u.id === currentUserId && u.isActive}
                         title={u.id === currentUserId && u.isActive ? "You can't deactivate your own account" : undefined}
                       >

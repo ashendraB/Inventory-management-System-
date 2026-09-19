@@ -83,7 +83,7 @@ export function BarcodeScanner() {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <TextInput
           ref={inputRef}
@@ -108,7 +108,7 @@ export function BarcodeScanner() {
           <p>{error}</p>
           <Link
             href={`/inventory/items/new?barcode=${encodeURIComponent(value.trim())}`}
-            className="mt-1 inline-block font-medium text-brand-800 hover:underline"
+            className="mt-1 inline-block font-medium text-gold-400 hover:underline"
           >
             + Add as new inventory item →
           </Link>
@@ -116,14 +116,14 @@ export function BarcodeScanner() {
       )}
 
       {result?.type === "item" && (
-        <div className="mt-3 rounded-md border border-slate-200 p-3 text-sm">
-          <p className="font-medium text-slate-900">{result.item.name}</p>
-          <p className="text-slate-500">
+        <div className="mt-3 rounded-md border border-white/10 p-3 text-sm">
+          <p className="font-medium text-white">{result.item.name}</p>
+          <p className="text-slate-400">
             {result.item.itemCode} · {result.item.category.name}
           </p>
           <Link
             href={`/inventory/items/${result.item.id}`}
-            className="mt-2 inline-block text-brand-800 hover:underline"
+            className="mt-2 inline-block text-gold-400 hover:underline"
           >
             View item →
           </Link>
@@ -131,11 +131,11 @@ export function BarcodeScanner() {
       )}
 
       {result?.type === "lot" && (
-        <div className="mt-3 rounded-md border border-slate-200 p-3 text-sm">
+        <div className="mt-3 rounded-md border border-white/10 p-3 text-sm">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-medium text-slate-900">{result.lot.lotCode}</p>
-              <p className="text-slate-500">{result.lot.inventoryItem.name}</p>
+              <p className="font-medium text-white">{result.lot.lotCode}</p>
+              <p className="text-slate-400">{result.lot.inventoryItem.name}</p>
             </div>
             <Badge tone={statusTone(result.lot.status)}>{result.lot.status}</Badge>
           </div>
@@ -161,7 +161,7 @@ export function BarcodeScanner() {
             )}
             <Link
               href={`/inventory/items/${result.lot.inventoryItem.id}`}
-              className="text-brand-800 hover:underline"
+              className="text-gold-400 hover:underline"
             >
               View item →
             </Link>

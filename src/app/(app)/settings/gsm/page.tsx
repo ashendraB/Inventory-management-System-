@@ -9,8 +9,8 @@ export default async function GsmSettingsPage() {
   return (
     <div className="max-w-2xl space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">GSM</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-gold-400">GSM</h1>
+        <p className="text-sm text-slate-400">
           Paper weight values used on paper inventory items, printing price rules, and printing
           records.
         </p>
