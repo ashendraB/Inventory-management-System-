@@ -270,6 +270,8 @@ export async function submitPrintingJob(
         printingMachine: data.printingMachine || null,
         operatorId,
         notes: data.notes || null,
+        documentFileName: data.documentFileName || null,
+        documentData: data.documentBase64 ? Buffer.from(data.documentBase64, "base64") : null,
       },
     });
 
@@ -343,6 +345,10 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
+      // documentData holds the full PDF bytes — never fetch it for a list of
+      // rows. documentFileName alone (kept) is enough to know whether a
+      // "Reprint" button should show.
+      omit: { documentData: true },
       include: {
         lecturer: { select: { name: true } },
         subject: { select: { name: true } },
@@ -367,6 +373,7 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
 export async function getPrintingRecord(id: string) {
   return prisma.printingRecord.findUnique({
     where: { id },
+    omit: { documentData: true },
     include: {
       lecturer: true,
       subject: true,
@@ -377,6 +384,15 @@ export async function getPrintingRecord(id: string) {
       lot: true,
       operator: { select: { name: true } },
     },
+  });
+}
+
+/** The one place documentData is actually fetched — backs the Reprint
+ * button's dedicated document-serving route. */
+export async function getPrintingRecordDocument(id: string) {
+  return prisma.printingRecord.findUnique({
+    where: { id },
+    select: { documentFileName: true, documentData: true },
   });
 }
 

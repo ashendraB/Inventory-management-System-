@@ -417,6 +417,13 @@ model PrintingRecord {
   operatorId  String
   operator    User @relation(fields: [operatorId], references: [id])
   notes       String?
+  // The attached document itself (PDF only — same constraint as the
+  // Calculator's auto page-detection), stored so "Reprint" can reopen it
+  // later. Deliberately excluded (via Prisma `omit`) from every query except
+  // the one dedicated document-serving route — including it by default
+  // would pull full file bytes into every list/detail page load.
+  documentFileName String?
+  documentData      Bytes?
   createdAt   DateTime @default(now())
 
   stockTransaction StockTransaction?

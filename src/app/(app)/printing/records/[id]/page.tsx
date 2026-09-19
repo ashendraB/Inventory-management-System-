@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPrintingRecord } from "@/server/printing-service";
 import { PrintingRecordActions } from "@/components/printing/PrintingRecordActions";
+import { ReprintButton } from "@/components/printing/ReprintButton";
 import { EditPrintingRecordForm } from "@/components/printing/EditPrintingRecordForm";
 import { formatCurrency, formatDate } from "@/lib/format";
 
@@ -33,6 +34,12 @@ export default async function PrintingRecordDetailPage({
           >
             Edit
           </Link>
+          {record.documentFileName && (
+            <ReprintButton
+              recordId={record.id}
+              className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-brand-300 hover:bg-slate-100"
+            />
+          )}
           <PrintingRecordActions recordId={record.id} />
         </div>
       </div>

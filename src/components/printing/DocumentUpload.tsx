@@ -23,6 +23,10 @@ import { Button } from "@/components/ui/Field";
  */
 export interface DocumentUploadHandle {
   print: () => void;
+  /** The attached file, but only when it's a supported, readable PDF — null
+   * otherwise (no file, or an unsupported format like .docx). Used to save
+   * the document alongside the printing record for "Reprint" later. */
+  getPdfFile: () => File | null;
 }
 
 function stripExtension(fileName: string) {
@@ -45,6 +49,7 @@ export function DocumentUpload({
   ref?: React.Ref<DocumentUploadHandle>;
 }) {
   const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [detectedPages, setDetectedPages] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,21 +82,29 @@ export function DocumentUpload({
     win.print();
   }, []);
 
-  useImperativeHandle(ref, () => ({ print: handlePrint }), [handlePrint]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      print: handlePrint,
+      getPdfFile: () => (!unsupported && file ? file : null),
+    }),
+    [handlePrint, unsupported, file]
+  );
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selected = e.target.files?.[0];
+    if (!selected) return;
 
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setDetectedPages(null);
     setUnsupported(false);
     setPreviewReady(false);
-    setFileName(file.name);
-    onFileSelected?.(stripExtension(file.name));
+    setFileName(selected.name);
+    setFile(selected);
+    onFileSelected?.(stripExtension(selected.name));
 
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    const url = URL.createObjectURL(file);
+    const isPdf = selected.type === "application/pdf" || selected.name.toLowerCase().endsWith(".pdf");
+    const url = URL.createObjectURL(selected);
     setFileUrl(url);
 
     if (!isPdf) {
@@ -107,7 +120,7 @@ export function DocumentUpload({
       // bundler — pdf.js requires the worker version to exactly match the
       // API version, and a plain static file sidesteps bundler asset quirks.
       pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-      const arrayBuffer = await file.arrayBuffer();
+      const arrayBuffer = await selected.arrayBuffer();
       const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       setDetectedPages(doc.numPages);
       onPagesDetected(doc.numPages);
@@ -123,6 +136,7 @@ export function DocumentUpload({
   function handleClear() {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setFileName(null);
+    setFile(null);
     setFileUrl(null);
     setDetectedPages(null);
     setUnsupported(false);

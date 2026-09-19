@@ -8,6 +8,19 @@ import { DocumentUpload, type DocumentUploadHandle } from "@/components/printing
 import { formatCurrency } from "@/lib/format";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 
+/** Chunked to avoid a stack-overflow from String.fromCharCode(...bytes) on
+ * larger PDFs — btoa() itself has no size limit, spreading a huge array
+ * onto the call stack does. */
+async function fileToBase64(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 interface Lecturer {
   id: string;
   name: string;
@@ -267,6 +280,9 @@ export function PrintingCalculatorForm({
   async function submitRecord() {
     setSubmitting(true);
     try {
+      const pdfFile = documentRef.current?.getPdfFile() ?? null;
+      const documentBase64 = pdfFile ? await fileToBase64(pdfFile) : undefined;
+
       const res = await fetch("/api/printing/records", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -282,6 +298,8 @@ export function PrintingCalculatorForm({
           pages: Number(pages),
           copies: Number(copies),
           notes,
+          documentBase64,
+          documentFileName: pdfFile?.name,
         }),
       });
       const data = await res.json();

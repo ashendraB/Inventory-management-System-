@@ -3,8 +3,15 @@
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useSession } from "@/lib/session-context";
+import { ReprintButton } from "@/components/printing/ReprintButton";
 
-export function PrintingRecordRowActions({ recordId }: { recordId: string }) {
+export function PrintingRecordRowActions({
+  recordId,
+  hasDocument,
+}: {
+  recordId: string;
+  hasDocument?: boolean;
+}) {
   const router = useRouter();
   const { role } = useSession();
 
@@ -27,8 +34,11 @@ export function PrintingRecordRowActions({ recordId }: { recordId: string }) {
   }
 
   return (
-    <button onClick={handleDelete} className="text-red-600 hover:underline">
-      Delete
-    </button>
+    <div className="flex items-center gap-3">
+      {hasDocument && <ReprintButton recordId={recordId} />}
+      <button onClick={handleDelete} className="text-red-600 hover:underline">
+        Delete
+      </button>
+    </div>
   );
 }

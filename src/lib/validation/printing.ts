@@ -15,6 +15,10 @@ export const printingJobInputSchema = z.object({
   copies: z.coerce.number().int().positive("Copies must be greater than 0"),
   printingMachine: z.string().trim().max(100).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
+  // The attached PDF (for "Reprint" later), base64-encoded client-side —
+  // optional, and only ever sent when the attached file was a real PDF.
+  documentBase64: z.string().optional(),
+  documentFileName: z.string().trim().max(255).optional(),
 });
 
 export const previewJobInputSchema = printingJobInputSchema.pick({

@@ -120,7 +120,10 @@ export default async function PrintingRecordsPage({
                       >
                         Edit
                       </Link>
-                      <PrintingRecordRowActions recordId={r.id} />
+                      <PrintingRecordRowActions
+                        recordId={r.id}
+                        hasDocument={Boolean(r.documentFileName)}
+                      />
                     </div>
                   </td>
                 </tr>
