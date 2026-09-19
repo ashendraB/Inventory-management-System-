@@ -1,13 +1,6 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -37,16 +30,13 @@
   --color-gold-900: #453218;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Actual body background/text color live as Tailwind classes directly on
+   <body> in layout.tsx (bg-brand-900 text-white) — deliberately not set
+   here. A plain, unlayered CSS rule like `body { color: ... }` would sit
+   outside Tailwind's cascade layers and silently beat any Tailwind utility
+   class applied to the same element, no matter the specificity — exactly
+   the bug that happened here once already. */
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
