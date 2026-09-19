@@ -305,6 +305,7 @@ export function PrintingCalculatorForm({
         <DocumentUpload
           ref={documentRef}
           onPagesDetected={(n) => setPages(String(n))}
+          onFileSelected={setDocumentName}
           onReadyChange={setDocumentReady}
         />
 

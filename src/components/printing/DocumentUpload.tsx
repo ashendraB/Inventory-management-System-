@@ -25,12 +25,22 @@ export interface DocumentUploadHandle {
   print: () => void;
 }
 
+function stripExtension(fileName: string) {
+  const dot = fileName.lastIndexOf(".");
+  return dot > 0 ? fileName.slice(0, dot) : fileName;
+}
+
 export function DocumentUpload({
   onPagesDetected,
+  onFileSelected,
   onReadyChange,
   ref,
 }: {
   onPagesDetected: (pages: number) => void;
+  /** Fired with the file's name (extension stripped) whenever a new file is
+   * chosen, so the caller can auto-fill Document Name — still just a plain
+   * text field afterward, so the operator can edit or clear it freely. */
+  onFileSelected?: (name: string) => void;
   onReadyChange?: (ready: boolean) => void;
   ref?: React.Ref<DocumentUploadHandle>;
 }) {
@@ -78,6 +88,7 @@ export function DocumentUpload({
     setUnsupported(false);
     setPreviewReady(false);
     setFileName(file.name);
+    onFileSelected?.(stripExtension(file.name));
 
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     const url = URL.createObjectURL(file);
@@ -123,9 +134,10 @@ export function DocumentUpload({
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-1 text-sm font-semibold text-slate-900">Document to Print</h2>
       <p className="mb-3 text-xs text-slate-500">
-        Optional — attach the file to auto-fill the page count and preview it below. The Print
-        button prints this preview directly (your browser&apos;s own print dialog) and saves the
-        record at the same time.
+        Optional — attach the file to auto-fill the page count and Document Name (from the
+        filename — edit or clear it below if you need to) and preview it below. The Print button
+        prints this preview directly (your browser&apos;s own print dialog) and saves the record
+        at the same time.
       </p>
       <input
         ref={inputRef}
