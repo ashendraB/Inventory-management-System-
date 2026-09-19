@@ -29,6 +29,8 @@ jobs:
 
       - run: npm run lint
 
-      - run: npx tsc --noEmit
-
+      # `next build` type-checks on its own (and generates Next's own route
+      # types like LayoutProps first) — a separate `tsc --noEmit` run before
+      # this would fail on those not existing yet, so this is the only
+      # build/type-check step.
       - run: npm run build
