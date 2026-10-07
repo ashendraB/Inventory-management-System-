@@ -24,7 +24,6 @@ async function fileToBase64(file: File): Promise<string> {
 interface Lecturer {
   id: string;
   name: string;
-  department: string | null;
   subjectId: string | null;
 }
 
@@ -247,15 +246,16 @@ export function PrintingCalculatorForm({
     setItems(listData.items);
   }
 
-  const subjectLecturers = subjectId ? lecturers.filter((l) => l.subjectId === subjectId) : [];
-
-  // Picking a subject auto-selects its lecturer when exactly one teaches it;
-  // with several (or none) the operator still chooses, guided by the hint.
-  function handleSubjectChange(id: string) {
-    setSubjectId(id);
-    if (!id) return;
-    const matches = lecturers.filter((l) => l.subjectId === id);
-    if (matches.length === 1) setLecturerId(matches[0].id);
+  // Picking a lecturer fills in the subject they teach. Still just a normal
+  // dropdown afterward, so the operator can change it for this one job; a
+  // lecturer with no subject (or whose subject was deactivated and so isn't
+  // in the list) leaves the Subject field alone.
+  function handleLecturerChange(id: string) {
+    setLecturerId(id);
+    const lecturer = lecturers.find((l) => l.id === id);
+    if (lecturer?.subjectId && subjects.some((s) => s.id === lecturer.subjectId)) {
+      setSubjectId(lecturer.subjectId);
+    }
   }
 
   function handleReset() {
@@ -386,12 +386,11 @@ export function PrintingCalculatorForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FieldWrapper label="Lecturer" htmlFor="lecturerId" required>
-              <Select id="lecturerId" required value={lecturerId} onChange={(e) => setLecturerId(e.target.value)}>
+              <Select id="lecturerId" required value={lecturerId} onChange={(e) => handleLecturerChange(e.target.value)}>
                 <option value="">Select lecturer</option>
                 {lecturers.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.name}
-                    {l.department ? ` (${l.department})` : ""}
                   </option>
                 ))}
               </Select>
@@ -408,17 +407,9 @@ export function PrintingCalculatorForm({
             <FieldWrapper
               label="Subject"
               htmlFor="subjectId"
-              hint={
-                !subjectId
-                  ? "Picking a subject selects its lecturer automatically"
-                  : subjectLecturers.length === 0
-                    ? "No lecturer is linked to this subject yet — set it on the lecturer's page"
-                    : subjectLecturers.length > 1
-                      ? `${subjectLecturers.length} lecturers teach this — choose one above`
-                      : `Lecturer auto-selected: ${subjectLecturers[0].name}`
-              }
+              hint="Filled in automatically from the lecturer — change it if this job is for a different subject"
             >
-              <Select id="subjectId" value={subjectId} onChange={(e) => handleSubjectChange(e.target.value)}>
+              <Select id="subjectId" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
                 <option value="">None</option>
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>

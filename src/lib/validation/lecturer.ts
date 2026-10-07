@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const createLecturerSchema = z.object({
   name: z.string().trim().min(1, "Lecturer name is required").max(200),
-  department: z.string().trim().max(200).optional().or(z.literal("")),
   email: z.string().trim().email("Invalid email").optional().or(z.literal("")),
   phone: z.string().trim().max(50).optional().or(z.literal("")),
   // Subject *name* as typed — resolved to a Subject row (created if new) in

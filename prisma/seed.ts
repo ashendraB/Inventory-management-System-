@@ -76,34 +76,9 @@ async function main() {
     )
   );
 
-  console.log("Seeding sample lecturers...");
-  const lecturers: { code: string; name: string; department: string }[] = [
-    { code: "LEC-0001", name: "Mr. Silva", department: "Economics" },
-    { code: "LEC-0002", name: "Ms. Perera", department: "Mathematics" },
-    { code: "LEC-0003", name: "Dr. Fernando", department: "Computer Science" },
-  ];
-  for (const l of lecturers) {
-    await prisma.lecturer.upsert({
-      where: { lecturerCode: l.code },
-      update: {},
-      create: {
-        lecturerCode: l.code,
-        name: l.name,
-        department: l.department,
-      },
-    });
-  }
-  // These codes are hardcoded above rather than generated through
-  // nextSequence("lecturer"), so the counter needs to be caught up to match
-  // — otherwise the first lecturer created through the app would collide
-  // with LEC-0001. Only safe to re-run before any real lecturer has been
-  // added through the app; re-seeding after that would move the counter
-  // backwards and risk a future collision.
-  await prisma.counter.upsert({
-    where: { id: "lecturer" },
-    create: { id: "lecturer", value: lecturers.length },
-    update: { value: lecturers.length },
-  });
+  // Lecturers are deliberately not seeded — they're real people, added
+  // through the app (Lecturers > Add Lecturer), which also keeps their ID
+  // counter correct.
 
   console.log("Seed complete.");
   console.log("Login with: admin / admin123, inventory.op / inventory123, printing.op / printing123");

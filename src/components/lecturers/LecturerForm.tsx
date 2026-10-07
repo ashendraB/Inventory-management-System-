@@ -7,7 +7,6 @@ import { FieldWrapper, TextInput, TextArea, Button } from "@/components/ui/Field
 
 export interface LecturerFormValues {
   name: string;
-  department: string;
   subject: string;
   email: string;
   phone: string;
@@ -16,7 +15,6 @@ export interface LecturerFormValues {
 
 const EMPTY: LecturerFormValues = {
   name: "",
-  department: "",
   subject: "",
   email: "",
   phone: "",
@@ -82,18 +80,10 @@ export function LecturerForm({
             placeholder="Dr. Fernando"
           />
         </FieldWrapper>
-        <FieldWrapper label="Department" htmlFor="l-department">
-          <TextInput
-            id="l-department"
-            value={values.department}
-            onChange={(e) => setValues({ ...values, department: e.target.value })}
-            placeholder="Computer Science"
-          />
-        </FieldWrapper>
         <FieldWrapper
           label="Subject"
           htmlFor="l-subject"
-          hint="Pick an existing subject or type a new one — it's added to Subjects automatically. The Printing Calculator uses it to auto-select this lecturer."
+          hint="Pick an existing subject or type a new one — it's added to Subjects automatically. The Printing Calculator fills it in when this lecturer is selected."
         >
           <TextInput
             id="l-subject"

@@ -78,9 +78,6 @@ export default async function InvoiceDetailPage({
             <p className="text-xs font-medium uppercase text-slate-400">Billed To</p>
             <p className="font-medium text-white">{invoice.lecturer.name}</p>
             <p className="text-sm text-slate-400">{invoice.lecturer.lecturerCode}</p>
-            {invoice.lecturer.department && (
-              <p className="text-sm text-slate-400">{invoice.lecturer.department}</p>
-            )}
             {invoice.lecturer.email && (
               <p className="text-sm text-slate-400">{invoice.lecturer.email}</p>
             )}

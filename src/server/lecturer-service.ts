@@ -47,7 +47,6 @@ export async function createLecturer(
     data: {
       lecturerCode,
       name: data.name,
-      department: cleanOptional(data.department),
       email: cleanOptional(data.email),
       phone: cleanOptional(data.phone),
       subjectId: subjectId ?? null,
@@ -66,7 +65,6 @@ export async function updateLecturer(
     where: { id },
     data: {
       ...(data.name !== undefined && { name: data.name }),
-      ...(data.department !== undefined && { department: cleanOptional(data.department) }),
       ...(data.email !== undefined && { email: cleanOptional(data.email) }),
       ...(data.phone !== undefined && { phone: cleanOptional(data.phone) }),
       ...(subjectId !== undefined && { subjectId }),
