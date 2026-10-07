@@ -37,6 +37,7 @@ export default async function LecturersPage() {
               <th className="px-4 py-3">Lecturer ID</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Department</th>
+              <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Status</th>
@@ -47,7 +48,7 @@ export default async function LecturersPage() {
           <tbody>
             {lecturers.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-slate-400">
                   No lecturers yet.
                 </td>
               </tr>
@@ -57,6 +58,7 @@ export default async function LecturersPage() {
                   <td className="px-4 py-3 font-medium text-slate-200">{l.lecturerCode}</td>
                   <td className="px-4 py-3">{l.name}</td>
                   <td className="px-4 py-3 text-slate-400">{l.department ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{l.subject?.name ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{l.email ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{l.phone ?? "—"}</td>
                   <td className="px-4 py-3">

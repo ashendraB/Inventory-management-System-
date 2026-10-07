@@ -23,7 +23,12 @@ export default async function PrintingCalculatorPage() {
         </p>
       </div>
       <PrintingCalculatorForm
-        lecturers={lecturers.map((l) => ({ id: l.id, name: l.name, department: l.department }))}
+        lecturers={lecturers.map((l) => ({
+          id: l.id,
+          name: l.name,
+          department: l.department,
+          subjectId: l.subjectId,
+        }))}
         initialItems={items}
         subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
         grades={grades.map((g) => ({ id: g.id, name: g.name }))}

@@ -25,6 +25,7 @@ interface Lecturer {
   id: string;
   name: string;
   department: string | null;
+  subjectId: string | null;
 }
 
 interface LookupOption {
@@ -246,6 +247,17 @@ export function PrintingCalculatorForm({
     setItems(listData.items);
   }
 
+  const subjectLecturers = subjectId ? lecturers.filter((l) => l.subjectId === subjectId) : [];
+
+  // Picking a subject auto-selects its lecturer when exactly one teaches it;
+  // with several (or none) the operator still chooses, guided by the hint.
+  function handleSubjectChange(id: string) {
+    setSubjectId(id);
+    if (!id) return;
+    const matches = lecturers.filter((l) => l.subjectId === id);
+    if (matches.length === 1) setLecturerId(matches[0].id);
+  }
+
   function handleReset() {
     setLecturerId("");
     setDocumentName("");
@@ -393,8 +405,20 @@ export function PrintingCalculatorForm({
                 placeholder="Economics Tutorial 03"
               />
             </FieldWrapper>
-            <FieldWrapper label="Subject" htmlFor="subjectId">
-              <Select id="subjectId" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
+            <FieldWrapper
+              label="Subject"
+              htmlFor="subjectId"
+              hint={
+                !subjectId
+                  ? "Picking a subject selects its lecturer automatically"
+                  : subjectLecturers.length === 0
+                    ? "No lecturer is linked to this subject yet — set it on the lecturer's page"
+                    : subjectLecturers.length > 1
+                      ? `${subjectLecturers.length} lecturers teach this — choose one above`
+                      : `Lecturer auto-selected: ${subjectLecturers[0].name}`
+              }
+            >
+              <Select id="subjectId" value={subjectId} onChange={(e) => handleSubjectChange(e.target.value)}>
                 <option value="">None</option>
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>

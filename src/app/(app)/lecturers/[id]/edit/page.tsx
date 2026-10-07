@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getLecturer } from "@/server/lecturer-service";
+import { listSubjects } from "@/server/paper-config-service";
 import { LecturerForm } from "@/components/lecturers/LecturerForm";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function EditLecturerPage({
   // specific dynamic route, so enforce it here too.
   if (session?.role !== "ADMINISTRATOR") redirect("/lecturers");
 
-  const lecturer = await getLecturer(id);
+  const [lecturer, subjects] = await Promise.all([getLecturer(id), listSubjects()]);
   if (!lecturer) notFound();
 
   return (
@@ -28,9 +29,11 @@ export default async function EditLecturerPage({
       <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
         <LecturerForm
           lecturerId={lecturer.id}
+          subjectOptions={subjects.map((s) => s.name)}
           initialValues={{
             name: lecturer.name,
             department: lecturer.department ?? "",
+            subject: lecturer.subject?.name ?? "",
             email: lecturer.email ?? "",
             phone: lecturer.phone ?? "",
             notes: lecturer.notes ?? "",

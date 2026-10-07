@@ -8,6 +8,7 @@ import { FieldWrapper, TextInput, TextArea, Button } from "@/components/ui/Field
 export interface LecturerFormValues {
   name: string;
   department: string;
+  subject: string;
   email: string;
   phone: string;
   notes: string;
@@ -16,6 +17,7 @@ export interface LecturerFormValues {
 const EMPTY: LecturerFormValues = {
   name: "",
   department: "",
+  subject: "",
   email: "",
   phone: "",
   notes: "",
@@ -24,9 +26,11 @@ const EMPTY: LecturerFormValues = {
 export function LecturerForm({
   lecturerId,
   initialValues,
+  subjectOptions = [],
 }: {
   lecturerId?: string; // presence = edit mode
   initialValues?: Partial<LecturerFormValues>;
+  subjectOptions?: string[]; // existing subjects, offered as suggestions
 }) {
   const router = useRouter();
   const [values, setValues] = useState<LecturerFormValues>({ ...EMPTY, ...initialValues });
@@ -85,6 +89,25 @@ export function LecturerForm({
             onChange={(e) => setValues({ ...values, department: e.target.value })}
             placeholder="Computer Science"
           />
+        </FieldWrapper>
+        <FieldWrapper
+          label="Subject"
+          htmlFor="l-subject"
+          hint="Pick an existing subject or type a new one — it's added to Subjects automatically. The Printing Calculator uses it to auto-select this lecturer."
+        >
+          <TextInput
+            id="l-subject"
+            list="l-subject-options"
+            value={values.subject}
+            onChange={(e) => setValues({ ...values, subject: e.target.value })}
+            placeholder="Physics"
+            autoComplete="off"
+          />
+          <datalist id="l-subject-options">
+            {subjectOptions.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
         </FieldWrapper>
         <FieldWrapper label="Email" htmlFor="l-email">
           <TextInput

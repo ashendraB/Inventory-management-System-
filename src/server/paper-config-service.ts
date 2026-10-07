@@ -73,6 +73,21 @@ export async function createSubject(name: string) {
   return prisma.subject.create({ data: { name } });
 }
 
+/** Find a subject by name (case-insensitive) or create it — used when a
+ * subject is typed straight into the Lecturer form. A matching subject that
+ * was deactivated is reactivated, since typing it there means it's wanted. */
+export async function findOrCreateSubjectByName(name: string) {
+  const existing = await prisma.subject.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+  });
+  if (existing) {
+    return existing.isActive
+      ? existing
+      : prisma.subject.update({ where: { id: existing.id }, data: { isActive: true } });
+  }
+  return prisma.subject.create({ data: { name } });
+}
+
 export async function setSubjectActive(id: string, isActive: boolean) {
   return prisma.subject.update({ where: { id }, data: { isActive } });
 }

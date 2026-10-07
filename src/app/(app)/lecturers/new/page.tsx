@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { listSubjects } from "@/server/paper-config-service";
 import { LecturerForm } from "@/components/lecturers/LecturerForm";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,8 @@ export default async function NewLecturerPage() {
   // this specific dynamic route, so enforce it here too.
   if (session?.role !== "ADMINISTRATOR") redirect("/lecturers");
 
+  const subjects = await listSubjects();
+
   return (
     <div className="max-w-2xl space-y-4">
       <div>
@@ -19,7 +22,7 @@ export default async function NewLecturerPage() {
         </p>
       </div>
       <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
-        <LecturerForm />
+        <LecturerForm subjectOptions={subjects.map((s) => s.name)} />
       </div>
     </div>
   );
