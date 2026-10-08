@@ -36,7 +36,7 @@ export default async function LecturersPage() {
             <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
               <th className="px-4 py-3">Lecturer ID</th>
               <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Subject</th>
+              <th className="px-4 py-3">Subjects</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Status</th>
@@ -56,7 +56,7 @@ export default async function LecturersPage() {
                 <tr key={l.id} className="border-b border-white/10 last:border-0 transition-colors hover:bg-white/5">
                   <td className="px-4 py-3 font-medium text-slate-200">{l.lecturerCode}</td>
                   <td className="px-4 py-3">{l.name}</td>
-                  <td className="px-4 py-3 text-slate-400">{l.subject?.name ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{l.subjects.length > 0 ? l.subjects.map((s) => s.name).join(", ") : "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{l.email ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{l.phone ?? "—"}</td>
                   <td className="px-4 py-3">

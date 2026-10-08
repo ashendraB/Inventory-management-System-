@@ -102,7 +102,7 @@ model Subject {
   printingRecords PrintingRecord[]
   // Lecturers who teach this subject — lets the Printing Calculator auto-
   // pick the lecturer when a subject is chosen.
-  lecturers       Lecturer[]
+  lecturers       Lecturer[] @relation("LecturerSubjects")
 }
 
 model Grade {
@@ -300,8 +300,8 @@ model Lecturer {
   department String?
   email      String?
   phone      String?
-  subjectId  String?
-  subject    Subject? @relation(fields: [subjectId], references: [id])
+  // Subjects this lecturer teaches (one or several).
+  subjects   Subject[] @relation("LecturerSubjects")
   status     LecturerStatus @default(ACTIVE)
   notes      String?
   createdAt  DateTime @default(now())

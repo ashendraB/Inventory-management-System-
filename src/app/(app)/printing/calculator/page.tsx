@@ -26,7 +26,7 @@ export default async function PrintingCalculatorPage() {
         lecturers={lecturers.map((l) => ({
           id: l.id,
           name: l.name,
-          subjectId: l.subjectId,
+          subjectIds: l.subjects.map((s) => s.id),
         }))}
         initialItems={items}
         subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}

@@ -26,7 +26,7 @@ async function fileToBase64(file: File): Promise<string> {
 interface Lecturer {
   id: string;
   name: string;
-  subjectId: string | null;
+  subjectIds: string[];
 }
 
 interface LookupOption {
@@ -248,15 +248,25 @@ export function PrintingCalculatorForm({
     setItems(listData.items);
   }
 
-  // Picking a lecturer fills in the subject they teach. Still just a normal
-  // dropdown afterward, so the operator can change it for this one job; a
-  // lecturer with no subject (or whose subject was deactivated and so isn't
-  // in the list) leaves the Subject field alone.
+  // The (active) subjects the chosen lecturer teaches.
+  const selectedLecturer = lecturers.find((l) => l.id === lecturerId);
+  const lecturerSubjects = subjects.filter((s) => selectedLecturer?.subjectIds.includes(s.id));
+  const otherSubjects = subjects.filter((s) => !lecturerSubjects.some((ls) => ls.id === s.id));
+
+  // Picking a lecturer fills in the subject they teach. A lecturer with one
+  // subject gets it filled in; with several, the field is cleared (unless the
+  // current pick is one of theirs) so the operator chooses deliberately rather
+  // than the job being tagged with a wrong guess. Still a normal dropdown, so
+  // it can be changed for this one job. A lecturer with no subject (or whose
+  // subjects were all deactivated) leaves the field alone.
   function handleLecturerChange(id: string) {
     setLecturerId(id);
     const lecturer = lecturers.find((l) => l.id === id);
-    if (lecturer?.subjectId && subjects.some((s) => s.id === lecturer.subjectId)) {
-      setSubjectId(lecturer.subjectId);
+    const mine = subjects.filter((s) => lecturer?.subjectIds.includes(s.id));
+    if (mine.length === 1) {
+      setSubjectId(mine[0].id);
+    } else if (mine.length > 1 && !mine.some((s) => s.id === subjectId)) {
+      setSubjectId("");
     }
   }
 
@@ -420,15 +430,38 @@ export function PrintingCalculatorForm({
             <FieldWrapper
               label="Subject"
               htmlFor="subjectId"
-              hint="Filled in automatically from the lecturer — change it if this job is for a different subject"
+              hint={
+                lecturerSubjects.length > 1 && !subjectId
+                  ? `${selectedLecturer?.name} teaches ${lecturerSubjects.map((s) => s.name).join(" and ")} — pick which one this job is for`
+                  : "Filled in automatically from the lecturer — change it if this job is for a different subject"
+              }
             >
               <Select id="subjectId" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
                 <option value="">None</option>
-                {subjects.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                {lecturerSubjects.length > 0 && otherSubjects.length > 0 ? (
+                  <>
+                    <optgroup label={`${selectedLecturer?.name}'s subjects`}>
+                      {lecturerSubjects.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other subjects">
+                      {otherSubjects.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </>
+                ) : (
+                  subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))
+                )}
               </Select>
             </FieldWrapper>
             <FieldWrapper label="Grade" htmlFor="gradeId">

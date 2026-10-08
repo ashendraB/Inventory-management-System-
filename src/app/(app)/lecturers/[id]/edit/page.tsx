@@ -32,7 +32,7 @@ export default async function EditLecturerPage({
           subjectOptions={subjects.map((s) => s.name)}
           initialValues={{
             name: lecturer.name,
-            subject: lecturer.subject?.name ?? "",
+            subjects: lecturer.subjects.map((s) => s.name),
             email: lecturer.email ?? "",
             phone: lecturer.phone ?? "",
             notes: lecturer.notes ?? "",
