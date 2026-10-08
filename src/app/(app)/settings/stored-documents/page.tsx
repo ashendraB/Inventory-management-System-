@@ -1,7 +1,7 @@
 import { getStoredDocumentsStats, listStoredDocuments } from "@/server/printing-service";
 import { getDatabaseSizeStats } from "@/server/db-stats-service";
 import { listLecturers } from "@/server/lecturer-service";
-import { listSubjects } from "@/server/paper-config-service";
+import { listGrades } from "@/server/paper-config-service";
 import { StoredDocumentsFilterBar } from "@/components/settings/StoredDocumentsFilterBar";
 import { StoredDocumentRowActions } from "@/components/settings/StoredDocumentRowActions";
 import { formatDate, formatBytes } from "@/lib/format";
@@ -30,17 +30,17 @@ function resolveRange(sp: { preset?: string; month?: string }): { from?: Date; t
 export default async function StoredDocumentsSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ preset?: string; month?: string; lecturerId?: string; subjectId?: string }>;
+  searchParams: Promise<{ preset?: string; month?: string; lecturerId?: string; gradeId?: string }>;
 }) {
   const sp = await searchParams;
   const range = resolveRange(sp);
-  // Include inactive lecturers/subjects: an old file can belong to one.
-  const [stats, documents, dbStats, lecturers, subjects] = await Promise.all([
+  // Include inactive lecturers/grades: an old file can belong to one.
+  const [stats, documents, dbStats, lecturers, grades] = await Promise.all([
     getStoredDocumentsStats(),
-    listStoredDocuments({ ...range, lecturerId: sp.lecturerId, subjectId: sp.subjectId }),
+    listStoredDocuments({ ...range, lecturerId: sp.lecturerId, gradeId: sp.gradeId }),
     getDatabaseSizeStats(),
     listLecturers(true),
-    listSubjects(true),
+    listGrades(true),
   ]);
   const filteredBytes = documents.reduce((sum, d) => sum + d.bytes, 0);
   const dbPercent = Math.min(100, Math.round((dbStats.bytes / dbStats.limitBytes) * 100));
@@ -88,7 +88,7 @@ export default async function StoredDocumentsSettingsPage({
 
       <StoredDocumentsFilterBar
         lecturers={lecturers.map((l) => ({ id: l.id, name: l.name }))}
-        subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
+        grades={grades.map((g) => ({ id: g.id, name: g.name }))}
       />
 
       <p className="text-sm text-slate-400">
@@ -103,7 +103,7 @@ export default async function StoredDocumentsSettingsPage({
               <th className="px-4 py-3">Printing ID</th>
               <th className="px-4 py-3">Document</th>
               <th className="px-4 py-3">Lecturer</th>
-              <th className="px-4 py-3">Subject</th>
+              <th className="px-4 py-3">Grade</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Size</th>
               <th className="px-4 py-3">Actions</th>
@@ -125,7 +125,7 @@ export default async function StoredDocumentsSettingsPage({
                   <td className="px-4 py-3 font-medium text-gold-400">{doc.printingCode}</td>
                   <td className="px-4 py-3">{doc.documentName}</td>
                   <td className="px-4 py-3 text-slate-400">{doc.lecturerName}</td>
-                  <td className="px-4 py-3 text-slate-400">{doc.subjectName ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-400">{doc.gradeName ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{formatDate(doc.date)}</td>
                   <td className="px-4 py-3 text-slate-400">{formatBytes(doc.bytes)}</td>
                   <td className="px-4 py-3">

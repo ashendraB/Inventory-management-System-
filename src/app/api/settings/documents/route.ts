@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         from,
         to,
         lecturerId: sp.get("lecturerId") ?? undefined,
-        subjectId: sp.get("subjectId") ?? undefined,
+        gradeId: sp.get("gradeId") ?? undefined,
       }),
     ]);
     return NextResponse.json({ stats, documents });

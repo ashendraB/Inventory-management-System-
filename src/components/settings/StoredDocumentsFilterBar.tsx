@@ -12,10 +12,10 @@ const PRESETS = [
 
 export function StoredDocumentsFilterBar({
   lecturers,
-  subjects,
+  grades,
 }: {
   lecturers: { id: string; name: string }[];
-  subjects: { id: string; name: string }[];
+  grades: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,8 +23,8 @@ export function StoredDocumentsFilterBar({
   const preset = searchParams.get("preset") ?? "";
   const month = searchParams.get("month") ?? "";
   const lecturerId = searchParams.get("lecturerId") ?? "";
-  const subjectId = searchParams.get("subjectId") ?? "";
-  const hasFilters = preset || month || lecturerId || subjectId;
+  const gradeId = searchParams.get("gradeId") ?? "";
+  const hasFilters = preset || month || lecturerId || gradeId;
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -88,16 +88,16 @@ export function StoredDocumentsFilterBar({
         </Select>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-200">Subject</label>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Grade</label>
         <Select
-          value={subjectId}
-          onChange={(e) => setParam("subjectId", e.target.value)}
+          value={gradeId}
+          onChange={(e) => setParam("gradeId", e.target.value)}
           className="w-auto"
         >
-          <option value="">All subjects</option>
-          {subjects.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
+          <option value="">All grades</option>
+          {grades.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
             </option>
           ))}
         </Select>
