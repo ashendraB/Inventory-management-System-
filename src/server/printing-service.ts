@@ -436,12 +436,16 @@ export async function getStoredDocumentsStats() {
 export interface StoredDocumentFilters {
   from?: Date;
   to?: Date;
+  lecturerId?: string;
+  subjectId?: string;
 }
 
 export async function listStoredDocuments(filters: StoredDocumentFilters = {}) {
   const conditions = [Prisma.sql`pr."documentFileName" IS NOT NULL`];
   if (filters.from) conditions.push(Prisma.sql`pr."date" >= ${filters.from}`);
   if (filters.to) conditions.push(Prisma.sql`pr."date" < ${filters.to}`);
+  if (filters.lecturerId) conditions.push(Prisma.sql`pr."lecturerId" = ${filters.lecturerId}`);
+  if (filters.subjectId) conditions.push(Prisma.sql`pr."subjectId" = ${filters.subjectId}`);
 
   return prisma.$queryRaw<
     {
@@ -451,13 +455,16 @@ export async function listStoredDocuments(filters: StoredDocumentFilters = {}) {
       documentFileName: string;
       date: Date;
       lecturerName: string;
+      subjectName: string | null;
       bytes: bigint;
     }[]
   >`
     SELECT pr."id", pr."printingCode", pr."documentName", pr."documentFileName", pr."date",
-           l."name" AS "lecturerName", OCTET_LENGTH(pr."documentData")::bigint AS "bytes"
+           l."name" AS "lecturerName", s."name" AS "subjectName",
+           OCTET_LENGTH(pr."documentData")::bigint AS "bytes"
     FROM "PrintingRecord" pr
     JOIN "Lecturer" l ON l."id" = pr."lecturerId"
+    LEFT JOIN "Subject" s ON s."id" = pr."subjectId"
     WHERE ${Prisma.join(conditions, " AND ")}
     ORDER BY pr."date" DESC
   `.then((rows) => rows.map((r) => ({ ...r, bytes: Number(r.bytes) })));

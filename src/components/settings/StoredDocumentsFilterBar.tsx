@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { TextInput } from "@/components/ui/Field";
+import { Select, TextInput, Button } from "@/components/ui/Field";
 
 const PRESETS = [
   { value: "", label: "All" },
@@ -10,12 +10,28 @@ const PRESETS = [
   { value: "month", label: "Last Month" },
 ] as const;
 
-export function StoredDocumentsFilterBar() {
+export function StoredDocumentsFilterBar({
+  lecturers,
+  subjects,
+}: {
+  lecturers: { id: string; name: string }[];
+  subjects: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const preset = searchParams.get("preset") ?? "";
   const month = searchParams.get("month") ?? "";
+  const lecturerId = searchParams.get("lecturerId") ?? "";
+  const subjectId = searchParams.get("subjectId") ?? "";
+  const hasFilters = preset || month || lecturerId || subjectId;
+
+  function setParam(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) params.set(key, value);
+    else params.delete(key);
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   function setPreset(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,6 +72,41 @@ export function StoredDocumentsFilterBar() {
         <label className="mb-1 block text-sm font-medium text-slate-200">Selected Month</label>
         <TextInput type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
       </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Lecturer</label>
+        <Select
+          value={lecturerId}
+          onChange={(e) => setParam("lecturerId", e.target.value)}
+          className="w-auto"
+        >
+          <option value="">All lecturers</option>
+          {lecturers.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-200">Subject</label>
+        <Select
+          value={subjectId}
+          onChange={(e) => setParam("subjectId", e.target.value)}
+          className="w-auto"
+        >
+          <option value="">All subjects</option>
+          {subjects.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      {hasFilters && (
+        <Button type="button" variant="secondary" onClick={() => router.push(pathname)}>
+          Clear Filters
+        </Button>
+      )}
     </div>
   );
 }

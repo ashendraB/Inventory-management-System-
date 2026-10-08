@@ -10,7 +10,12 @@ export async function GET(request: NextRequest) {
     const to = sp.get("to") ? new Date(sp.get("to")!) : undefined;
     const [stats, documents] = await Promise.all([
       getStoredDocumentsStats(),
-      listStoredDocuments({ from, to }),
+      listStoredDocuments({
+        from,
+        to,
+        lecturerId: sp.get("lecturerId") ?? undefined,
+        subjectId: sp.get("subjectId") ?? undefined,
+      }),
     ]);
     return NextResponse.json({ stats, documents });
   } catch (err) {

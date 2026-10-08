@@ -1,5 +1,7 @@
 import { getStoredDocumentsStats, listStoredDocuments } from "@/server/printing-service";
 import { getDatabaseSizeStats } from "@/server/db-stats-service";
+import { listLecturers } from "@/server/lecturer-service";
+import { listSubjects } from "@/server/paper-config-service";
 import { StoredDocumentsFilterBar } from "@/components/settings/StoredDocumentsFilterBar";
 import { StoredDocumentRowActions } from "@/components/settings/StoredDocumentRowActions";
 import { formatDate, formatBytes } from "@/lib/format";
@@ -28,15 +30,19 @@ function resolveRange(sp: { preset?: string; month?: string }): { from?: Date; t
 export default async function StoredDocumentsSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ preset?: string; month?: string }>;
+  searchParams: Promise<{ preset?: string; month?: string; lecturerId?: string; subjectId?: string }>;
 }) {
   const sp = await searchParams;
   const range = resolveRange(sp);
-  const [stats, documents, dbStats] = await Promise.all([
+  // Include inactive lecturers/subjects: an old file can belong to one.
+  const [stats, documents, dbStats, lecturers, subjects] = await Promise.all([
     getStoredDocumentsStats(),
-    listStoredDocuments(range),
+    listStoredDocuments({ ...range, lecturerId: sp.lecturerId, subjectId: sp.subjectId }),
     getDatabaseSizeStats(),
+    listLecturers(true),
+    listSubjects(true),
   ]);
+  const filteredBytes = documents.reduce((sum, d) => sum + d.bytes, 0);
   const dbPercent = Math.min(100, Math.round((dbStats.bytes / dbStats.limitBytes) * 100));
 
   return (
@@ -80,7 +86,15 @@ export default async function StoredDocumentsSettingsPage({
         </div>
       </div>
 
-      <StoredDocumentsFilterBar />
+      <StoredDocumentsFilterBar
+        lecturers={lecturers.map((l) => ({ id: l.id, name: l.name }))}
+        subjects={subjects.map((s) => ({ id: s.id, name: s.name }))}
+      />
+
+      <p className="text-sm text-slate-400">
+        Showing {documents.length} file{documents.length === 1 ? "" : "s"} ·{" "}
+        {formatBytes(filteredBytes)}
+      </p>
 
       <div className="overflow-x-auto rounded-xl border border-brand-700 bg-brand-800 shadow-sm">
         <table className="w-full text-sm">
@@ -89,6 +103,7 @@ export default async function StoredDocumentsSettingsPage({
               <th className="px-4 py-3">Printing ID</th>
               <th className="px-4 py-3">Document</th>
               <th className="px-4 py-3">Lecturer</th>
+              <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Size</th>
               <th className="px-4 py-3">Actions</th>
@@ -97,7 +112,7 @@ export default async function StoredDocumentsSettingsPage({
           <tbody>
             {documents.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
                   No stored files match this filter.
                 </td>
               </tr>
@@ -110,6 +125,7 @@ export default async function StoredDocumentsSettingsPage({
                   <td className="px-4 py-3 font-medium text-gold-400">{doc.printingCode}</td>
                   <td className="px-4 py-3">{doc.documentName}</td>
                   <td className="px-4 py-3 text-slate-400">{doc.lecturerName}</td>
+                  <td className="px-4 py-3 text-slate-400">{doc.subjectName ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-400">{formatDate(doc.date)}</td>
                   <td className="px-4 py-3 text-slate-400">{formatBytes(doc.bytes)}</td>
                   <td className="px-4 py-3">
