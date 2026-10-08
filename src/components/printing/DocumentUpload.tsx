@@ -23,6 +23,9 @@ import { Button } from "@/components/ui/Field";
  */
 export interface DocumentUploadHandle {
   print: () => void;
+  /** Saves the attached PDF to the computer (so it can be opened and printed
+   * in Adobe Acrobat). */
+  download: () => void;
   /** The attached file, but only when it's a supported, readable PDF — null
    * otherwise (no file, or an unsupported format like .docx). Used to save
    * the document alongside the printing record for "Reprint" later. */
@@ -82,13 +85,24 @@ export function DocumentUpload({
     win.print();
   }, []);
 
+  const handleDownload = useCallback(() => {
+    if (!fileUrl || !fileName) return;
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, [fileUrl, fileName]);
+
   useImperativeHandle(
     ref,
     () => ({
       print: handlePrint,
+      download: handleDownload,
       getPdfFile: () => (!unsupported && file ? file : null),
     }),
-    [handlePrint, unsupported, file]
+    [handlePrint, handleDownload, unsupported, file]
   );
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -190,16 +204,6 @@ export function DocumentUpload({
                 className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10"
               >
                 Open in New Tab
-              </a>
-            )}
-            {fileUrl && fileName && (
-              <a
-                href={fileUrl}
-                download={fileName}
-                title="Save the file, then open it in Adobe Acrobat to print with its full print window"
-                className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10"
-              >
-                Download PDF (print in Acrobat)
               </a>
             )}
             <Button type="button" variant="secondary" onClick={handleClear}>

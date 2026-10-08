@@ -90,7 +90,7 @@ export function PrintingCalculatorForm({
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [printedRecord, setPrintedRecord] = useState<{ id: string; printingCode: string } | null>(null);
+  const [printedRecord, setPrintedRecord] = useState<{ id: string; printingCode: string; viaAcrobat: boolean } | null>(null);
 
   const documentRef = useRef<DocumentUploadHandle>(null);
   const [documentReady, setDocumentReady] = useState(false);
@@ -287,7 +287,10 @@ export function PrintingCalculatorForm({
     setPrintedRecord(null);
   }
 
-  function handlePrint() {
+  /** mode "browser": open the browser print dialog right away. mode
+   * "acrobat": save the record, then download the PDF so it can be opened and
+   * printed in Adobe Acrobat (full print window with printer Properties). */
+  function handlePrint(mode: "browser" | "acrobat" = "browser") {
     setSubmitError(null);
     setPrintedRecord(null);
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
@@ -295,14 +298,14 @@ export function PrintingCalculatorForm({
       return;
     }
 
-    if (documentReady) {
+    if (documentReady && mode === "browser") {
       documentRef.current?.print();
     }
 
-    void submitRecord();
+    void submitRecord(mode);
   }
 
-  async function submitRecord() {
+  async function submitRecord(mode: "browser" | "acrobat") {
     setSubmitting(true);
     try {
       const attached = documentRef.current?.getPdfFile() ?? null;
@@ -345,7 +348,12 @@ export function PrintingCalculatorForm({
         );
       }
       if (documentReady) {
-        setPrintedRecord({ id: data.record.id, printingCode: data.record.printingCode });
+        if (mode === "acrobat") documentRef.current?.download();
+        setPrintedRecord({
+          id: data.record.id,
+          printingCode: data.record.printingCode,
+          viaAcrobat: mode === "acrobat",
+        });
         toast.success(`Printing record ${data.record.printingCode} saved`);
       } else {
         toast.success(`Printing record ${data.record.printingCode} saved`);
@@ -553,8 +561,9 @@ export function PrintingCalculatorForm({
         {printedRecord && (
           <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             <span>
-              Printing record {printedRecord.printingCode} saved. Finish printing in the dialog
-              that just opened, then view it whenever you&apos;re ready.
+              {printedRecord.viaAcrobat
+                ? `Printing record ${printedRecord.printingCode} saved and the PDF was downloaded. Open it in Acrobat (click it in the download bar) and print.`
+                : `Printing record ${printedRecord.printingCode} saved. Finish printing in the dialog that just opened, then view it whenever you're ready.`}
             </span>
             <a
               href={`/printing/records/${printedRecord.id}`}
@@ -583,9 +592,20 @@ export function PrintingCalculatorForm({
         )}
 
         <div className="flex gap-3">
-          <Button type="button" onClick={handlePrint} disabled={!canSubmit || submitting}>
+          <Button type="button" onClick={() => handlePrint("browser")} disabled={!canSubmit || submitting}>
             {submitting ? "Printing..." : "Print"}
           </Button>
+          {documentReady && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => handlePrint("acrobat")}
+              disabled={!canSubmit || submitting}
+              title="Saves the record, then downloads the PDF to print from Adobe Acrobat"
+            >
+              Save &amp; Print in Acrobat
+            </Button>
+          )}
           <Button type="button" variant="secondary" onClick={handleReset}>
             Reset
           </Button>
