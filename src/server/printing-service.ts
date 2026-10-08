@@ -303,7 +303,9 @@ export async function submitPrintingJob(
     });
 
     return record;
-  });
+    // Many sequential queries to a remote database: leave far more headroom
+    // than Prisma's 5s default so a slow link can't abort a job halfway.
+  }, { maxWait: 10_000, timeout: 30_000 });
 }
 
 export interface PrintingRecordFilters {
@@ -393,7 +395,7 @@ export async function getPrintingRecord(id: string) {
 export async function getPrintingRecordDocument(id: string) {
   return prisma.printingRecord.findUnique({
     where: { id },
-    select: { documentFileName: true, documentData: true },
+    omit: { documentData: false }, // opt back in to the default exclusion
   });
 }
 

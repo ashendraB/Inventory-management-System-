@@ -8,6 +8,8 @@ import { DocumentUpload, type DocumentUploadHandle } from "@/components/printing
 import { formatCurrency } from "@/lib/format";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
 
+const MAX_STORED_PDF_BYTES = 6 * 1024 * 1024;
+
 /** Chunked to avoid a stack-overflow from String.fromCharCode(...bytes) on
  * larger PDFs — btoa() itself has no size limit, spreading a huge array
  * onto the call stack does. */
@@ -292,7 +294,12 @@ export function PrintingCalculatorForm({
   async function submitRecord() {
     setSubmitting(true);
     try {
-      const pdfFile = documentRef.current?.getPdfFile() ?? null;
+      const attached = documentRef.current?.getPdfFile() ?? null;
+      // The request body is capped at 10 MB and base64 adds a third on top,
+      // so a bigger PDF can't be stored for Reprint — the job itself is still
+      // saved and printed normally.
+      const tooBigToStore = !!attached && attached.size > MAX_STORED_PDF_BYTES;
+      const pdfFile = tooBigToStore ? null : attached;
       const documentBase64 = pdfFile ? await fileToBase64(pdfFile) : undefined;
 
       const res = await fetch("/api/printing/records", {
@@ -320,6 +327,12 @@ export function PrintingCalculatorForm({
         return;
       }
 
+      if (tooBigToStore) {
+        toast(
+          `This PDF is over ${MAX_STORED_PDF_BYTES / 1024 / 1024} MB, so it wasn't saved for Reprint. The printing record itself is saved.`,
+          { duration: 8000 }
+        );
+      }
       if (documentReady) {
         setPrintedRecord({ id: data.record.id, printingCode: data.record.printingCode });
         toast.success(`Printing record ${data.record.printingCode} saved`);
