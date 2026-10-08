@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { FieldWrapper, TextInput, TextArea, Select, Button } from "@/components/ui/Field";
+import { PrintSettingsChecklist } from "@/components/printing/PrintSettingsChecklist";
 import { DocumentUpload, type DocumentUploadHandle } from "@/components/printing/DocumentUpload";
 import { formatCurrency } from "@/lib/format";
 import { calculatePrintingJob } from "@/lib/printing-calculation";
@@ -562,6 +563,23 @@ export function PrintingCalculatorForm({
               View Summary
             </a>
           </div>
+        )}
+
+        {pages && copies && (
+          <PrintSettingsChecklist
+            copies={Number(copies)}
+            pages={Number(pages)}
+            sides={sides}
+            colourMode={colourMode}
+            layout={layout}
+            paper={
+              selectedItem
+                ? [selectedItem.paperSizeName, selectedItem.gsmValue && `${selectedItem.gsmValue} GSM`, selectedItem.paperTypeName]
+                    .filter(Boolean)
+                    .join(" / ") || selectedItem.name
+                : null
+            }
+          />
         )}
 
         <div className="flex gap-3">

@@ -3,7 +3,7 @@ import { requireRole, handleApiError, ApiError } from "@/lib/api-auth";
 import { getPrintingRecordDocument } from "@/server/printing-service";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -18,7 +18,11 @@ export async function GET(
     return new NextResponse(new Uint8Array(record.documentData), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${fileName}"`,
+        // ?download=1 saves the file (to open in Acrobat etc.) instead of
+        // showing it in the browser's own viewer.
+        "Content-Disposition": `${
+          request.nextUrl.searchParams.get("download") === "1" ? "attachment" : "inline"
+        }; filename="${fileName}"`,
       },
     });
   } catch (err) {

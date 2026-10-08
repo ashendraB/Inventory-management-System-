@@ -192,6 +192,16 @@ export function DocumentUpload({
                 Open in New Tab
               </a>
             )}
+            {fileUrl && fileName && (
+              <a
+                href={fileUrl}
+                download={fileName}
+                title="Save the file, then open it in Adobe Acrobat to print with its full print window"
+                className="inline-flex items-center rounded-md border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10"
+              >
+                Download PDF (print in Acrobat)
+              </a>
+            )}
             <Button type="button" variant="secondary" onClick={handleClear}>
               Remove
             </Button>

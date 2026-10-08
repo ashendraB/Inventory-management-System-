@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPrintingRecord } from "@/server/printing-service";
 import { PrintingRecordActions } from "@/components/printing/PrintingRecordActions";
+import { PrintSettingsChecklist } from "@/components/printing/PrintSettingsChecklist";
 import { ReprintButton } from "@/components/printing/ReprintButton";
 import { EditPrintingRecordForm } from "@/components/printing/EditPrintingRecordForm";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -37,10 +38,19 @@ export default async function PrintingRecordDetailPage({
             Edit
           </Link>
           {record.documentFileName && (
-            <ReprintButton
-              recordId={record.id}
-              className="inline-flex items-center rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
-            />
+            <>
+              <ReprintButton
+                recordId={record.id}
+                className="inline-flex items-center rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
+              />
+              <a
+                href={`/api/printing/records/${record.id}/document?download=1`}
+                title="Save the PDF, then open it in Adobe Acrobat to print with its full print window"
+                className="inline-flex items-center rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-gold-500/50 hover:bg-white/10"
+              >
+                Download PDF
+              </a>
+            </>
           )}
           <PrintingRecordActions recordId={record.id} />
         </div>
@@ -68,6 +78,18 @@ export default async function PrintingRecordDetailPage({
         </dl>
 
         <div className="my-4 border-t border-dashed border-white/20" />
+
+        {record.documentFileName && (
+          <PrintSettingsChecklist
+            className="mb-4"
+            copies={record.copies}
+            pages={record.pages}
+            sides={record.sides}
+            colourMode={record.colourMode}
+            layout={record.layout}
+            paper={`${record.paperSize.name} / ${record.gsm.value} GSM / ${record.paperType.name}`}
+          />
+        )}
 
         <div className="mb-4 rounded-lg border border-gold-500/30 bg-white/5 p-4">
           <h2 className="mb-3 text-sm font-semibold text-gold-400">How the total is calculated</h2>
