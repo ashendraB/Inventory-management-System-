@@ -1,5 +1,7 @@
 import { getDashboardSummary, getRecentActivity } from "@/server/dashboard-service";
 import { StatCard } from "@/components/ui/StatCard";
+import { StatusBadge } from "@/components/ui/Badge";
+import { ActivityPanel, ActivityIcons } from "@/components/dashboard/ActivityPanel";
 import { formatCurrency } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -51,85 +53,89 @@ export default async function DashboardPage() {
         <StatCard label="Pending Invoices" value={summary.pendingInvoices} />
       </div>
 
-      <div className="rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-gold-400">
-          Recent Activity
-        </h2>
+      <div className="space-y-3">
+        <div className="flex items-end justify-between">
+          <h2 className="text-base font-semibold text-gold-400">Recent Activity</h2>
+          <p className="text-xs text-slate-400">Latest 5 in each area</p>
+        </div>
         {!hasAnyActivity ? (
-          <p className="py-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-brand-700 bg-brand-800 py-10 text-center text-sm text-slate-400">
             No activity yet. Once inventory, stock lots, and printing jobs are
             added, they&apos;ll show up here.
           </p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2">
-            <ActivityList
-              title="Recently added inventory"
-              items={activity.recentInventory.map((i) => ({
-                id: i.id,
-                primary: i.name,
-                secondary: i.itemCode,
-                date: i.createdAt,
-              }))}
-            />
-            <ActivityList
-              title="Recently added stock lots"
-              items={activity.recentLots.map((l) => ({
-                id: l.id,
-                primary: l.lotCode,
-                secondary: l.inventoryItem.name,
-                date: l.createdAt,
-              }))}
-            />
-            <ActivityList
-              title="Recent printing jobs"
-              items={activity.recentPrinting.map((p) => ({
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ActivityPanel
+              title="Printing jobs"
+              icon={ActivityIcons.printing}
+              viewAllHref="/printing/records"
+              emptyText="No printing jobs yet."
+              emptyHref="/printing/calculator"
+              emptyLabel="Start a printing job →"
+              rows={activity.recentPrinting.map((p) => ({
                 id: p.id,
-                primary: p.documentName,
-                secondary: `${p.lecturer.name} · ${formatCurrency(Number(p.totalCost))}`,
+                href: `/printing/records/${p.id}`,
+                title: p.documentName,
+                subtitle: `${p.printingCode} · ${p.lecturer.name} · ${p.physicalSheets.toLocaleString()} sheets`,
+                value: formatCurrency(Number(p.totalCost)),
                 date: p.createdAt,
               }))}
             />
-            <ActivityList
-              title="Recently generated invoices"
-              items={activity.recentInvoices.map((inv) => ({
+            <ActivityPanel
+              title="Invoices"
+              icon={ActivityIcons.invoices}
+              viewAllHref="/billing/invoices"
+              emptyText="No invoices generated yet."
+              emptyHref="/billing/monthly"
+              emptyLabel="Go to Monthly Billing →"
+              rows={activity.recentInvoices.map((inv) => ({
                 id: inv.id,
-                primary: inv.invoiceNumber,
-                secondary: `${inv.lecturer.name} · ${formatCurrency(Number(inv.grandTotal))}`,
+                href: `/billing/invoices/${inv.id}`,
+                title: inv.invoiceNumber,
+                subtitle: inv.lecturer.name,
+                value: (
+                  <span className="flex items-center justify-end gap-2">
+                    <StatusBadge status={inv.status} />
+                    {formatCurrency(Number(inv.grandTotal))}
+                  </span>
+                ),
                 date: inv.createdAt,
+              }))}
+            />
+            <ActivityPanel
+              title="Inventory items"
+              icon={ActivityIcons.inventory}
+              viewAllHref="/inventory/items"
+              emptyText="No inventory items yet."
+              emptyHref="/inventory/items/new"
+              emptyLabel="Add an inventory item →"
+              rows={activity.recentInventory.map((i) => ({
+                id: i.id,
+                href: `/inventory/items/${i.id}`,
+                title: i.name,
+                subtitle: `${i.itemCode} · ${i.category.name}`,
+                date: i.createdAt,
+              }))}
+            />
+            <ActivityPanel
+              title="Stock lots"
+              icon={ActivityIcons.lots}
+              viewAllHref="/inventory/lots"
+              emptyText="No stock lots yet."
+              emptyHref="/inventory/items"
+              emptyLabel="Open inventory items →"
+              rows={activity.recentLots.map((l) => ({
+                id: l.id,
+                href: `/inventory/lots/${l.id}`,
+                title: l.inventoryItem.name,
+                subtitle: l.lotCode,
+                value: `+${l.quantityPurchased.toLocaleString()}`,
+                date: l.createdAt,
               }))}
             />
           </div>
         )}
       </div>
-
-    </div>
-  );
-}
-
-function ActivityList({
-  title,
-  items,
-}: {
-  title: string;
-  items: { id: string; primary: string; secondary: string; date: Date }[];
-}) {
-  return (
-    <div>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {title}
-      </h3>
-      {items.length === 0 ? (
-        <p className="text-sm text-slate-400">None yet.</p>
-      ) : (
-        <ul className="space-y-1.5">
-          {items.map((item) => (
-            <li key={item.id} className="text-sm">
-              <span className="font-medium text-slate-100">{item.primary}</span>{" "}
-              <span className="text-slate-400">— {item.secondary}</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

@@ -66,7 +66,13 @@ export async function getRecentActivity() {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
         take: 5,
-        select: { id: true, name: true, itemCode: true, createdAt: true },
+        select: {
+          id: true,
+          name: true,
+          itemCode: true,
+          createdAt: true,
+          category: { select: { name: true } },
+        },
       }),
       prisma.inventoryLot.findMany({
         where: { inventoryItem: { deletedAt: null } },
@@ -75,6 +81,7 @@ export async function getRecentActivity() {
         select: {
           id: true,
           lotCode: true,
+          quantityPurchased: true,
           createdAt: true,
           inventoryItem: { select: { name: true } },
         },
@@ -84,7 +91,9 @@ export async function getRecentActivity() {
         take: 5,
         select: {
           id: true,
+          printingCode: true,
           documentName: true,
+          physicalSheets: true,
           totalCost: true,
           createdAt: true,
           lecturer: { select: { name: true } },
@@ -96,6 +105,7 @@ export async function getRecentActivity() {
         select: {
           id: true,
           invoiceNumber: true,
+          status: true,
           grandTotal: true,
           createdAt: true,
           lecturer: { select: { name: true } },
