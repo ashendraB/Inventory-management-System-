@@ -53,29 +53,53 @@ interface PreviewState {
   chargePerSheet: number | null;
 }
 
+/** A previous printing record whose details (and stored PDF) pre-fill the
+ * form, so reprinting it runs through the normal calculator and creates a new
+ * record, stock deduction and bill like any other job. */
+export interface ReprintSource {
+  recordId: string;
+  printingCode: string;
+  lecturerId: string;
+  documentName: string;
+  subjectId: string;
+  gradeId: string;
+  inventoryItemId: string;
+  colourMode: "BW" | "COLOUR";
+  sides: "SINGLE" | "DOUBLE";
+  layout: "NORMAL" | "BOOKLET";
+  pages: number;
+  copies: number;
+  documentFileName: string;
+}
+
 export function PrintingCalculatorForm({
   lecturers,
   initialItems,
   subjects,
   grades,
+  reprint,
 }: {
   lecturers: Lecturer[];
   initialItems: PaperItem[];
   subjects: LookupOption[];
   grades: LookupOption[];
+  reprint?: ReprintSource;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
-  const [lecturerId, setLecturerId] = useState("");
-  const [documentName, setDocumentName] = useState("");
-  const [subjectId, setSubjectId] = useState("");
-  const [gradeId, setGradeId] = useState("");
-  const [colourMode, setColourMode] = useState<"BW" | "COLOUR">("BW");
-  const [itemId, setItemId] = useState("");
-  const [sides, setSides] = useState<"SINGLE" | "DOUBLE">("SINGLE");
-  const [layout, setLayout] = useState<"NORMAL" | "BOOKLET">("NORMAL");
-  const [pages, setPages] = useState("");
-  const [copies, setCopies] = useState("");
+  const [lecturerId, setLecturerId] = useState(reprint?.lecturerId ?? "");
+  const [documentName, setDocumentName] = useState(reprint?.documentName ?? "");
+  const [subjectId, setSubjectId] = useState(reprint?.subjectId ?? "");
+  const [gradeId, setGradeId] = useState(reprint?.gradeId ?? "");
+  const [colourMode, setColourMode] = useState<"BW" | "COLOUR">(reprint?.colourMode ?? "BW");
+  const [itemId, setItemId] = useState(reprint?.inventoryItemId ?? "");
+  const [sides, setSides] = useState<"SINGLE" | "DOUBLE">(reprint?.sides ?? "SINGLE");
+  const [layout, setLayout] = useState<"NORMAL" | "BOOKLET">(reprint?.layout ?? "NORMAL");
+  const [pages, setPages] = useState(reprint ? String(reprint.pages) : "");
+  const [copies, setCopies] = useState(reprint ? String(reprint.copies) : "");
+  // Loading the reprint PDF would otherwise overwrite the Document Name with
+  // its file name; keep the original record's name instead.
+  const keepDocumentName = useRef(!!reprint);
   const [notes, setNotes] = useState("");
 
   const [scanValue, setScanValue] = useState("");
@@ -379,10 +403,33 @@ export function PrintingCalculatorForm({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
+        {reprint && (
+          <div className="rounded-xl border border-gold-500/40 bg-gold-500/10 px-4 py-3 text-sm text-slate-100">
+            <strong className="text-gold-400">Reprinting {reprint.printingCode}.</strong> The
+            details and PDF are filled in from that job — change the copies or anything else if
+            needed, then print. This saves a <em>new</em> printing record (and uses new stock),
+            like any other job.
+          </div>
+        )}
+
         <DocumentUpload
           ref={documentRef}
           onPagesDetected={(n) => setPages(String(n))}
-          onFileSelected={setDocumentName}
+          onFileSelected={(name) => {
+            if (keepDocumentName.current) {
+              keepDocumentName.current = false;
+              return;
+            }
+            setDocumentName(name);
+          }}
+          initialDocument={
+            reprint
+              ? {
+                  url: `/api/printing/records/${reprint.recordId}/document`,
+                  name: reprint.documentFileName,
+                }
+              : undefined
+          }
           onReadyChange={setDocumentReady}
         />
 

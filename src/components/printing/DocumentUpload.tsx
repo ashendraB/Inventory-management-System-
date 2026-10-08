@@ -41,6 +41,7 @@ export function DocumentUpload({
   onPagesDetected,
   onFileSelected,
   onReadyChange,
+  initialDocument,
   ref,
 }: {
   onPagesDetected: (pages: number) => void;
@@ -49,6 +50,9 @@ export function DocumentUpload({
    * text field afterward, so the operator can edit or clear it freely. */
   onFileSelected?: (name: string) => void;
   onReadyChange?: (ready: boolean) => void;
+  /** A saved PDF to load straight away, as if the operator had just chosen it
+   * (used when reprinting a stored document). */
+  initialDocument?: { url: string; name: string };
   ref?: React.Ref<DocumentUploadHandle>;
 }) {
   const [fileName, setFileName] = useState<string | null>(null);
@@ -105,10 +109,12 @@ export function DocumentUpload({
     [handlePrint, handleDownload, unsupported, file]
   );
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0];
-    if (!selected) return;
+    if (selected) void loadFile(selected);
+  }
 
+  async function loadFile(selected: File) {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setDetectedPages(null);
     setUnsupported(false);
@@ -146,6 +152,23 @@ export function DocumentUpload({
       setLoading(false);
     }
   }
+
+  const initialLoaded = useRef(false);
+  useEffect(() => {
+    if (!initialDocument || initialLoaded.current) return;
+    initialLoaded.current = true;
+    (async () => {
+      try {
+        const res = await fetch(initialDocument.url);
+        if (!res.ok) throw new Error("not found");
+        const blob = await res.blob();
+        await loadFile(new File([blob], initialDocument.name, { type: "application/pdf" }));
+      } catch {
+        toast.error("Could not load the saved PDF — attach the file again to continue.");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleClear() {
     if (fileUrl) URL.revokeObjectURL(fileUrl);

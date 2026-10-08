@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ReprintButton } from "@/components/printing/ReprintButton";
+import Link from "next/link";
 
 export function StoredDocumentRowActions({
   recordId,
@@ -30,7 +30,14 @@ export function StoredDocumentRowActions({
 
   return (
     <div className="flex items-center gap-3">
-      <ReprintButton recordId={recordId} />
+      {/* Reprint goes through the Printing Calculator (pre-filled from this
+          job) so it is recorded, costed and billed like any other job. */}
+      <Link
+        href={`/printing/calculator?reprint=${recordId}`}
+        className="text-gold-400 hover:underline"
+      >
+        Reprint
+      </Link>
       <button type="button" onClick={handleDelete} className="text-red-600 hover:underline">
         Delete
       </button>
