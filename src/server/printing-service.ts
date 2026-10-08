@@ -342,7 +342,7 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
     }),
   };
 
-  const [records, total] = await Promise.all([
+  const [records, total, sums, pageCopies] = await Promise.all([
     prisma.printingRecord.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -362,10 +362,25 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
       },
     }),
     prisma.printingRecord.count({ where }),
+    // Totals cover every record matching the filters, not just this page.
+    prisma.printingRecord.aggregate({
+      where,
+      _sum: { physicalSheets: true, wastedSheets: true, totalCost: true },
+    }),
+    // pages x copies is a per-row product, which aggregate() can't sum.
+    prisma.printingRecord.findMany({ where, select: { pages: true, copies: true } }),
   ]);
+
+  const totals = {
+    prints: pageCopies.reduce((sum, r) => sum + r.pages * r.copies, 0),
+    sheets: sums._sum.physicalSheets ?? 0,
+    wastedSheets: sums._sum.wastedSheets ?? 0,
+    totalCost: Number(sums._sum.totalCost ?? 0),
+  };
 
   return {
     records,
+    totals,
     total,
     page,
     pageSize,

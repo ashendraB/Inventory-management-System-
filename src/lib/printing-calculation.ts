@@ -44,10 +44,27 @@ export function calculatePhysicalSheets(
   sides: PrintSidesValue,
   layout: PrintLayoutValue
 ): number {
+  return describeSheetMath(pages, copies, sides, layout).physicalSheets;
+}
+
+/** The same sheet math as calculatePhysicalSheets, but with every
+ * intermediate number exposed so a record can show its working. Single
+ * source of truth — calculatePhysicalSheets just returns the last step. */
+export function describeSheetMath(
+  pages: number,
+  copies: number,
+  sides: PrintSidesValue,
+  layout: PrintLayoutValue
+) {
   const pagesPerSide = layout === "BOOKLET" ? 2 : 1;
   const pagesPerSheet = sides === "DOUBLE" ? pagesPerSide * 2 : pagesPerSide;
   const sheetsPerCopy = Math.ceil(pages / pagesPerSheet);
-  return sheetsPerCopy * copies;
+  return {
+    totalPrints: pages * copies,
+    pagesPerSheet,
+    sheetsPerCopy,
+    physicalSheets: sheetsPerCopy * copies,
+  };
 }
 
 export function calculatePrintingJob(input: CalculationInput): CalculationResult {

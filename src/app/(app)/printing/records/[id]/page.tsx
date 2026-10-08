@@ -5,6 +5,7 @@ import { PrintingRecordActions } from "@/components/printing/PrintingRecordActio
 import { ReprintButton } from "@/components/printing/ReprintButton";
 import { EditPrintingRecordForm } from "@/components/printing/EditPrintingRecordForm";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { describeSheetMath } from "@/lib/printing-calculation";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function PrintingRecordDetailPage({
   const sp = await searchParams;
   const record = await getPrintingRecord(id);
   if (!record) notFound();
+  const math = describeSheetMath(record.pages, record.copies, record.sides, record.layout);
 
   return (
     <div className="max-w-2xl space-y-4">
@@ -67,7 +69,51 @@ export default async function PrintingRecordDetailPage({
 
         <div className="my-4 border-t border-dashed border-white/20" />
 
+        <div className="mb-4 rounded-lg border border-gold-500/30 bg-white/5 p-4">
+          <h2 className="mb-3 text-sm font-semibold text-gold-400">How the total is calculated</h2>
+          <ol className="space-y-3 text-sm text-slate-300">
+            <Step n={1} title="Total prints">
+              {record.pages.toLocaleString()} pages × {record.copies.toLocaleString()} cop
+              {record.copies === 1 ? "y" : "ies"} ={" "}
+              <b className="text-white">{math.totalPrints.toLocaleString()} prints</b>
+            </Step>
+            <Step n={2} title="Sheets of paper per copy">
+              {record.sides === "DOUBLE" ? "Double-sided" : "Single-sided"}
+              {record.layout === "BOOKLET" ? " booklet" : ""} fits{" "}
+              <b className="text-white">
+                {math.pagesPerSheet} page{math.pagesPerSheet === 1 ? "" : "s"} per sheet
+              </b>
+              , so {record.pages.toLocaleString()} ÷ {math.pagesPerSheet} (rounded up) ={" "}
+              <b className="text-white">{math.sheetsPerCopy.toLocaleString()} sheets per copy</b>
+            </Step>
+            <Step n={3} title="Physical sheets used">
+              {math.sheetsPerCopy.toLocaleString()} sheets × {record.copies.toLocaleString()} cop
+              {record.copies === 1 ? "y" : "ies"} ={" "}
+              <b className="text-white">{math.physicalSheets.toLocaleString()} sheets</b>
+              {record.wastedSheets > 0 && (
+                <> (wasted sheets are tracked separately and not billed)</>
+              )}
+            </Step>
+            <Step n={4} title="Paper cost">
+              {math.physicalSheets.toLocaleString()} sheets × {formatCurrency(Number(record.paperCostPerSheet))} ={" "}
+              <b className="text-white">{formatCurrency(Number(record.totalPaperCost))}</b>
+            </Step>
+            <Step n={5} title="Printing charge">
+              {math.physicalSheets.toLocaleString()} sheets × {formatCurrency(Number(record.printingChargePerSheet))} ={" "}
+              <b className="text-white">{formatCurrency(Number(record.totalPrintingCharge))}</b>
+            </Step>
+            <Step n={6} title="Total">
+              {formatCurrency(Number(record.totalPaperCost))} + {formatCurrency(Number(record.totalPrintingCharge))} ={" "}
+              <b className="text-gold-400">{formatCurrency(Number(record.totalCost))}</b>
+            </Step>
+          </ol>
+          <p className="mt-3 text-xs text-slate-400">
+            Rates shown are the ones saved with this job, so later price changes don&apos;t alter it.
+          </p>
+        </div>
+
         <dl className="space-y-2 text-sm">
+          <Row label="Total Prints" value={math.totalPrints.toLocaleString()} />
           <Row label="Physical Sheets" value={record.physicalSheets.toLocaleString()} />
           {record.wastedSheets > 0 && (
             <Row
@@ -122,6 +168,20 @@ function Detail({ label, value }: { label: string; value: string }) {
       <dt className="text-xs font-medium text-slate-400">{label}</dt>
       <dd className="text-slate-100">{value}</dd>
     </div>
+  );
+}
+
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-brand-900">
+        {n}
+      </span>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{title}</p>
+        <p>{children}</p>
+      </div>
+    </li>
   );
 }
 

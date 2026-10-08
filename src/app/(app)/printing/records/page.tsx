@@ -69,6 +69,7 @@ export default async function PrintingRecordsPage({
               <th className="px-4 py-3">Paper</th>
               <th className="px-4 py-3">Colour</th>
               <th className="px-4 py-3">Side</th>
+              <th className="px-4 py-3">Prints</th>
               <th className="px-4 py-3">Sheets</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Operator</th>
@@ -78,7 +79,7 @@ export default async function PrintingRecordsPage({
           <tbody>
             {result.records.length === 0 ? (
               <tr>
-                <td colSpan={12} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={13} className="px-4 py-10 text-center text-slate-400">
                   No printing records yet.
                 </td>
               </tr>
@@ -102,6 +103,12 @@ export default async function PrintingRecordsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-400">{r.colourMode === "BW" ? "B&W" : "Colour"}</td>
                   <td className="px-4 py-3 text-slate-400">{r.sides === "SINGLE" ? "Single" : "Double"}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {(r.pages * r.copies).toLocaleString()}
+                    <span className="ml-1 text-xs text-slate-400">
+                      ({r.pages} × {r.copies})
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     {r.physicalSheets.toLocaleString()}
                     {r.wastedSheets > 0 && (
@@ -130,8 +137,27 @@ export default async function PrintingRecordsPage({
               ))
             )}
           </tbody>
+          {result.records.length > 0 && (
+            <tfoot>
+              <tr className="border-t border-gold-500/40 bg-white/5 font-semibold text-white">
+                <td colSpan={8} className="px-4 py-3 text-right text-xs uppercase tracking-wide text-slate-400">
+                  Total of all {result.total} matching job{result.total === 1 ? "" : "s"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">{result.totals.prints.toLocaleString()}</td>
+                <td className="px-4 py-3">{result.totals.sheets.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gold-400">{formatCurrency(result.totals.totalCost)}</td>
+                <td colSpan={2} />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
+
+      <p className="text-xs text-slate-400">
+        <strong className="text-slate-200">Prints</strong> = pages × copies (every page printed).{" "}
+        <strong className="text-slate-200">Sheets</strong> = physical paper used, which is fewer when
+        printing double-sided or as a booklet. Open a job to see exactly how its total is calculated.
+      </p>
 
       <Pagination page={result.page} totalPages={result.totalPages} makeHref={pageHref} />
     </div>
