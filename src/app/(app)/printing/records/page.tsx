@@ -3,6 +3,7 @@ import { listPrintingRecords } from "@/server/printing-service";
 import { listActiveLecturers } from "@/server/lecturer-service";
 import { listSubjects } from "@/server/paper-config-service";
 import { Pagination } from "@/components/ui/Pagination";
+import { CalculationButton } from "@/components/printing/CalculationButton";
 import { PrintingRecordRowActions } from "@/components/printing/PrintingRecordRowActions";
 import { PrintingRecordsFilterBar } from "@/components/printing/PrintingRecordsFilterBar";
 import { Badge } from "@/components/ui/Badge";
@@ -121,6 +122,21 @@ export default async function PrintingRecordsPage({
                   <td className="px-4 py-3 text-slate-400">{r.operator.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3 text-sm">
+                      <CalculationButton
+                        printingCode={r.printingCode}
+                        documentName={r.documentName}
+                        lecturerName={r.lecturer.name}
+                        pages={r.pages}
+                        copies={r.copies}
+                        sides={r.sides}
+                        layout={r.layout}
+                        wastedSheets={r.wastedSheets}
+                        paperCostPerSheet={Number(r.paperCostPerSheet)}
+                        printingChargePerSheet={Number(r.printingChargePerSheet)}
+                        totalPaperCost={Number(r.totalPaperCost)}
+                        totalPrintingCharge={Number(r.totalPrintingCharge)}
+                        totalCost={Number(r.totalCost)}
+                      />
                       <Link
                         href={`/printing/records/${r.id}?edit=1`}
                         className="text-gold-400 hover:underline"
