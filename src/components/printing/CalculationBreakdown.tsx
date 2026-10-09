@@ -7,6 +7,10 @@ export interface CalculationBreakdownProps {
   sides: "SINGLE" | "DOUBLE";
   layout: "NORMAL" | "BOOKLET";
   wastedSheets: number;
+  // Double-sided jobs: sheets with printing on one side only (the odd last
+  // page of each copy), billed at the one-sided price. 0 / null otherwise.
+  singleSidedSheets: number;
+  singleSidedChargePerSheet: number | null;
   // The rates and totals saved with the record — never recomputed from
   // today's prices, so this always matches what was actually billed.
   paperCostPerSheet: number;
@@ -21,9 +25,12 @@ export interface CalculationBreakdownProps {
  * charge, total. The sheet math comes from the same function the calculator
  * uses, so it can't drift from the real calculation. */
 export function CalculationBreakdown(props: CalculationBreakdownProps) {
-  const { pages, copies, sides, layout, wastedSheets } = props;
+  const { pages, copies, sides, layout, wastedSheets, singleSidedSheets } = props;
   const math = describeSheetMath(pages, copies, sides, layout);
   const copyWord = copies === 1 ? "copy" : "copies";
+  const mainSheets = math.physicalSheets - singleSidedSheets;
+  // Records made before the round-up rule was added have un-rounded prices.
+  const roundedUp = Math.abs((props.paperCostPerSheet + props.printingChargePerSheet) * 2 % 1) < 1e-6;
 
   return (
     <div className="rounded-lg border border-gold-500/30 bg-white/5 p-4">
@@ -46,16 +53,38 @@ export function CalculationBreakdown(props: CalculationBreakdownProps) {
           {math.sheetsPerCopy.toLocaleString()} sheets × {copies.toLocaleString()} {copyWord} ={" "}
           <b className="text-white">{math.physicalSheets.toLocaleString()} sheets</b>
           {wastedSheets > 0 && <> (wasted sheets are tracked separately and not billed)</>}
+          {singleSidedSheets > 0 && (
+            <p className="mt-1 text-slate-400">
+              {singleSidedSheets.toLocaleString()} of them carry printing on one side only (the odd
+              last page of each copy), so they are charged at the one-sided price.
+            </p>
+          )}
         </Step>
         <Step n={4} title="Paper cost">
           {math.physicalSheets.toLocaleString()} sheets × {formatCurrency(props.paperCostPerSheet)} ={" "}
           <b className="text-white">{formatCurrency(props.totalPaperCost)}</b>
         </Step>
         <Step n={5} title="Printing charge">
-          {math.physicalSheets.toLocaleString()} sheets × {formatCurrency(props.printingChargePerSheet)} ={" "}
+          {singleSidedSheets > 0 && props.singleSidedChargePerSheet !== null ? (
+            <>
+              {mainSheets.toLocaleString()} {sides === "DOUBLE" ? "double-sided " : ""}sheets ×{" "}
+              {formatCurrency(props.printingChargePerSheet)} + {singleSidedSheets.toLocaleString()}{" "}
+              one-sided sheets × {formatCurrency(props.singleSidedChargePerSheet)} ={" "}
+            </>
+          ) : (
+            <>
+              {math.physicalSheets.toLocaleString()} sheets ×{" "}
+              {formatCurrency(props.printingChargePerSheet)} ={" "}
+            </>
+          )}
           <b className="text-white">{formatCurrency(props.totalPrintingCharge)}</b>
-        </Step>
-        <Step n={6} title="Total">
+          {roundedUp && (
+            <p className="mt-1 text-slate-400">
+              Each sheet&apos;s price (paper + printing) is rounded up to the next Rs. 0.50, so the
+              charge per sheet includes that small round-up.
+            </p>
+          )}
+        </Step>        <Step n={6} title="Total">
           {formatCurrency(props.totalPaperCost)} + {formatCurrency(props.totalPrintingCharge)} ={" "}
           <b className="text-gold-400">{formatCurrency(props.totalCost)}</b>
         </Step>

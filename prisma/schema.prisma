@@ -415,6 +415,11 @@ model PrintingRecord {
   priceRuleId          String?
   priceRule            PrintingPriceRule? @relation(fields: [priceRuleId], references: [id])
   printingChargePerSheet Decimal
+  // Double-sided jobs only: sheets that carry printing on one side only (the
+  // odd last page of each copy), billed at the one-sided price below instead
+  // of the double-sided one. 0 / null on older records and single-sided jobs.
+  singleSidedSheets    Int      @default(0)
+  singleSidedChargePerSheet Decimal?
   totalPrintingCharge  Decimal
   totalCost            Decimal
 

@@ -96,6 +96,10 @@ export default async function PrintingRecordDetailPage({
           sides={record.sides}
           layout={record.layout}
           wastedSheets={record.wastedSheets}
+          singleSidedSheets={record.singleSidedSheets}
+          singleSidedChargePerSheet={
+            record.singleSidedChargePerSheet === null ? null : Number(record.singleSidedChargePerSheet)
+          }
           paperCostPerSheet={Number(record.paperCostPerSheet)}
           printingChargePerSheet={Number(record.printingChargePerSheet)}
           totalPaperCost={Number(record.totalPaperCost)}

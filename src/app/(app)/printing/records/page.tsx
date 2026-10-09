@@ -131,6 +131,10 @@ export default async function PrintingRecordsPage({
                         sides={r.sides}
                         layout={r.layout}
                         wastedSheets={r.wastedSheets}
+                        singleSidedSheets={r.singleSidedSheets}
+                        singleSidedChargePerSheet={
+                          r.singleSidedChargePerSheet === null ? null : Number(r.singleSidedChargePerSheet)
+                        }
                         paperCostPerSheet={Number(r.paperCostPerSheet)}
                         printingChargePerSheet={Number(r.printingChargePerSheet)}
                         totalPaperCost={Number(r.totalPaperCost)}

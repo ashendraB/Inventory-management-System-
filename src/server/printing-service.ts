@@ -82,6 +82,10 @@ interface ResolvedJobInputs {
   item: NonNullable<Awaited<ReturnType<typeof getItemWithPaperIdentity>>>;
   activeLot: { id: string; currentQuantity: number; costPerSheet: string };
   priceRule: { id: string; chargePerSheet: string };
+  /** Double-sided jobs: the one-sided rule for the same paper/colour, used for
+   * the half-filled last sheet. null if none is configured (those sheets then
+   * fall back to the double-sided charge). */
+  singleSidedRule: { id: string; chargePerSheet: string } | null;
 }
 
 async function getItemWithPaperIdentity(inventoryItemId: string) {
@@ -141,11 +145,28 @@ async function resolveJobInputs(
       costPerSheet: activeLot.costPerSheet.toString(),
     },
     priceRule: { id: priceRule.id, chargePerSheet: priceRule.chargePerSheet.toString() },
+    singleSidedRule: await findSingleSidedRule(item, colourMode, sides),
   };
 }
 
+async function findSingleSidedRule(
+  item: { paperSizeId: string | null; gsmId: string | null; paperTypeId: string | null },
+  colourMode: "BW" | "COLOUR",
+  sides: "SINGLE" | "DOUBLE"
+) {
+  if (sides !== "DOUBLE" || !item.paperSizeId || !item.gsmId || !item.paperTypeId) return null;
+  const rule = await findMatchingPriceRule({
+    paperSizeId: item.paperSizeId,
+    gsmId: item.gsmId,
+    paperTypeId: item.paperTypeId,
+    colourMode,
+    sides: "SINGLE",
+  });
+  return rule ? { id: rule.id, chargePerSheet: rule.chargePerSheet.toString() } : null;
+}
+
 export async function previewPrintingJob(data: z.infer<typeof previewJobInputSchema>) {
-  const { item, activeLot, priceRule } = await resolveJobInputs(
+  const { item, activeLot, priceRule, singleSidedRule } = await resolveJobInputs(
     data.inventoryItemId,
     data.colourMode,
     data.sides
@@ -158,6 +179,7 @@ export async function previewPrintingJob(data: z.infer<typeof previewJobInputSch
     copies: data.copies,
     paperCostPerSheet: Number(activeLot.costPerSheet),
     printingChargePerSheet: Number(priceRule.chargePerSheet),
+    singleSidedChargePerSheet: singleSidedRule ? Number(singleSidedRule.chargePerSheet) : null,
     availableStock: activeLot.currentQuantity,
   });
 
@@ -172,6 +194,12 @@ export async function previewPrintingJob(data: z.infer<typeof previewJobInputSch
     },
     activeLot,
     calculation,
+    // The price-rule charges as configured (before the Rs. 0.50 rounding in
+    // `calculation`), so the client can re-run the same calculation locally.
+    ruleCharges: {
+      main: Number(priceRule.chargePerSheet),
+      singleSided: singleSidedRule ? Number(singleSidedRule.chargePerSheet) : null,
+    },
   };
 }
 
@@ -221,6 +249,8 @@ export async function submitPrintingJob(
       );
     }
 
+    const singleSidedRule = await findSingleSidedRule(item, data.colourMode, data.sides);
+
     const calc = calculatePrintingJob({
       sides: data.sides,
       layout: data.layout,
@@ -228,6 +258,7 @@ export async function submitPrintingJob(
       copies: data.copies,
       paperCostPerSheet: Number(activeLot.costPerSheet),
       printingChargePerSheet: Number(priceRule.chargePerSheet),
+      singleSidedChargePerSheet: singleSidedRule ? Number(singleSidedRule.chargePerSheet) : null,
       availableStock: activeLot.currentQuantity,
     });
 
@@ -265,7 +296,10 @@ export async function submitPrintingJob(
         paperCostPerSheet: activeLot.costPerSheet,
         totalPaperCost: calc.totalPaperCost,
         priceRuleId: priceRule.id,
-        printingChargePerSheet: priceRule.chargePerSheet,
+        // The charge actually applied (rule charge + the Rs. 0.50 rounding).
+        printingChargePerSheet: calc.printingChargePerSheet,
+        singleSidedSheets: calc.singleSidedSheets,
+        singleSidedChargePerSheet: calc.singleSidedChargePerSheet,
         totalPrintingCharge: calc.totalPrintingCharge,
         totalCost: calc.totalCost,
         printingMachine: data.printingMachine || null,

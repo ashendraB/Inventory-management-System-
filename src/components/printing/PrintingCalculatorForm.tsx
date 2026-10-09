@@ -50,7 +50,9 @@ interface PreviewState {
   loading: boolean;
   error: string | null;
   priceError: string | null;
+  /** The price-rule charges as configured (before the Rs. 0.50 rounding). */
   chargePerSheet: number | null;
+  singleSidedChargePerSheet: number | null;
 }
 
 /** A previous printing record whose details (and stored PDF) pre-fill the
@@ -111,6 +113,7 @@ export function PrintingCalculatorForm({
     error: null,
     priceError: null,
     chargePerSheet: null,
+    singleSidedChargePerSheet: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -148,7 +151,7 @@ export function PrintingCalculatorForm({
       if (cancelled) return;
 
       if (!itemId || !pages || !copies) {
-        setPreview({ loading: false, error: null, priceError: null, chargePerSheet: null });
+        setPreview({ loading: false, error: null, priceError: null, chargePerSheet: null, singleSidedChargePerSheet: null });
         return;
       }
 
@@ -174,6 +177,7 @@ export function PrintingCalculatorForm({
             error: res.status === 409 ? null : data.error,
             priceError: res.status === 422 ? data.error : null,
             chargePerSheet: null,
+            singleSidedChargePerSheet: null,
           });
           return;
         }
@@ -181,7 +185,8 @@ export function PrintingCalculatorForm({
           loading: false,
           error: null,
           priceError: null,
-          chargePerSheet: data.calculation.printingChargePerSheet,
+          chargePerSheet: data.ruleCharges.main,
+          singleSidedChargePerSheet: data.ruleCharges.singleSided,
         });
         // Refresh this item's active-lot snapshot so the displayed stock
         // stays current without a full refetch of the whole list.
@@ -202,7 +207,7 @@ export function PrintingCalculatorForm({
         );
       } catch {
         if (!cancelled) {
-          setPreview({ loading: false, error: "Could not reach the server.", priceError: null, chargePerSheet: null });
+          setPreview({ loading: false, error: "Could not reach the server.", priceError: null, chargePerSheet: null, singleSidedChargePerSheet: null });
         }
       }
     }, 300);
@@ -223,9 +228,22 @@ export function PrintingCalculatorForm({
       copies: Number(copies),
       paperCostPerSheet: Number(selectedItem.activeLot.costPerSheet),
       printingChargePerSheet: preview.chargePerSheet,
+      singleSidedChargePerSheet: preview.singleSidedChargePerSheet,
       availableStock: selectedItem.activeLot.currentQuantity,
     });
-  }, [selectedItem, preview.chargePerSheet, sides, layout, pages, copies]);
+  }, [selectedItem, preview.chargePerSheet, preview.singleSidedChargePerSheet, sides, layout, pages, copies]);
+
+  /** Picks the paper, and sets the Layout to match: A3 jobs are printed as
+   * booklets (4 pages per double-sided sheet), so choosing A3 selects Booklet
+   * automatically, and moving back to a non-A3 paper puts it back to Normal.
+   * Still changeable by hand afterwards. */
+  function choosePaper(id: string, list: PaperItem[] = items) {
+    const wasA3 = list.find((i) => i.id === itemId)?.paperSizeName === "A3";
+    const isA3 = list.find((i) => i.id === id)?.paperSizeName === "A3";
+    setItemId(id);
+    if (isA3 && !wasA3) setLayout("BOOKLET");
+    else if (wasA3 && !isA3 && id) setLayout("NORMAL");
+  }
 
   async function handleScan() {
     if (!scanValue.trim()) return;
@@ -238,14 +256,16 @@ export function PrintingCalculatorForm({
         toast.error(data.error ?? "Barcode not found.");
         return;
       }
+      let list = items;
       if (!items.some((i) => i.id === data.inventoryItemId)) {
         // Item exists but wasn't in our initial "has active lot maybe" list
         // (e.g. inactive item's lot) — refetch the full list to be safe.
         const listRes = await fetch("/api/printing/items");
         const listData = await listRes.json();
         setItems(listData.items);
+        list = listData.items;
       }
-      setItemId(data.inventoryItemId);
+      choosePaper(data.inventoryItemId, list);
       if (data.scannedLotId && !data.scannedLotIsActive) {
         setScanPrompt({ lotId: data.scannedLotId, lotCode: scanValue.trim() });
       }
@@ -532,7 +552,7 @@ export function PrintingCalculatorForm({
             </FieldWrapper>
 
             <FieldWrapper label="Paper" htmlFor="itemId" required>
-              <Select id="itemId" required value={itemId} onChange={(e) => setItemId(e.target.value)}>
+              <Select id="itemId" required value={itemId} onChange={(e) => choosePaper(e.target.value)}>
                 <option value="">Select paper</option>
                 {items.map((i) => (
                   <option key={i.id} value={i.id}>
@@ -564,7 +584,11 @@ export function PrintingCalculatorForm({
               label="Layout"
               htmlFor="layout"
               required
-              hint={layout === "BOOKLET" ? "2 pages per side, folded (e.g. A4 pages on A3)" : undefined}
+              hint={
+                layout === "BOOKLET"
+                  ? "2 pages per side, folded (e.g. A4 pages on A3). Selected automatically for A3 paper."
+                  : undefined
+              }
             >
               <Select id="layout" value={layout} onChange={(e) => setLayout(e.target.value as "NORMAL" | "BOOKLET")}>
                 <option value="NORMAL">Normal</option>
@@ -695,6 +719,12 @@ export function PrintingCalculatorForm({
           ) : (
             <dl className="space-y-2 text-sm">
               <Row label="Physical Sheets" value={calculation.physicalSheets.toLocaleString()} />
+              {calculation.singleSidedSheets > 0 && (
+                <Row
+                  label="  of which one side only"
+                  value={calculation.singleSidedSheets.toLocaleString()}
+                />
+              )}
               <Row label="Paper Cost" value={formatCurrency(calculation.totalPaperCost)} />
               <Row label="Printing Charge" value={formatCurrency(calculation.totalPrintingCharge)} />
               <div className="border-t border-white/10 pt-2">
