@@ -120,6 +120,7 @@ export function PrintingCalculatorForm({
   const [printedRecord, setPrintedRecord] = useState<{ id: string; printingCode: string; viaAcrobat: boolean } | null>(null);
 
   const documentRef = useRef<DocumentUploadHandle>(null);
+  const submittingRef = useRef(false);
   const [documentReady, setDocumentReady] = useState(false);
 
   const selectedItem = items.find((i) => i.id === itemId) ?? null;
@@ -350,9 +351,15 @@ export function PrintingCalculatorForm({
   }
 
   async function submitRecord(mode: "browser" | "acrobat") {
+    // Re-entrancy guard: a fast double-click must never save (and bill) the
+    // same job twice — state updates alone can lag a click or two behind.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
-      const attached = documentRef.current?.getPdfFile() ?? null;
+      // A reprint is a normal, billed job, but its PDF is already in Stored
+      // Documents (on the original record) — never store a second copy of it.
+      const attached = reprint ? null : (documentRef.current?.getPdfFile() ?? null);
       // The request body is capped at 10 MB and base64 adds a third on top,
       // so a bigger PDF can't be stored for Reprint — the job itself is still
       // saved and printed normally.
@@ -412,6 +419,7 @@ export function PrintingCalculatorForm({
     } catch {
       setSubmitError("Could not reach the server. Please try again.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }
@@ -434,7 +442,8 @@ export function PrintingCalculatorForm({
             <strong className="text-gold-400">Reprinting {reprint.printingCode}.</strong> The
             details and PDF are filled in from that job — change the copies or anything else if
             needed, then print. This saves a <em>new</em> printing record (and uses new stock),
-            like any other job.
+            like any other job — but the PDF is <strong>not</strong> saved again in Stored
+            Documents; it stays on the original job.
           </div>
         )}
 
