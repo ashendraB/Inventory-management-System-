@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { Select, TextInput, Button } from "@/components/ui/Field";
@@ -24,7 +25,19 @@ export function StoredDocumentsFilterBar({
   const month = searchParams.get("month") ?? "";
   const lecturerId = searchParams.get("lecturerId") ?? "";
   const gradeId = searchParams.get("gradeId") ?? "";
-  const hasFilters = preset || month || lecturerId || gradeId;
+  const urlSearch = searchParams.get("search") ?? "";
+  const hasFilters = preset || month || lecturerId || gradeId || urlSearch;
+
+  // The box updates as you type; the page is refreshed shortly after you stop
+  // typing rather than on every keystroke.
+  const [search, setSearch] = useState(urlSearch);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search.trim() !== urlSearch) setParam("search", search.trim());
+    }, 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,6 +64,19 @@ export function StoredDocumentsFilterBar({
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border border-brand-700 bg-brand-800 p-4 shadow-sm">
+      <div className="w-full sm:w-72">
+        <label htmlFor="doc-search" className="mb-1 block text-sm font-medium text-slate-200">
+          Search
+        </label>
+        <TextInput
+          id="doc-search"
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Document name, printing ID or lecturer"
+          autoComplete="off"
+        />
+      </div>
       <div className="flex gap-1.5">
         {PRESETS.map((p) => (
           <button
@@ -103,7 +129,14 @@ export function StoredDocumentsFilterBar({
         </Select>
       </div>
       {hasFilters && (
-        <Button type="button" variant="secondary" onClick={() => router.push(pathname)}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setSearch("");
+            router.push(pathname);
+          }}
+        >
           Clear Filters
         </Button>
       )}

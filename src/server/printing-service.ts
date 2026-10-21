@@ -472,6 +472,8 @@ export interface StoredDocumentFilters {
   to?: Date;
   lecturerId?: string;
   gradeId?: string;
+  /** Matches the document name, file name, printing ID or lecturer name. */
+  search?: string;
 }
 
 export async function listStoredDocuments(filters: StoredDocumentFilters = {}) {
@@ -480,6 +482,14 @@ export async function listStoredDocuments(filters: StoredDocumentFilters = {}) {
   if (filters.to) conditions.push(Prisma.sql`pr."date" < ${filters.to}`);
   if (filters.lecturerId) conditions.push(Prisma.sql`pr."lecturerId" = ${filters.lecturerId}`);
   if (filters.gradeId) conditions.push(Prisma.sql`pr."gradeId" = ${filters.gradeId}`);
+  const term = filters.search?.trim();
+  if (term) {
+    // Escape LIKE wildcards so a typed "%" or "_" is searched for literally.
+    const like = `%${term.replace(/[\\%_]/g, "\\$&")}%`;
+    conditions.push(
+      Prisma.sql`(pr."documentName" ILIKE ${like} OR pr."documentFileName" ILIKE ${like} OR pr."printingCode" ILIKE ${like} OR l."name" ILIKE ${like})`
+    );
+  }
 
   return prisma.$queryRaw<
     {

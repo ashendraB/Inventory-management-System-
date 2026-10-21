@@ -30,14 +30,14 @@ function resolveRange(sp: { preset?: string; month?: string }): { from?: Date; t
 export default async function StoredDocumentsSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ preset?: string; month?: string; lecturerId?: string; gradeId?: string }>;
+  searchParams: Promise<{ preset?: string; month?: string; lecturerId?: string; gradeId?: string; search?: string }>;
 }) {
   const sp = await searchParams;
   const range = resolveRange(sp);
   // Include inactive lecturers/grades: an old file can belong to one.
   const [stats, documents, dbStats, lecturers, grades] = await Promise.all([
     getStoredDocumentsStats(),
-    listStoredDocuments({ ...range, lecturerId: sp.lecturerId, gradeId: sp.gradeId }),
+    listStoredDocuments({ ...range, lecturerId: sp.lecturerId, gradeId: sp.gradeId, search: sp.search }),
     getDatabaseSizeStats(),
     listLecturers(true),
     listGrades(true),
@@ -113,7 +113,7 @@ export default async function StoredDocumentsSettingsPage({
             {documents.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-10 text-center text-slate-400">
-                  No stored files match this filter.
+                  No stored files match this search or filter.
                 </td>
               </tr>
             ) : (
