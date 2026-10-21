@@ -150,7 +150,7 @@ export function PrintingCalculatorForm({
     const timer = setTimeout(async () => {
       if (cancelled) return;
 
-      if (!itemId || !pages || !copies) {
+      if (reprint || !itemId || !pages || !copies) {
         setPreview({ loading: false, error: null, priceError: null, chargePerSheet: null, singleSidedChargePerSheet: null });
         return;
       }
@@ -337,6 +337,24 @@ export function PrintingCalculatorForm({
   function handlePrint(mode: "browser" | "acrobat" = "browser") {
     setSubmitError(null);
     setPrintedRecord(null);
+
+    // A reprint only sends the stored PDF to the printer: no new printing
+    // record, no stock used, no billing, and nothing new in Stored Documents.
+    if (reprint) {
+      if (!documentReady) {
+        setSubmitError("The PDF hasn't finished loading yet — try again in a moment.");
+        return;
+      }
+      if (mode === "browser") documentRef.current?.print();
+      else documentRef.current?.download();
+      toast.success(
+        mode === "browser"
+          ? "Print dialog opened — no new record was saved."
+          : "PDF downloaded — open it in Acrobat to print. No new record was saved."
+      );
+      return;
+    }
+
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
       setSubmitError("Please fill in all required fields.");
       return;
@@ -416,8 +434,9 @@ export function PrintingCalculatorForm({
     }
   }
 
-  const canSubmit =
-    lecturerId &&
+  const canSubmit = reprint
+    ? documentReady
+    : lecturerId &&
     documentName &&
     itemId &&
     pages &&
@@ -432,9 +451,10 @@ export function PrintingCalculatorForm({
         {reprint && (
           <div className="rounded-xl border border-gold-500/40 bg-gold-500/10 px-4 py-3 text-sm text-slate-100">
             <strong className="text-gold-400">Reprinting {reprint.printingCode}.</strong> The
-            details and PDF are filled in from that job — change the copies or anything else if
-            needed, then print. This saves a <em>new</em> printing record (and uses new stock),
-            like any other job.
+            details and PDF are filled in from that job. Printing from here does{" "}
+            <strong>not</strong> create a new printing job, use stock, bill anything, or add
+            another document to Stored Documents — it only prints the file again. To record a new
+            billable job instead, use <em>New Printing Job</em> from Printing Records.
           </div>
         )}
 
@@ -678,9 +698,13 @@ export function PrintingCalculatorForm({
               variant="secondary"
               onClick={() => handlePrint("acrobat")}
               disabled={!canSubmit || submitting}
-              title="Saves the record, then downloads the PDF to print from Adobe Acrobat"
+              title={
+                reprint
+                  ? "Downloads the PDF to print from Adobe Acrobat (nothing is saved)"
+                  : "Saves the record, then downloads the PDF to print from Adobe Acrobat"
+              }
             >
-              Save &amp; Print in Acrobat
+              {reprint ? "Print in Acrobat" : "Save & Print in Acrobat"}
             </Button>
           )}
           <Button type="button" variant="secondary" onClick={handleReset}>
@@ -690,6 +714,16 @@ export function PrintingCalculatorForm({
       </div>
 
       <div className="space-y-4">
+        {reprint ? (
+          <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 text-sm text-slate-300 shadow-sm">
+            <h2 className="mb-2 text-sm font-semibold text-gold-400">Reprint only</h2>
+            <p>
+              Nothing is saved or billed from this page: no stock is used and no new record or
+              stored file is created.
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="rounded-xl border border-brand-700 bg-brand-800 p-6 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-gold-400">Active Stock</h2>
           {!itemId ? (
@@ -749,6 +783,8 @@ export function PrintingCalculatorForm({
             </dl>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
