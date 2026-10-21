@@ -49,6 +49,9 @@ export const NAV: NavSection[] = [
     links: [
       { label: "Printing Calculator", href: "/printing/calculator", roles: ADMIN_PRINT, implemented: true },
       { label: "Printing Records", href: "/printing/records", roles: ADMIN_PRINT, implemented: true },
+      // Administrator only (it can delete saved files); the page itself still
+      // lives at /settings/stored-documents.
+      { label: "Stored Documents", href: "/settings/stored-documents", roles: ADMIN, implemented: true },
       { label: "Active Paper Stock", href: "/printing/active-stock", roles: ADMIN_PRINT, implemented: true },
       { label: "Printing Price Configuration", href: "/printing/price-config", roles: ADMIN, implemented: true },
     ],
@@ -91,7 +94,6 @@ export const NAV: NavSection[] = [
       { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
       { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
       { label: "Subjects & Grades", href: "/settings/subjects-grades", roles: ADMIN, implemented: true },
-      { label: "Stored Documents", href: "/settings/stored-documents", roles: ADMIN, implemented: true },
       { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: true },
     ],
   },
