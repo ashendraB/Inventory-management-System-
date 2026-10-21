@@ -7,7 +7,7 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    const session = await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const { id } = await ctx.params;
     const lot = await reopenLot(id, session.userId);
     return NextResponse.json({ lot });

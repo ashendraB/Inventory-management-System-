@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireRole(["ADMINISTRATOR"]);
+    const session = await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
     const body = await request.json().catch(() => null);
     const parsed = createGsmTypeSchema.safeParse(body);
     if (!parsed.success) {

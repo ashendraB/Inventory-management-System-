@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { useSession } from "@/lib/session-context";
 
 export function LotRowActions({
   lotId,
@@ -15,10 +14,7 @@ export function LotRowActions({
   isActiveStock: boolean;
 }) {
   const router = useRouter();
-  const { role } = useSession();
   const [busy, setBusy] = useState(false);
-
-  if (role === "PRINTING_OPERATOR") return null;
 
   async function handleSetActive() {
     setBusy(true);

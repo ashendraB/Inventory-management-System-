@@ -6,7 +6,7 @@ import { logAudit } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const includeInactive =
       request.nextUrl.searchParams.get("includeInactive") === "true";
     const suppliers = await listSuppliers(includeInactive);
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireRole(["ADMINISTRATOR"]);
+    const session = await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
     const body = await request.json().catch(() => null);
     const parsed = createSupplierSchema.safeParse(body);
     if (!parsed.success) {

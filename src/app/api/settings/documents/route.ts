@@ -4,7 +4,7 @@ import { getStoredDocumentsStats, listStoredDocuments } from "@/server/printing-
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole(["ADMINISTRATOR"]);
+    await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
     const sp = request.nextUrl.searchParams;
     const from = sp.get("from") ? new Date(sp.get("from")!) : undefined;
     const to = sp.get("to") ? new Date(sp.get("to")!) : undefined;

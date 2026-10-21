@@ -13,7 +13,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const { id } = await ctx.params;
     const item = await getInventoryItem(id);
     if (!item) throw new ApiError(404, "Inventory item not found.");

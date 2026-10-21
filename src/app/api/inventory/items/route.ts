@@ -12,7 +12,7 @@ import { logAudit } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const sp = request.nextUrl.searchParams;
     const filters: InventoryItemFilters = {
       search: sp.get("search") ?? undefined,
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     // Both Administrator and Inventory Operator may add items (spec §4);
     // only Administrator may later edit/deactivate them.
-    const session = await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    const session = await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const body = await request.json().catch(() => null);
     const parsed = createInventoryItemSchema.safeParse(body);
     if (!parsed.success) {

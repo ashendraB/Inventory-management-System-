@@ -36,11 +36,11 @@ export const NAV: NavSection[] = [
     label: "Inventory",
     roles: ALL,
     links: [
-      { label: "Inventory Items", href: "/inventory/items", roles: ADMIN_INV, implemented: true },
-      { label: "Add Inventory Item", href: "/inventory/items/new", roles: ADMIN_INV, implemented: true },
+      { label: "Inventory Items", href: "/inventory/items", roles: ALL, implemented: true },
+      { label: "Add Inventory Item", href: "/inventory/items/new", roles: ALL, implemented: true },
       { label: "Barcode Reader", href: "/inventory/barcodes", roles: ALL, implemented: true },
-      { label: "Stock", href: "/inventory/lots", roles: ADMIN_INV, implemented: true },
-      { label: "Suppliers", href: "/inventory/suppliers", roles: ADMIN, implemented: true },
+      { label: "Stock", href: "/inventory/lots", roles: ALL, implemented: true },
+      { label: "Suppliers", href: "/inventory/suppliers", roles: ADMIN_PRINT, implemented: true },
     ],
   },
   {
@@ -49,9 +49,8 @@ export const NAV: NavSection[] = [
     links: [
       { label: "Printing Calculator", href: "/printing/calculator", roles: ADMIN_PRINT, implemented: true },
       { label: "Printing Records", href: "/printing/records", roles: ADMIN_PRINT, implemented: true },
-      // Administrator only (it can delete saved files); the page itself still
-      // lives at /settings/stored-documents.
-      { label: "Stored Documents", href: "/settings/stored-documents", roles: ADMIN, implemented: true },
+      // The page itself still lives at /settings/stored-documents.
+      { label: "Stored Documents", href: "/settings/stored-documents", roles: ADMIN_PRINT, implemented: true },
       { label: "Active Paper Stock", href: "/printing/active-stock", roles: ADMIN_PRINT, implemented: true },
       { label: "Printing Price Configuration", href: "/printing/price-config", roles: ADMIN, implemented: true },
     ],
@@ -87,13 +86,13 @@ export const NAV: NavSection[] = [
   },
   {
     label: "Settings",
-    roles: ADMIN,
+    roles: ADMIN_PRINT,
     links: [
       { label: "Users", href: "/settings/users", roles: ADMIN, implemented: true },
-      { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN, implemented: true },
-      { label: "GSM", href: "/settings/gsm", roles: ADMIN, implemented: true },
-      { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN, implemented: true },
-      { label: "Subjects & Grades", href: "/settings/subjects-grades", roles: ADMIN, implemented: true },
+      { label: "Paper Sizes", href: "/settings/paper-sizes", roles: ADMIN_PRINT, implemented: true },
+      { label: "GSM", href: "/settings/gsm", roles: ADMIN_PRINT, implemented: true },
+      { label: "Paper Types", href: "/settings/paper-types", roles: ADMIN_PRINT, implemented: true },
+      { label: "Subjects & Grades", href: "/settings/subjects-grades", roles: ADMIN_PRINT, implemented: true },
       { label: "System Settings", href: "/settings/system", roles: ADMIN, implemented: true },
     ],
   },

@@ -6,7 +6,7 @@ import { listCategories } from "@/server/inventory-service";
 // seeded once, not user-creatable. This route is read-only.
 export async function GET() {
   try {
-    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR"]);
+    await requireRole(["ADMINISTRATOR", "INVENTORY_OPERATOR", "PRINTING_OPERATOR"]);
     const categories = await listCategories();
     return NextResponse.json({ categories });
   } catch (err) {

@@ -8,7 +8,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireRole(["ADMINISTRATOR"]);
+    const session = await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
     const { id } = await ctx.params;
     await clearDocument(id);
     await logAudit({
