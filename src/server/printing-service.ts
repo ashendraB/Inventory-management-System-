@@ -262,14 +262,10 @@ export async function submitPrintingJob(
       availableStock: activeLot.currentQuantity,
     });
 
-    if (!calc.sufficientStock) {
-      throw new ApiError(
-        409,
-        `Insufficient stock. Required: ${calc.physicalSheets.toLocaleString()} sheets. ` +
-          `Available: ${activeLot.currentQuantity.toLocaleString()} sheets. ` +
-          `Shortage: ${(calc.physicalSheets - activeLot.currentQuantity).toLocaleString()} sheets.`
-      );
-    }
+    // A shortage (calc.sufficientStock === false) deliberately does NOT block
+    // the job: the shop's physical paper is the truth, and the system count
+    // can lag behind it. The lot just goes negative (shown as a shortage) until
+    // stock is added or corrected; deleting the job restores it exactly.
 
     const seq = await nextSequence("printing_record", tx);
     const printingCode = `PRT-${padSequence(seq)}`;
@@ -313,13 +309,12 @@ export async function submitPrintingJob(
     const newQuantity = activeLot.currentQuantity - calc.physicalSheets;
     const nextStatus = statusFromQuantity(newQuantity, item.minStock);
 
+    // The lot stays the active stock even when it reaches 0 or goes negative,
+    // so printing is never locked out; it shows as OUT_OF_STOCK until new
+    // stock is added (adding a new active lot replaces it).
     await tx.inventoryLot.update({
       where: { id: activeLot.id },
-      data: {
-        currentQuantity: newQuantity,
-        status: nextStatus,
-        isActiveStock: nextStatus === "OUT_OF_STOCK" ? false : true,
-      },
+      data: { currentQuantity: newQuantity, status: nextStatus },
     });
 
     await tx.stockTransaction.create({

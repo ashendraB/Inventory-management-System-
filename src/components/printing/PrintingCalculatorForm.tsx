@@ -385,6 +385,12 @@ export function PrintingCalculatorForm({
         return;
       }
 
+      if (calculation && !calculation.sufficientStock) {
+        toast(
+          `Printing record saved, but stock was short by ${(-calculation.remainingStock).toLocaleString()} sheets. Add new stock to the lot to correct the count.`,
+          { duration: 8000 }
+        );
+      }
       if (tooBigToStore) {
         toast(
           `This PDF is over ${MAX_STORED_PDF_BYTES / 1024 / 1024} MB, so it wasn't saved for Reprint. The printing record itself is saved.`,
@@ -416,7 +422,7 @@ export function PrintingCalculatorForm({
     itemId &&
     pages &&
     copies &&
-    calculation?.sufficientStock &&
+    calculation &&
     !preview.priceError &&
     !preview.loading;
 
@@ -731,10 +737,13 @@ export function PrintingCalculatorForm({
                 <Row label="TOTAL" value={formatCurrency(calculation.totalCost)} bold />
               </div>
               {!calculation.sufficientStock && (
-                <p className="pt-2 text-sm text-red-600">
+                <p className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
                   Insufficient stock. Required: {calculation.physicalSheets.toLocaleString()} sheets.
                   Available: {selectedItem!.activeLot!.currentQuantity.toLocaleString()} sheets.
                   Shortage: {(calculation.physicalSheets - selectedItem!.activeLot!.currentQuantity).toLocaleString()} sheets.
+                  <span className="mt-1 block text-slate-300">
+                    You can still print — the lot will show {calculation.remainingStock.toLocaleString()} until new stock is added.
+                  </span>
                 </p>
               )}
             </dl>
