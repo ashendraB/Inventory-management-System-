@@ -8,7 +8,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
+    await requireRole(["ADMINISTRATOR"]);
     const { id } = await ctx.params;
     const body = await request.json().catch(() => null);
     const parsed = setActiveSchema.safeParse(body);

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireRole(["ADMINISTRATOR", "PRINTING_OPERATOR"]);
+    const session = await requireRole(["ADMINISTRATOR"]);
     const body = await request.json().catch(() => null);
     const parsed = createGradeSchema.safeParse(body);
     if (!parsed.success) {
