@@ -117,10 +117,18 @@ export function PrintingCalculatorForm({
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [printedRecord, setPrintedRecord] = useState<{ id: string; printingCode: string; viaAcrobat: boolean } | null>(null);
+  const [printedRecord, setPrintedRecord] = useState<{
+    id: string;
+    printingCode: string;
+    viaAcrobat: boolean;
+    withBarcode: boolean;
+  } | null>(null);
 
   const documentRef = useRef<DocumentUploadHandle>(null);
   const submittingRef = useRef(false);
+  // Stamp the printing ID barcode on page 1 of the PDF. On by default; untick
+  // for documents that should print clean (e.g. cover pages).
+  const [addBarcode, setAddBarcode] = useState(true);
   const [documentReady, setDocumentReady] = useState(false);
 
   const selectedItem = items.find((i) => i.id === itemId) ?? null;
@@ -404,10 +412,13 @@ export function PrintingCalculatorForm({
       if (documentReady) {
         // Barcode = the printing ID, so a printed sheet can be traced back to
         // its job. If the PDF can't be modified (e.g. it is protected) the job
-        // is already saved, so print it as it is rather than failing.
+        // is already saved, so print it as it is rather than failing. With the
+        // box unticked, null makes sure no stamped copy is printed.
+        let withBarcode = addBarcode;
         try {
-          await documentRef.current?.applyBarcode(data.record.printingCode);
+          await documentRef.current?.applyBarcode(addBarcode ? data.record.printingCode : null);
         } catch {
+          withBarcode = false;
           toast.error(
             "The job was saved, but a barcode couldn't be added to this PDF — it will print without one.",
             { duration: 8000 }
@@ -419,6 +430,7 @@ export function PrintingCalculatorForm({
           id: data.record.id,
           printingCode: data.record.printingCode,
           viaAcrobat: mode === "acrobat",
+          withBarcode,
         });
         toast.success(`Printing record ${data.record.printingCode} saved`);
       } else {
@@ -657,8 +669,8 @@ export function PrintingCalculatorForm({
           <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             <span>
               {printedRecord.viaAcrobat
-                ? `Printing record ${printedRecord.printingCode} saved and the PDF (with its barcode on page 1) was downloaded. Open it in Acrobat (click it in the download bar) and print.`
-                : `Printing record ${printedRecord.printingCode} saved, with its barcode added to page 1. Finish printing in the dialog that just opened, then view it whenever you're ready.`}
+                ? `Printing record ${printedRecord.printingCode} saved and the PDF${printedRecord.withBarcode ? " (with its barcode on page 1)" : " (no barcode)"} was downloaded. Open it in Acrobat (click it in the download bar) and print.`
+                : `Printing record ${printedRecord.printingCode} saved${printedRecord.withBarcode ? ", with its barcode added to page 1" : " (no barcode)"}. Finish printing in the dialog that just opened, then view it whenever you're ready.`}
             </span>
             <a
               href={`/printing/records/${printedRecord.id}`}
@@ -684,6 +696,23 @@ export function PrintingCalculatorForm({
                 : null
             }
           />
+        )}
+
+        {documentReady && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-200">
+            <input
+              type="checkbox"
+              checked={addBarcode}
+              onChange={(e) => setAddBarcode(e.target.checked)}
+              className="h-4 w-4 cursor-pointer accent-gold-500"
+            />
+            <span>
+              Add barcode to this document
+              <span className="ml-1 text-slate-400">
+                (the printing ID, bottom-right of page 1 — untick for cover pages)
+              </span>
+            </span>
+          </label>
         )}
 
         <div className="flex gap-3">

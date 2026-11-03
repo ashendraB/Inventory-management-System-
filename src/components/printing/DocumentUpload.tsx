@@ -35,8 +35,10 @@ export interface DocumentUploadHandle {
    * has a barcode for `code` (the printing ID) on page 1, and resolves once
    * the preview has reloaded. The attached original is untouched — it is what
    * gets saved for Reprint, and what a later barcode is stamped onto. Rejects
-   * if the PDF can't be modified; the caller then prints it as it is. */
-  applyBarcode: (code: string) => Promise<void>;
+   * if the PDF can't be modified; the caller then prints it as it is.
+   * Pass null to print WITHOUT a barcode: if an earlier job left a stamped copy
+   * in the preview, this puts the plain original back. */
+  applyBarcode: (code: string | null) => Promise<void>;
 }
 
 function stripExtension(fileName: string) {
@@ -111,11 +113,24 @@ export function DocumentUpload({
   }, [fileUrl, fileName]);
 
   const applyBarcode = useCallback(
-    async (code: string) => {
+    async (code: string | null) => {
       if (!file || unsupported) throw new Error("No PDF to stamp.");
-      const stamped = await stampBarcode(await file.arrayBuffer(), code);
-      const url = URL.createObjectURL(new Blob([stamped as BlobPart], { type: "application/pdf" }));
-      // Wait for the preview iframe to load the stamped copy so printing it
+      // No barcode wanted: nothing to do unless a stamped copy from an earlier
+      // job is still showing, in which case put the plain original back.
+      if (code === null && !barcodeCode) return;
+
+      let blob: Blob;
+      let settleMs: number;
+      if (code === null) {
+        blob = file;
+        settleMs = 1500;
+      } else {
+        const stamped = await stampBarcode(await file.arrayBuffer(), code);
+        blob = new Blob([stamped as BlobPart], { type: "application/pdf" });
+        settleMs = 1500 + Math.min(3500, Math.round((stamped.length / 1_048_576) * 500));
+      }
+      const url = URL.createObjectURL(blob);
+      // Wait for the preview iframe to load the new copy so printing it
       // immediately afterwards prints the right file (the old URL is revoked
       // by the effect above once fileUrl changes).
       const loaded = new Promise<void>((resolve) => {
@@ -129,13 +144,10 @@ export function DocumentUpload({
       // The iframe's load event fires when the PDF viewer page is up, not when
       // the document inside it has been drawn; printing straight away can print
       // a blank or the previous copy. Give the viewer time (more for big files).
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, 1500 + Math.min(3500, Math.round((stamped.length / 1_048_576) * 500)))
-      );
+      await new Promise<void>((resolve) => setTimeout(resolve, settleMs));
     },
-    [file, unsupported]
+    [file, unsupported, barcodeCode]
   );
-
   useImperativeHandle(
     ref,
     () => ({
@@ -227,8 +239,8 @@ export function DocumentUpload({
       <p className="mb-3 text-xs text-slate-400">
         Optional — attach the file to auto-fill the page count and Document Name (from the
         filename — edit or clear it below if you need to) and preview it below. The Print button
-        saves the job, adds its barcode (the printing ID) to page 1 of the PDF, and then opens
-        your browser&apos;s print dialog.
+        saves the job, adds its barcode (the printing ID) to page 1 of the PDF unless you untick
+        the barcode box next to the Print button, and then opens your browser&apos;s print dialog.
       </p>
       <input
         ref={inputRef}
