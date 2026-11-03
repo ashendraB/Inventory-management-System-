@@ -73,6 +73,8 @@ export function DocumentUpload({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadWaiter = useRef<(() => void) | null>(null);
+  // The printing ID stamped on the current preview, if any.
+  const [barcodeCode, setBarcodeCode] = useState<string | null>(null);
 
   const printable = !unsupported && !!fileUrl && previewReady;
 
@@ -120,9 +122,16 @@ export function DocumentUpload({
         loadWaiter.current = resolve;
       });
       setPreviewReady(false);
+      setBarcodeCode(code);
       setFileUrl(url);
       await Promise.race([loaded, new Promise<void>((resolve) => setTimeout(resolve, 10_000))]);
       loadWaiter.current = null;
+      // The iframe's load event fires when the PDF viewer page is up, not when
+      // the document inside it has been drawn; printing straight away can print
+      // a blank or the previous copy. Give the viewer time (more for big files).
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, 1500 + Math.min(3500, Math.round((stamped.length / 1_048_576) * 500)))
+      );
     },
     [file, unsupported]
   );
@@ -148,6 +157,7 @@ export function DocumentUpload({
     setDetectedPages(null);
     setUnsupported(false);
     setPreviewReady(false);
+    setBarcodeCode(null);
     setFileName(selected.name);
     setFile(selected);
     onFileSelected?.(stripExtension(selected.name));
@@ -207,6 +217,7 @@ export function DocumentUpload({
     setDetectedPages(null);
     setUnsupported(false);
     setPreviewReady(false);
+    setBarcodeCode(null);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -235,6 +246,12 @@ export function DocumentUpload({
             <p className="text-emerald-400">
               Detected {detectedPages} page{detectedPages === 1 ? "" : "s"} — filled into
               &quot;Number of Pages&quot; below. You can still edit it if needed.
+            </p>
+          )}
+          {barcodeCode && (
+            <p className="text-emerald-400">
+              Barcode <strong>{barcodeCode}</strong> was added to the bottom-right corner of page 1
+              (shown in the preview below).
             </p>
           )}
           {unsupported && (
@@ -268,13 +285,14 @@ export function DocumentUpload({
       {!unsupported && fileUrl && (
         <iframe
           ref={iframeRef}
-          src={fileUrl}
+          // Once a barcode is stamped, show the whole of page 1 so it is visible.
+          src={barcodeCode ? `${fileUrl}#page=1&view=Fit` : fileUrl}
           title="Document preview"
           onLoad={() => {
             setPreviewReady(true);
             loadWaiter.current?.();
           }}
-          className="mt-4 h-80 w-full rounded-md border border-white/10"
+          className={`mt-4 w-full rounded-md border border-white/10 ${barcodeCode ? "h-[600px]" : "h-80"}`}
         />
       )}
     </div>
