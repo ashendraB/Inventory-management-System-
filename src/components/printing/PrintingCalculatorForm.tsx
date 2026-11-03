@@ -332,19 +332,16 @@ export function PrintingCalculatorForm({
     setPrintedRecord(null);
   }
 
-  /** mode "browser": open the browser print dialog right away. mode
-   * "acrobat": save the record, then download the PDF so it can be opened and
-   * printed in Adobe Acrobat (full print window with printer Properties). */
+  /** Saves the job first (the printing ID only exists once it is saved), then
+   * puts a barcode for that ID on page 1 of the PDF, then either opens the
+   * browser print dialog (mode "browser") or downloads the PDF so it can be
+   * printed in Adobe Acrobat with its full print window (mode "acrobat"). */
   function handlePrint(mode: "browser" | "acrobat" = "browser") {
     setSubmitError(null);
     setPrintedRecord(null);
     if (!lecturerId || !documentName || !itemId || !pages || !copies) {
       setSubmitError("Please fill in all required fields.");
       return;
-    }
-
-    if (documentReady && mode === "browser") {
-      documentRef.current?.print();
     }
 
     void submitRecord(mode);
@@ -405,7 +402,19 @@ export function PrintingCalculatorForm({
         );
       }
       if (documentReady) {
+        // Barcode = the printing ID, so a printed sheet can be traced back to
+        // its job. If the PDF can't be modified (e.g. it is protected) the job
+        // is already saved, so print it as it is rather than failing.
+        try {
+          await documentRef.current?.applyBarcode(data.record.printingCode);
+        } catch {
+          toast.error(
+            "The job was saved, but a barcode couldn't be added to this PDF — it will print without one.",
+            { duration: 8000 }
+          );
+        }
         if (mode === "acrobat") documentRef.current?.download();
+        else documentRef.current?.print();
         setPrintedRecord({
           id: data.record.id,
           printingCode: data.record.printingCode,
@@ -648,8 +657,8 @@ export function PrintingCalculatorForm({
           <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             <span>
               {printedRecord.viaAcrobat
-                ? `Printing record ${printedRecord.printingCode} saved and the PDF was downloaded. Open it in Acrobat (click it in the download bar) and print.`
-                : `Printing record ${printedRecord.printingCode} saved. Finish printing in the dialog that just opened, then view it whenever you're ready.`}
+                ? `Printing record ${printedRecord.printingCode} saved and the PDF (with its barcode on page 1) was downloaded. Open it in Acrobat (click it in the download bar) and print.`
+                : `Printing record ${printedRecord.printingCode} saved, with its barcode added to page 1. Finish printing in the dialog that just opened, then view it whenever you're ready.`}
             </span>
             <a
               href={`/printing/records/${printedRecord.id}`}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Field";
+import { stampBarcode } from "@/lib/stamp-barcode";
 
 /**
  * Lets the operator attach the actual document being printed, shows it
@@ -30,6 +31,12 @@ export interface DocumentUploadHandle {
    * otherwise (no file, or an unsupported format like .docx). Used to save
    * the document alongside the printing record for "Reprint" later. */
   getPdfFile: () => File | null;
+  /** Replaces what is printed/downloaded/previewed with a copy of the PDF that
+   * has a barcode for `code` (the printing ID) on page 1, and resolves once
+   * the preview has reloaded. The attached original is untouched — it is what
+   * gets saved for Reprint, and what a later barcode is stamped onto. Rejects
+   * if the PDF can't be modified; the caller then prints it as it is. */
+  applyBarcode: (code: string) => Promise<void>;
 }
 
 function stripExtension(fileName: string) {
@@ -65,6 +72,8 @@ export function DocumentUpload({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const loadWaiter = useRef<(() => void) | null>(null);
+
   const printable = !unsupported && !!fileUrl && previewReady;
 
   // Object URLs must be revoked or they leak memory for the life of the tab.
@@ -99,14 +108,34 @@ export function DocumentUpload({
     a.remove();
   }, [fileUrl, fileName]);
 
+  const applyBarcode = useCallback(
+    async (code: string) => {
+      if (!file || unsupported) throw new Error("No PDF to stamp.");
+      const stamped = await stampBarcode(await file.arrayBuffer(), code);
+      const url = URL.createObjectURL(new Blob([stamped as BlobPart], { type: "application/pdf" }));
+      // Wait for the preview iframe to load the stamped copy so printing it
+      // immediately afterwards prints the right file (the old URL is revoked
+      // by the effect above once fileUrl changes).
+      const loaded = new Promise<void>((resolve) => {
+        loadWaiter.current = resolve;
+      });
+      setPreviewReady(false);
+      setFileUrl(url);
+      await Promise.race([loaded, new Promise<void>((resolve) => setTimeout(resolve, 10_000))]);
+      loadWaiter.current = null;
+    },
+    [file, unsupported]
+  );
+
   useImperativeHandle(
     ref,
     () => ({
       print: handlePrint,
       download: handleDownload,
       getPdfFile: () => (!unsupported && file ? file : null),
+      applyBarcode,
     }),
-    [handlePrint, handleDownload, unsupported, file]
+    [handlePrint, handleDownload, applyBarcode, unsupported, file]
   );
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -187,8 +216,8 @@ export function DocumentUpload({
       <p className="mb-3 text-xs text-slate-400">
         Optional — attach the file to auto-fill the page count and Document Name (from the
         filename — edit or clear it below if you need to) and preview it below. The Print button
-        prints this preview directly (your browser&apos;s own print dialog) and saves the record
-        at the same time.
+        saves the job, adds its barcode (the printing ID) to page 1 of the PDF, and then opens
+        your browser&apos;s print dialog.
       </p>
       <input
         ref={inputRef}
@@ -241,7 +270,10 @@ export function DocumentUpload({
           ref={iframeRef}
           src={fileUrl}
           title="Document preview"
-          onLoad={() => setPreviewReady(true)}
+          onLoad={() => {
+            setPreviewReady(true);
+            loadWaiter.current?.();
+          }}
           className="mt-4 h-80 w-full rounded-md border border-white/10"
         />
       )}

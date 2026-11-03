@@ -417,6 +417,25 @@ export async function listPrintingRecords(filters: PrintingRecordFilters = {}) {
   };
 }
 
+/** Finds a job from the printing ID that is printed as a barcode on its
+ * document (e.g. "PRT-000031"). Used by the Barcode Reader. */
+export async function findPrintingRecordByCode(code: string) {
+  return prisma.printingRecord.findUnique({
+    where: { printingCode: code.toUpperCase() },
+    select: {
+      id: true,
+      printingCode: true,
+      documentName: true,
+      date: true,
+      pages: true,
+      copies: true,
+      physicalSheets: true,
+      totalCost: true,
+      lecturer: { select: { name: true } },
+    },
+  });
+}
+
 export async function getPrintingRecord(id: string) {
   return prisma.printingRecord.findUnique({
     where: { id },

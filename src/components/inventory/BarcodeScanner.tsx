@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Badge, statusTone } from "@/components/ui/Badge";
 import { Button, TextInput } from "@/components/ui/Field";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 interface ScanItemResult {
   type: "item";
@@ -32,7 +32,22 @@ interface ScanLotResult {
   };
 }
 
-type ScanResult = ScanItemResult | ScanLotResult;
+interface ScanPrintingResult {
+  type: "printing";
+  record: {
+    id: string;
+    printingCode: string;
+    documentName: string;
+    date: string;
+    pages: number;
+    copies: number;
+    physicalSheets: number;
+    totalCost: string;
+    lecturer: { name: string };
+  };
+}
+
+type ScanResult = ScanItemResult | ScanLotResult | ScanPrintingResult;
 
 export function BarcodeScanner() {
   const router = useRouter();
@@ -90,7 +105,7 @@ export function BarcodeScanner() {
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Scan or type a barcode (item or stock lot)..."
+          placeholder="Scan or type a barcode (item, stock lot or printing ID)..."
           className="flex-1"
         />
         <Button type="submit" disabled={loading}>
@@ -126,6 +141,36 @@ export function BarcodeScanner() {
             className="mt-2 inline-block text-gold-400 hover:underline"
           >
             View item →
+          </Link>
+        </div>
+      )}
+
+      {result?.type === "printing" && (
+        <div className="mt-3 rounded-md border border-white/10 p-3 text-sm">
+          <p className="font-medium text-white">{result.record.printingCode}</p>
+          <p className="text-slate-300">{result.record.documentName}</p>
+          <p className="text-slate-400">
+            {result.record.lecturer.name} · {formatDate(result.record.date)}
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <p>
+              Pages × copies:{" "}
+              <span className="font-medium">
+                {result.record.pages} × {result.record.copies}
+              </span>
+            </p>
+            <p>
+              Sheets: <span className="font-medium">{result.record.physicalSheets.toLocaleString()}</span>
+            </p>
+            <p>
+              Total: <span className="font-medium">{formatCurrency(Number(result.record.totalCost))}</span>
+            </p>
+          </div>
+          <Link
+            href={`/printing/records/${result.record.id}`}
+            className="mt-2 inline-block text-gold-400 hover:underline"
+          >
+            Open printing record →
           </Link>
         </div>
       )}
